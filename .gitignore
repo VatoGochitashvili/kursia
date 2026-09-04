@@ -8,7 +8,7 @@ build/
 *.db
 *.db-journal
 prisma/dev.db*
-storage/
+storage/*
 !storage/.gitkeep
 .DS_Store
 *.tsbuildinfo
