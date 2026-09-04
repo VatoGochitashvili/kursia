@@ -63,7 +63,8 @@ async function loadCreator(slug: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const creator = await loadCreator(slug);
-  if (!creator) return { title: "404" };
+  // Raise the 404 before any bytes stream — see the note on the course page.
+  if (!creator) notFound();
 
   const { locale } = await getI18n();
   const headline = creator.user.profile?.headline;

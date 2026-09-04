@@ -44,6 +44,14 @@ import { Icon, type IconName } from "@/components/ui/Icon";
  * emitted here unless the lesson is a free preview.
  */
 
+/**
+ * Always rendered per request: the page reads the session (to show "you own
+ * this") and records a view, so it was never actually cacheable. Declaring it
+ * explicitly also keeps `notFound()` able to set a real 404 status instead of
+ * a soft 404 (HTTP 200 with 404 content), which Google would index.
+ */
+export const dynamic = "force-dynamic";
+
 interface Props {
   params: Promise<{ slug: string }>;
 }
@@ -51,7 +59,13 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const course = await getCourseBySlug(slug);
-  if (!course) return { title: "404" };
+
+  // Raise the 404 HERE, not in the page body. This route has a loading.tsx,
+  // so the page renders inside a Suspense boundary — by the time the body runs
+  // the response has begun streaming and the status can no longer be changed,
+  // which would make a missing course a soft 404 (HTTP 200 with 404 content).
+  // generateMetadata runs before any bytes are sent.
+  if (!course) notFound();
 
   const { locale } = await getI18n();
   const price = effectivePriceMinor(course.priceMinor, course.discountPriceMinor);

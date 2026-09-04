@@ -282,7 +282,7 @@ function buildContent(
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { page } = await params;
-  if (!PAGES.includes(page as PageKey)) return { title: "404" };
+  if (!PAGES.includes(page as PageKey)) notFound();
 
   const [{ locale }, settings] = await Promise.all([getI18n(), getSettings()]);
   const content = buildContent(page as PageKey, locale, {

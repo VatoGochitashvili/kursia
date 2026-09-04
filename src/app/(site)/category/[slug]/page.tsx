@@ -51,7 +51,8 @@ async function loadCategory(slug: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const category = await loadCategory(slug);
-  if (!category) return { title: "404" };
+  // Raise the 404 before any bytes stream — see the note on the course page.
+  if (!category || !category.isActive) notFound();
 
   const { locale } = await getI18n();
   const name = locale === "en" ? category.nameEn : category.nameKa;

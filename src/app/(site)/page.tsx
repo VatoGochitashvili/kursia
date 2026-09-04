@@ -393,9 +393,11 @@ function HeroStat({
   extra?: React.ReactNode;
 }) {
   return (
-    <div>
+    // flex-col so `order` actually applies: HTML requires <dt> before <dd>,
+    // but the design wants the number first and the label beneath it.
+    <div className="flex flex-col">
       <dt className="order-2 text-[13px] text-ink-muted">{label}</dt>
-      <dd className="text-2xl font-bold tabular-nums tracking-tight text-ink sm:text-3xl">
+      <dd className="order-1 text-2xl font-bold tabular-nums tracking-tight text-ink sm:text-3xl">
         {value}
         {extra && <span className="ms-1 inline-block align-middle">{extra}</span>}
       </dd>
