@@ -12,8 +12,15 @@ import { LOCALES, localePath } from "@/i18n/config";
  * also `noindex` at the header level).
  *
  * Each entry carries hreflang alternates so Google understands the ka/en pair.
+ *
+ * Rendered PER REQUEST, not at build time. Two reasons, both load-bearing:
+ *   1. A build must never need a live database. Prerendering this was what
+ *      broke container builds — there is no database at `docker build` time.
+ *   2. A sitemap baked at build time is frozen: courses published after the
+ *      deploy would not appear until the next one. Crawlers fetch this a few
+ *      times a day, so one query per fetch costs nothing and is always current.
  */
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 function withAlternates(path: string) {
   const languages: Record<string, string> = {};
@@ -24,6 +31,8 @@ function withAlternates(path: string) {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // A database blip should degrade the sitemap to its static pages, never
+  // return a 500 to Googlebot.
   const [courses, categories, creators] = await Promise.all([
     db.course.findMany({
       where: { status: "PUBLISHED" },
@@ -40,7 +49,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       select: { slug: true, updatedAt: true },
       take: 5_000,
     }),
-  ]);
+  ]).catch((error) => {
+    console.error("[sitemap] database unavailable, serving static entries only", error);
+    return [[], [], []] as [
+      { slug: string; updatedAt: Date; studentCount: number }[],
+      { slug: string; updatedAt: Date }[],
+      { slug: string; updatedAt: Date }[],
+    ];
+  });
 
   const staticPaths: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
     { path: "/", priority: 1, changeFrequency: "daily" },

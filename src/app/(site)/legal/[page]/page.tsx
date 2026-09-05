@@ -14,15 +14,17 @@ import { Breadcrumbs, JsonLd } from "@/components/ui/primitives";
  * NOT lorem ipsum. They still need review by a lawyer before launch, and the
  * page says so where it matters.
  */
-export const revalidate = 3600;
+/**
+ * Rendered per request, not prerendered. These pages interpolate live platform
+ * settings — the commission rate and the refund window — into text a user may
+ * rely on. Baking them at build time would freeze those numbers at their
+ * defaults and keep showing the wrong figures after an admin changes them.
+ */
+export const dynamic = "force-dynamic";
 
 type PageKey = "terms" | "privacy" | "refund-policy" | "about" | "contact" | "help";
 
 const PAGES: PageKey[] = ["terms", "privacy", "refund-policy", "about", "contact", "help"];
-
-export function generateStaticParams() {
-  return PAGES.map((page) => ({ page }));
-}
 
 interface Props {
   params: Promise<{ page: string }>;
