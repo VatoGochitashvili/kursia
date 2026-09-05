@@ -206,6 +206,11 @@ hashing all require a Node runtime that Workers do not provide. Run it on
 Railway, Render, Fly.io, Cloud Run or a VPS; you can still front it with
 Cloudflare for DNS/CDN and use R2 for media.
 
+**Render is the shortest path**: `render.yaml` in the repo root is a Blueprint
+that creates the web service, the PostgreSQL database and the maintenance cron
+job in one step, and generates the three secrets itself. Dashboard → New →
+Blueprint → pick this repo.
+
 See **[DEPLOYMENT.md](DEPLOYMENT.md)** for the full guide. The short version:
 
 ```bash
