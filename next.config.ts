@@ -3,6 +3,10 @@ import type { NextConfig } from "next";
 const config: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Emit a self-contained server for the Docker image. Gated so that plain
+  // `next start` (buildpack hosts like Railway/Render) keeps working locally
+  // and in a non-container deploy.
+  ...(process.env.BUILD_STANDALONE === "1" ? { output: "standalone" as const } : {}),
   images: {
     // Object storage / CDN hosts are allow-listed via env so the storage
     // provider can be swapped without touching code.

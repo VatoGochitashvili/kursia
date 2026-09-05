@@ -198,6 +198,26 @@ and browsers may not; for `ka-GE` they disagree (`₾89,10` vs `₾89.10`,
 
 ---
 
+## Deploying
+
+**Cloudflare Pages cannot host this app** — 47 Node-runtime route handlers,
+Prisma's native query engine, `node:fs` media streaming and `scrypt` password
+hashing all require a Node runtime that Workers do not provide. Run it on
+Railway, Render, Fly.io, Cloud Run or a VPS; you can still front it with
+Cloudflare for DNS/CDN and use R2 for media.
+
+See **[DEPLOYMENT.md](DEPLOYMENT.md)** for the full guide. The short version:
+
+```bash
+DATABASE_PROVIDER=postgresql DATABASE_URL=postgresql://…
+npm ci && npm run build     # build
+npm run release             # migrate + seed settings/categories/admin
+npm run start               # serve (reads PORT)
+```
+
+A `Dockerfile` is included (multi-stage, non-root, health-checked) for hosts
+that want a container. Health probe: `GET /api/health`.
+
 ## Operations
 
 Point a scheduler at `POST /api/cron` every ~10 minutes with

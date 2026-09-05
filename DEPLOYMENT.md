@@ -1,0 +1,181 @@
+# Deploying Kursia
+
+## Why not Cloudflare Pages
+
+Cloudflare Pages (and Workers generally) cannot run this app, and it is not a
+configuration problem. Four blockers, any one of which is fatal:
+
+| Blocker | Why |
+|---|---|
+| 47 route handlers declare `runtime = "nodejs"` | `@cloudflare/next-on-pages` supports only the Edge runtime and fails the build on the first one. |
+| Prisma `prisma-client-js` | The query engine is a native binary. Workers cannot load one. |
+| `node:fs`, `node:stream` — local storage driver and `/api/media` range streaming | Workers have no filesystem. |
+| `node:crypto` `scrypt` — password hashing | `workerd` does not implement `scrypt` even with `nodejs_compat`. Login would break at runtime, after a green build. |
+
+Porting is possible (`@opennextjs/cloudflare`, Prisma driver adapter over D1 or
+Hyperdrive, PBKDF2 via `crypto.subtle`, R2-only storage) but it rewrites
+security-critical auth code. **Run it on a Node host instead.** You can still put
+Cloudflare in front for DNS, CDN and DDoS protection, and use Cloudflare R2 for
+media — R2 speaks the S3 API, which the storage driver already supports.
+
+---
+
+## What you need
+
+1. **A Node host** — Railway, Render, Fly.io, a VPS, or Google Cloud Run.
+2. **PostgreSQL** — Neon, Supabase, Railway's addon, or your own.
+3. **S3-compatible object storage** — Cloudflare R2 is the cheapest for a
+   Georgian audience (zero egress fees).
+4. **Video hosting** — Bunny Stream. Self-hosted MP4 will not survive real
+   concurrency.
+5. **An email provider** — Resend works out of the box.
+
+---
+
+## Environment
+
+Copy `.env.example` and fill it in. The values that must change from their
+defaults before you take money:
+
+```bash
+NODE_ENV=production
+APP_URL=https://kursia.ge
+NEXT_PUBLIC_APP_URL=https://kursia.ge
+
+DATABASE_PROVIDER=postgresql
+DATABASE_URL=postgresql://user:pass@host:5432/kursia?sslmode=require
+
+# Generate each separately: openssl rand -hex 32
+AUTH_SECRET=...
+MEDIA_SIGNING_SECRET=...
+CERTIFICATE_SIGNING_SECRET=...
+
+STORAGE_DRIVER=s3
+S3_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+S3_BUCKET=kursia-media
+S3_ACCESS_KEY_ID=...
+S3_SECRET_ACCESS_KEY=...
+S3_PUBLIC_BASE_URL=https://media.kursia.ge   # public bucket/CDN for thumbnails
+IMAGE_REMOTE_HOSTS=media.kursia.ge
+
+VIDEO_DRIVER=bunny
+BUNNY_STREAM_LIBRARY_ID=...
+BUNNY_STREAM_API_KEY=...
+BUNNY_STREAM_CDN_HOSTNAME=vz-xxxx.b-cdn.net
+BUNNY_TOKEN_AUTH_KEY=...          # without this, playback URLs are shareable
+
+EMAIL_DRIVER=resend
+RESEND_API_KEY=...
+EMAIL_FROM="კურსია <no-reply@kursia.ge>"
+
+PAYMENT_PROVIDERS=bog,manual      # drop `sandbox` entirely
+PAYMENT_DEFAULT_PROVIDER=bog
+PAYMENT_SANDBOX_ENABLED=false
+BOG_CLIENT_ID=...
+BOG_CLIENT_SECRET=...
+BOG_PUBLIC_KEY=...                # PEM used to verify the callback signature
+
+TRUST_PROXY=true                  # so rate limiting sees real client IPs
+SEED_ADMIN_EMAIL=you@kursia.ge
+SEED_ADMIN_PASSWORD=<long random string — change it after first login>
+```
+
+Three things the app enforces, so a misconfiguration fails loudly rather than
+quietly:
+
+- Secrets shorter than 32 characters, or still saying `replace-me`, **throw at
+  boot in production**. You cannot accidentally ship the dev keys.
+- `sandbox` payment routes return **404** when `NODE_ENV=production`. The dev
+  settle endpoint cannot exist in production even if left enabled.
+- `robots.txt` blocks all crawling unless `NODE_ENV=production`, so a staging
+  copy cannot outrank the live site.
+
+---
+
+## Database
+
+Production uses versioned migrations, never `db push`:
+
+```bash
+npm run db:migrate:deploy   # applies prisma/migrations
+npm run db:seed:prod        # settings + categories + one admin
+```
+
+`db:seed:prod` is **not** the development seed. It creates no demo courses, no
+fake instructors and no invented reviews — only platform settings, the category
+tree, and a single administrator from `SEED_ADMIN_EMAIL`. It is safe to re-run:
+everything is upserted, and it refuses to add a second admin.
+
+`npm run release` runs both, and is what you point a host's release command at.
+
+---
+
+## Deploying
+
+### Railway / Render (buildpack — simplest)
+
+| Setting | Value |
+|---|---|
+| Build command | `npm ci && npm run build` |
+| Release command | `npm run release` |
+| Start command | `npm run start` |
+| Health check | `/api/health` |
+
+The app reads `PORT`, so nothing else is needed.
+
+### Docker (Fly.io, Cloud Run, a VPS)
+
+```bash
+docker build -t kursia .
+docker run -p 3000:3000 --env-file .env kursia
+```
+
+The image is multi-stage: no build toolchain, no source, runs as a non-root
+user, and has a `HEALTHCHECK` against `/api/health`. Run migrations once per
+release, before the new image takes traffic:
+
+```bash
+docker run --rm --env-file .env kursia npx prisma migrate deploy
+```
+
+---
+
+## After deploying
+
+**Point a scheduler at `/api/cron` every ~10 minutes:**
+
+```bash
+curl -X POST https://kursia.ge/api/cron -H "Authorization: Bearer $AUTH_SECRET"
+```
+
+It drains the email outbox, moves cleared sales from pending to withdrawable,
+and prunes expired sessions. Each job is idempotent, so a missed or repeated run
+is harmless — but if it never runs, **creators can never withdraw** and no
+transactional email is delivered.
+
+**Verify these by hand once:**
+
+- [ ] `/api/health` returns `{"status":"ok","db":"up"}`
+- [ ] `robots.txt` allows crawling (proves `NODE_ENV=production`)
+- [ ] `/checkout/sandbox` returns **404**
+- [ ] Register, then confirm the verification email actually arrives
+- [ ] A real card payment settles and opens course access
+- [ ] `/sitemap.xml` lists your published courses with your real domain
+- [ ] Log in as admin and change the seeded password
+
+**Set your real IBAN** in Admin → Settings. Until you do, the bank-transfer
+checkout shows a placeholder and the page says so.
+
+---
+
+## Scaling notes
+
+Two seams to be aware of before traffic grows:
+
+- **Rate limiting is in-process.** Correct for one instance. On more than one,
+  point `setRateLimitStore()` (`src/lib/rate-limit.ts`) at Redis, or requests
+  get N× the intended allowance.
+- **Search is `LIKE`-based.** Correct for Georgian — a unicameral script needs
+  no case folding — and fine to roughly 10⁵ courses. `buildSearchFilter` in
+  `src/lib/courses.ts` is the single function to replace with Postgres
+  full-text search or Meilisearch.
