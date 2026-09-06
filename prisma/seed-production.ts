@@ -99,8 +99,11 @@ async function seedAdmin() {
   if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
     return "skipped — set SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD to create one";
   }
+  // Warn rather than throw: this runs on the container's boot path, and a weak
+  // password must not stop settings and categories — already seeded above —
+  // from being reported, nor keep the site from starting.
   if (ADMIN_PASSWORD.length < 10) {
-    throw new Error("SEED_ADMIN_PASSWORD must be at least 10 characters.");
+    return "skipped — SEED_ADMIN_PASSWORD must be at least 10 characters";
   }
 
   const existing = await db.user.findUnique({

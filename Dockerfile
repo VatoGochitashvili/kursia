@@ -6,8 +6,10 @@
 # ─────────────────────────────────────────────────────────────────────────────
 
 FROM node:22-alpine AS base
-# Prisma's engines need this on Alpine.
-RUN apk add --no-cache libc6-compat
+# Prisma's query engine needs both on Alpine: libc6-compat for glibc symbols
+# and openssl for the TLS it uses to reach Postgres. Missing openssl is the
+# classic "Prisma works locally, dies in Alpine" failure.
+RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
 # ── Dependencies ────────────────────────────────────────────────────────────
@@ -32,6 +34,14 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm run build
 
+# Bundle the production seed to plain JS so the runtime image needs no tsx or
+# TypeScript toolchain. Prisma stays external — it is already in the image.
+RUN npx esbuild prisma/seed-production.ts \
+      --bundle --platform=node --format=esm --target=node22 \
+      --tsconfig=tsconfig.json \
+      --external:@prisma/client --external:prisma \
+      --outfile=/app/seed-production.mjs
+
 # ── Runtime ─────────────────────────────────────────────────────────────────
 FROM base AS runner
 ENV NODE_ENV=production
@@ -47,12 +57,28 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Prisma schema, migrations and the CLI, so `migrate deploy` can run on boot.
+# Schema + migrations, so `migrate deploy` can run on boot.
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
-COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
+
+# The Prisma CLI, installed into its OWN tree. Copying the CLI out of the build
+# stage does not work — it pulls dependencies (`effect`, others) that the
+# standalone output prunes, so it fails at runtime with "Cannot find module".
+# Isolating it also keeps it from colliding with the standalone server's
+# dependency tree. The version is read from the lockfile so it cannot drift.
+COPY --from=builder /app/package-lock.json ./package-lock.json
+RUN PRISMA_VERSION=$(node -p "require('./package-lock.json').packages['node_modules/prisma'].version") \
+ && npm install --no-save --no-audit --no-fund --prefix /app/migrator "prisma@$PRISMA_VERSION" \
+ && npm cache clean --force \
+ && rm -f ./package-lock.json \
+ && chown -R nextjs:nodejs /app/migrator
+
+# Migrations + baseline data run on boot, so no paid "pre-deploy" hook is
+# needed: the container brings itself up unaided on any plan.
+COPY --from=builder --chown=nextjs:nodejs /app/seed-production.mjs ./seed-production.mjs
+COPY --chown=nextjs:nodejs scripts/docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
 
 # Local-disk storage is a dev convenience; in production set STORAGE_DRIVER=s3.
 # The directory exists so a misconfigured deploy fails loudly rather than
@@ -65,4 +91,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-CMD ["node", "server.js"]
+CMD ["./docker-entrypoint.sh"]

@@ -1,0 +1,64 @@
+name: Scheduled maintenance
+
+# Calls the app's /api/cron endpoint on a schedule. This is the free
+# replacement for a hosted cron job (Render's is a paid feature).
+#
+# The job drains the email outbox, moves cleared sales from pending to
+# withdrawable, and prunes expired sessions. Every step is idempotent, so a
+# missed or repeated run is harmless — but if it NEVER runs, creators can
+# never withdraw their earnings and no transactional email is delivered.
+#
+# Setup — Settings → Secrets and variables → Actions:
+#   APP_URL       your deployed URL, e.g. https://kursia.onrender.com
+#   CRON_SECRET   the same value as the app's AUTH_SECRET
+#
+# Note: GitHub disables scheduled workflows on repositories with no activity
+# for 60 days. Push a commit occasionally, or re-enable it in the Actions tab.
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: # lets you run it by hand from the Actions tab
+
+# Never let two runs overlap.
+concurrency:
+  group: kursia-cron
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call /api/cron
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$APP_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "::warning::APP_URL or CRON_SECRET is not set — skipping."
+            echo "Add both under Settings → Secrets and variables → Actions."
+            exit 0
+          fi
+
+          # A free host may have spun the app down; the first request wakes it
+          # and can take ~50s, so allow a generous timeout and one retry.
+          for attempt in 1 2; do
+            echo "attempt $attempt"
+            status=$(curl -sS -o /tmp/cron-body.txt -w '%{http_code}' \
+              --max-time 120 \
+              -X POST "$APP_URL/api/cron" \
+              -H "Authorization: Bearer $CRON_SECRET") && rc=0 || rc=$?
+
+            if [ "${rc:-0}" -eq 0 ] && [ "$status" = "200" ]; then
+              echo "ok: $(cat /tmp/cron-body.txt)"
+              exit 0
+            fi
+
+            echo "::warning::attempt $attempt failed (curl rc=${rc:-0}, http=$status)"
+            cat /tmp/cron-body.txt 2>/dev/null || true
+            [ "$attempt" = "1" ] && sleep 30
+          done
+
+          echo "::error::/api/cron did not succeed. Check the deployment and that CRON_SECRET matches AUTH_SECRET."
+          exit 1

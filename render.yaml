@@ -12,24 +12,24 @@ databases:
   - name: kursia-db
     databaseName: kursia
     user: kursia
-    # `free` works for a trial but Render expires free databases; move to
-    # `starter` before real users, or you will lose every purchase record.
-    plan: starter
+    # Free to start. Render expires free databases after their trial window,
+    # so move to `starter` before real users — a purchase ledger must not live
+    # on an instance that gets deleted.
+    plan: free
 
 services:
   - type: web
     name: kursia
-    runtime: node
-    plan: starter
+    runtime: docker
+    plan: free
     region: frankfurt # closest Render region to Georgia
     branch: main
     healthCheckPath: /api/health
 
-    buildCommand: npm ci && npm run build
-    # Runs after the build, before the new instance takes traffic: applies
-    # migrations and ensures settings/categories/admin exist. Idempotent.
-    preDeployCommand: npm run release
-    startCommand: npm run start
+    # Build and start come from the Dockerfile. Migrations and baseline data
+    # run in its entrypoint before the server starts, so no paid "pre-deploy"
+    # hook is needed.
+    dockerfilePath: ./Dockerfile
 
     envVars:
       - key: NODE_VERSION
@@ -176,32 +176,15 @@ services:
 
     autoDeploy: true
 
-  # ── Scheduled maintenance ─────────────────────────────────────────────────
-  # Drains the email outbox, moves cleared sales from pending to withdrawable,
-  # prunes expired sessions. WITHOUT THIS, creators can never withdraw their
-  # earnings and no transactional email is ever delivered.
-  #
-  # Render cron is a paid feature; on a plan without it, any external scheduler
-  # (cron-job.org, GitHub Actions) hitting the same URL with the same header
-  # does the identical job.
-  - type: cron
-    name: kursia-cron
-    runtime: node
-    plan: starter
-    region: frankfurt
-    branch: main
-    schedule: "*/10 * * * *"
-    buildCommand: "echo no build step needed"
-    startCommand: >
-      node -e "fetch(process.env.APP_URL+'/api/cron',{method:'POST',headers:{Authorization:'Bearer '+process.env.AUTH_SECRET}}).then(async r=>{console.log(r.status,await r.text());process.exit(r.ok?0:1)}).catch(e=>{console.error(e);process.exit(1)})"
-    envVars:
-      - key: APP_URL
-        fromService:
-          type: web
-          name: kursia
-          envVarKey: RENDER_EXTERNAL_URL
-      - key: AUTH_SECRET
-        fromService:
-          type: web
-          name: kursia
-          envVarKey: AUTH_SECRET
+# ─────────────────────────────────────────────────────────────────────────────
+# Scheduled maintenance is NOT defined here: Render cron jobs are a paid
+# feature. The job drains the email outbox, moves cleared sales from pending to
+# withdrawable, and prunes expired sessions — without it creators can never
+# withdraw and no email is delivered.
+#
+# A free equivalent ships in .github/workflows/cron.yml (GitHub Actions), or
+# use any external pinger against:
+#
+#   POST https://<your-app>.onrender.com/api/cron
+#   Authorization: Bearer <AUTH_SECRET>
+# ─────────────────────────────────────────────────────────────────────────────
