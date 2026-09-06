@@ -11,6 +11,35 @@
 # ─────────────────────────────────────────────────────────────────────────────
 set -e
 
+# Render (and similar hosts) can mount a "Secret File" — typically a .env —
+# into the app root and /etc/secrets. Load it into the environment so this
+# script and the app see the same values as a plain env-var setup. Parsed line
+# by line rather than sourced: the file must never be able to execute code.
+for candidate in /etc/secrets/.env ./.env; do
+  [ -f "$candidate" ] || continue
+  echo "▸ loading configuration from $candidate"
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in "" | \#*) continue ;; esac
+    case "$line" in *=*) ;; *) continue ;; esac
+
+    key=${line%%=*}
+    value=${line#*=}
+
+    # Ignore anything that is not a plain variable name.
+    case "$key" in *[!A-Za-z0-9_]* | "") continue ;; esac
+
+    # Strip one layer of surrounding quotes, if present.
+    case "$value" in
+      \"*\") value=${value#\"}; value=${value%\"} ;;
+      "'"*"'") value=${value#"'"}; value=${value%"'"} ;;
+    esac
+
+    # A variable set directly on the service always wins over the file.
+    eval "current=\${$key-}"
+    [ -n "$current" ] || export "$key=$value"
+  done < "$candidate"
+done
+
 echo "▸ checking configuration"
 
 if [ -z "$DATABASE_URL" ]; then

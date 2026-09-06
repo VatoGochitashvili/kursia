@@ -112,6 +112,18 @@ everything is upserted, and it refuses to add a second admin.
 
 ## Deploying
 
+### Two ways to supply configuration
+
+Either works, and they can be mixed:
+
+- **Environment variables** — set each key on the service. Simplest, and what
+  `render.yaml` uses.
+- **A Secret File** — upload one `.env` to Render's *Secret Files*. The
+  container's entrypoint loads it from `/etc/secrets/.env` or the app root
+  before anything else runs. It is parsed line by line rather than sourced, so
+  the file cannot execute code, and a variable set directly on the service
+  always overrides the same key in the file.
+
 ### Migrations run themselves
 
 The container applies migrations and ensures baseline data **in its entrypoint,
