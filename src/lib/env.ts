@@ -100,7 +100,19 @@ const schema = z.object({
   PAYMENT_PROVIDERS: csv("sandbox,manual"),
   PAYMENT_DEFAULT_PROVIDER: z.string().default("sandbox"),
   PAYMENT_SANDBOX_ENABLED: bool(true),
-  PAYMENT_SANDBOX_SECRET: secret("PAYMENT_SANDBOX_SECRET"),
+  /**
+   * Dev-only. The sandbox provider reports itself unconfigured whenever
+   * NODE_ENV is production, and its routes 404 there, so this secret is
+   * meaningless in a real deployment — requiring it made every request 500 on
+   * an otherwise correct production setup. Never enforced; only the three
+   * signing secrets above are.
+   */
+  PAYMENT_SANDBOX_SECRET: z
+    .string()
+    .optional()
+    .transform((v) =>
+      v && v.length >= 16 ? v : "dev-insecure-sandbox-secret-do-not-use-in-production",
+    ),
 
   BOG_CLIENT_ID: z.string().default(""),
   BOG_CLIENT_SECRET: z.string().default(""),
