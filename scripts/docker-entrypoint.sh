@@ -29,6 +29,25 @@ case "$DATABASE_URL" in
     ;;
 esac
 
+# Signing secrets gate sessions, media grants and certificates. Without them
+# the app would fall back to a constant dev value, so anyone could forge a
+# session cookie. Refuse to start rather than run insecurely.
+missing=""
+for var in AUTH_SECRET MEDIA_SIGNING_SECRET CERTIFICATE_SIGNING_SECRET; do
+  eval "value=\$$var"
+  case "$value" in
+    "" | replace-me*) missing="$missing $var" ;;
+  esac
+done
+
+if [ -n "$missing" ]; then
+  echo "✖ missing or placeholder secrets:$missing"
+  echo "  Generate one value per variable and set them on the service:"
+  echo "    openssl rand -hex 32"
+  echo "  (On Render these can be auto-generated — see render.yaml.)"
+  exit 1
+fi
+
 echo "▸ applying database migrations"
 # `migrate deploy` only ever applies pending migrations — it never resets or
 # drops anything, which is why it is the correct command for production.

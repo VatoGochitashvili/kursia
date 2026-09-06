@@ -31,6 +31,20 @@ const csv = (dflt: string) =>
     );
 
 const DEV = process.env.NODE_ENV !== "production";
+
+/**
+ * `next build` runs with NODE_ENV=production, but a container image is built
+ * once and its secrets are injected when it RUNS. Demanding them at build time
+ * would mean baking production credentials into the image — exactly backwards,
+ * and it makes the image impossible to build in CI.
+ *
+ * So the check is skipped during the build and enforced when the server
+ * actually starts, which is the moment that matters: a deployment missing
+ * AUTH_SECRET still refuses to boot.
+ */
+const IS_BUILD = process.env.NEXT_PHASE === "phase-production-build";
+const ENFORCE_SECRETS = !DEV && !IS_BUILD;
+
 /** Secrets must be real in production; dev gets a deterministic stand-in. */
 const secret = (name: string) =>
   z
@@ -38,7 +52,7 @@ const secret = (name: string) =>
     .optional()
     .transform((v) => v ?? "")
     .superRefine((v, ctx) => {
-      if (!DEV && (v.length < 32 || v.startsWith("replace-me"))) {
+      if (ENFORCE_SECRETS && (v.length < 32 || v.startsWith("replace-me"))) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: `${name} must be set to a random value of at least 32 chars in production (openssl rand -hex 32)`,
