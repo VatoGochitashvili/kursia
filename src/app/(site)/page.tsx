@@ -18,6 +18,7 @@ import { SearchBar } from "@/components/layout/SearchBar";
 import { ButtonLink } from "@/components/ui/Button";
 import { Card, JsonLd, SectionHeading, Stars } from "@/components/ui/primitives";
 import { Icon, categoryIcon, type IconName } from "@/components/ui/Icon";
+import { cn } from "@/lib/cn";
 
 /**
  * The homepage is fully server-rendered from the database and revalidated
@@ -68,7 +69,15 @@ export default async function HomePage() {
         />
 
         <div className="container-page py-16 sm:py-20 lg:py-28">
-          <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
+          {/* Only split the hero when there are courses to show beside it.
+              An empty marketplace previously reserved half the width for an
+              empty grid, which read as a broken layout. */}
+          <div
+            className={cn(
+              "grid items-center gap-12",
+              featured.length > 0 ? "lg:grid-cols-[1.05fr_0.95fr]" : "max-w-3xl",
+            )}
+          >
             <div className="animate-fade-up">
               <p className="eyebrow mb-4">{t.home.heroEyebrow}</p>
 
@@ -115,6 +124,7 @@ export default async function HomePage() {
             </div>
 
             {/* Live catalogue preview — real courses, not a stock illustration. */}
+            {featured.length > 0 && (
             <div className="relative hidden lg:block">
               <div className="absolute -inset-6 -z-10 rounded-[2.5rem] bg-gradient-to-br from-brand-100/60 to-accent-50/60 blur-2xl" />
               <div className="grid gap-4 sm:grid-cols-2">
@@ -130,6 +140,7 @@ export default async function HomePage() {
                 ))}
               </div>
             </div>
+            )}
           </div>
         </div>
       </section>
@@ -165,6 +176,40 @@ export default async function HomePage() {
           ))}
         </ul>
       </Section>
+
+      {/* ── Empty marketplace ────────────────────────────────────────────── */}
+      {/* With no courses, four whole sections below render nothing and the page
+          reads as half-built. A launching platform is in this state by
+          definition, so say so deliberately and point at the action that fixes
+          it, rather than showing a gap. */}
+      {featured.length === 0 && popular.length === 0 && (
+        <Section muted>
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
+              <Icon name="sparkles" size={26} />
+            </span>
+            <h2 className="mt-5 text-2xl sm:text-3xl">
+              {locale === "en"
+                ? "The first courses are on their way"
+                : "პირველი კურსები მალე გამოჩნდება"}
+            </h2>
+            <p className="mt-3 text-pretty text-[15px] leading-relaxed text-ink-muted">
+              {locale === "en"
+                ? "This marketplace is brand new. If you teach something well, you can be one of the first instructors here — and keep the majority of every sale."
+                : "პლატფორმა ახლახან გაიხსნა. თუ რაღაცას კარგად ასწავლი, შეგიძლია იყო ერთ-ერთი პირველი ინსტრუქტორი — და გაყიდვის დიდი ნაწილი შენ დაგრჩეს."}
+            </p>
+            <div className="mt-7 flex flex-wrap justify-center gap-3">
+              <ButtonLink href={p("/register?type=creator")} size="lg">
+                {t.home.creatorCtaButton}
+                <Icon name="arrowRight" size={17} />
+              </ButtonLink>
+              <ButtonLink href={p("/become-instructor")} variant="outline" size="lg">
+                {t.common.showMore}
+              </ButtonLink>
+            </div>
+          </div>
+        </Section>
+      )}
 
       {/* ── Featured ─────────────────────────────────────────────────────── */}
       {featured.length > 0 && (
