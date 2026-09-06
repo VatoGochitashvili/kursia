@@ -19,6 +19,8 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Card, JsonLd, SectionHeading, Stars } from "@/components/ui/primitives";
 import { Icon, categoryIcon, type IconName } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
+import { Reveal } from "@/components/ui/Reveal";
+import { CountUp } from "@/components/ui/CountUp";
 
 /**
  * The homepage is fully server-rendered from the database and revalidated
@@ -57,16 +59,40 @@ export default async function HomePage() {
     <>
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden border-b border-line bg-surface">
-        {/* Soft brand wash — decorative only. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10"
-          style={{
-            background:
-              "radial-gradient(70rem 32rem at 15% -12%, rgb(53 89 240 / 0.10), transparent 60%)," +
-              "radial-gradient(48rem 26rem at 92% 8%, rgb(255 87 16 / 0.07), transparent 62%)",
-          }}
-        />
+        {/* Decorative depth. Two slow, low-contrast washes that drift on
+            different rhythms, so the page feels alive without anything
+            demanding attention. Pure CSS — no JavaScript, no repaint cost
+            beyond the compositor. */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+          <div
+            className="aurora absolute -left-1/4 -top-1/2 h-[46rem] w-[46rem] rounded-full opacity-70 blur-3xl"
+            style={{
+              background:
+                "radial-gradient(circle, rgb(53 89 240 / 0.16), transparent 62%)",
+            }}
+          />
+          <div
+            className="aurora absolute -right-1/4 top-0 h-[38rem] w-[38rem] rounded-full opacity-70 blur-3xl"
+            style={{
+              background:
+                "radial-gradient(circle, rgb(255 87 16 / 0.13), transparent 62%)",
+              animationDelay: "-7s",
+              animationDuration: "26s",
+            }}
+          />
+          {/* A faint grid gives the wash something to sit against. */}
+          <div
+            className="absolute inset-0 opacity-[0.35]"
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, rgb(13 17 23 / 0.04) 1px, transparent 1px)," +
+                "linear-gradient(to bottom, rgb(13 17 23 / 0.04) 1px, transparent 1px)",
+              backgroundSize: "56px 56px",
+              maskImage: "radial-gradient(60rem 34rem at 50% 0%, #000 40%, transparent 78%)",
+              WebkitMaskImage: "radial-gradient(60rem 34rem at 50% 0%, #000 40%, transparent 78%)",
+            }}
+          />
+        </div>
 
         <div className="container-page py-16 sm:py-20 lg:py-28">
           {/* Only split the hero when there are courses to show beside it.
@@ -78,22 +104,43 @@ export default async function HomePage() {
               featured.length > 0 ? "lg:grid-cols-[1.05fr_0.95fr]" : "max-w-3xl",
             )}
           >
-            <div className="animate-fade-up">
-              <p className="eyebrow mb-4">{t.home.heroEyebrow}</p>
+            <div>
+              <p className="eyebrow mb-4 animate-fade-up">{t.home.heroEyebrow}</p>
 
-              <h1 className="text-balance text-[2.5rem] leading-[1.08] sm:text-6xl lg:text-[4.25rem]">
+              {/*
+                The line-height is bound to each font-size with the `/` syntax
+                rather than a separate `leading-` class: Tailwind's text-*
+                utilities set line-height themselves (1 for arbitrary sizes and
+                for text-6xl), so a standalone leading- class is silently
+                overridden at every breakpoint.
+
+                1.18, not the 1.08 this used to carry. Georgian
+                ascenders and descenders are far deeper than Latin, so the
+                tighter value made "შექმენი" and "გამოიმუშავე" physically
+                overlap. Measured on the live site: a 43px line box for 40px
+                text, with zero gap between lines.
+              */}
+              <h1
+                className="text-balance text-[2.5rem]/[1.2] animate-fade-up sm:text-6xl/[1.18] lg:text-[4.25rem]/[1.18]"
+                style={{ animationDelay: "70ms" }}
+              >
                 <span className="block">{t.home.heroTitleLine1}</span>
                 <span className="block">{t.home.heroTitleLine2}</span>
-                <span className="block bg-gradient-to-r from-brand-600 to-accent-500 bg-clip-text text-transparent">
+                {/* pb-[0.08em] keeps background-clip from shaving the
+                    descenders off ვ and უ. */}
+                <span className="text-gradient-animated block pb-[0.08em]">
                   {t.home.heroTitleLine3}
                 </span>
               </h1>
 
-              <p className="mt-6 max-w-xl text-pretty text-base leading-relaxed text-ink-muted sm:text-[17px]">
+              <p
+                className="mt-6 max-w-xl text-pretty text-base leading-relaxed text-ink-muted animate-fade-up sm:text-[17px]"
+                style={{ animationDelay: "140ms" }}
+              >
                 {t.home.heroSubtitle}
               </p>
 
-              <div className="mt-8 max-w-xl">
+              <div className="mt-8 max-w-xl animate-fade-up" style={{ animationDelay: "210ms" }}>
                 <SearchBar
                   placeholder={t.home.heroSearchPlaceholder}
                   action={p("/courses")}
@@ -101,7 +148,10 @@ export default async function HomePage() {
                 />
               </div>
 
-              <div className="mt-5 flex flex-wrap gap-3">
+              <div
+                className="mt-5 flex flex-wrap gap-3 animate-fade-up"
+                style={{ animationDelay: "280ms" }}
+              >
                 <ButtonLink href={p("/courses")} size="lg">
                   {t.home.heroPrimaryCta}
                   <Icon name="arrowRight" size={17} />
@@ -111,10 +161,22 @@ export default async function HomePage() {
                 </ButtonLink>
               </div>
 
-              <dl className="mt-10 grid max-w-lg grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
-                <HeroStat value={formatCount(stats.courses, locale)} label={t.home.statCourses} />
-                <HeroStat value={formatCount(stats.students, locale)} label={t.home.statStudents} />
-                <HeroStat value={formatCount(stats.creators, locale)} label={t.home.statCreators} />
+              <dl
+                className="mt-10 grid max-w-lg grid-cols-2 gap-x-6 gap-y-5 animate-fade-up sm:grid-cols-4"
+                style={{ animationDelay: "350ms" }}
+              >
+                <HeroStat
+                  value={<CountUp value={stats.courses} locale={locale} />}
+                  label={t.home.statCourses}
+                />
+                <HeroStat
+                  value={<CountUp value={stats.students} locale={locale} />}
+                  label={t.home.statStudents}
+                />
+                <HeroStat
+                  value={<CountUp value={stats.creators} locale={locale} />}
+                  label={t.home.statCreators}
+                />
                 <HeroStat
                   value={stats.averageRating > 0 ? stats.averageRating.toFixed(1) : "—"}
                   label={t.home.statRating}
@@ -405,7 +467,9 @@ export default async function HomePage() {
 function Section({ children, muted }: { children: React.ReactNode; muted?: boolean }) {
   return (
     <section className={muted ? "border-y border-line bg-surface-muted" : ""}>
-      <div className="container-page py-14 sm:py-16">{children}</div>
+      <div className="container-page py-14 sm:py-16">
+        <Reveal>{children}</Reveal>
+      </div>
     </section>
   );
 }
@@ -433,7 +497,7 @@ function HeroStat({
   label,
   extra,
 }: {
-  value: string;
+  value: React.ReactNode;
   label: string;
   extra?: React.ReactNode;
 }) {
@@ -468,10 +532,16 @@ function CategoryTile({
   return (
     <Link
       href={href}
-      className="group flex h-full flex-col items-center gap-2.5 rounded-2xl border border-line bg-surface p-4 text-center transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md"
+      className="group relative flex h-full flex-col items-center gap-2.5 overflow-hidden rounded-2xl border border-line bg-surface p-4 text-center transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-lg"
     >
+      {/* A wash of the category's own colour rises on hover. */}
       <span
-        className="inline-flex h-11 w-11 items-center justify-center rounded-xl transition-transform group-hover:scale-105"
+        aria-hidden="true"
+        className="absolute inset-x-0 bottom-0 h-0 opacity-0 transition-all duration-300 group-hover:h-full group-hover:opacity-100"
+        style={{ background: `linear-gradient(to top, ${color ?? "#3559f0"}0f, transparent)` }}
+      />
+      <span
+        className="relative inline-flex h-11 w-11 items-center justify-center rounded-xl transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-110"
         style={{
           backgroundColor: `${color ?? "#3559f0"}15`,
           color: color ?? "#3559f0",
@@ -479,8 +549,8 @@ function CategoryTile({
       >
         <Icon name={icon} size={20} />
       </span>
-      <span className="text-[13px] font-semibold leading-tight text-ink">{name}</span>
-      <span className="text-[11px] text-ink-subtle">
+      <span className="relative text-[13px] font-semibold leading-tight text-ink">{name}</span>
+      <span className="relative text-[11px] text-ink-subtle">
         {count} {countLabel}
       </span>
     </Link>

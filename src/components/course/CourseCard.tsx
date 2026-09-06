@@ -29,7 +29,12 @@ export function CourseCard({ course, locale, t, variant = "grid", priority, clas
   return (
     <article
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-2xl border border-line bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-lg",
+        // Motion is the whole difference between a card that feels inert and
+        // one that feels responsive: a longer curve, a real lift, and a ring
+        // that picks up the brand colour.
+        "group relative flex flex-col overflow-hidden rounded-2xl border border-line bg-surface",
+        "transition-[transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
+        "hover:-translate-y-1.5 hover:border-brand-200 hover:shadow-xl",
         variant === "rail" && "w-[17rem] shrink-0",
         className,
       )}
@@ -42,13 +47,18 @@ export function CourseCard({ course, locale, t, variant = "grid", priority, clas
             fill
             sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 300px"
             priority={priority}
-            className="object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+            className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.07]"
           />
         ) : (
           <div className="flex h-full items-center justify-center text-ink-subtle">
             <Icon name="book" size={32} />
           </div>
         )}
+
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
+        />
 
         <div className="absolute left-2.5 top-2.5 flex flex-wrap gap-1.5">
           {course.isFeatured && <Badge tone="dark">{t.common.featured}</Badge>}
@@ -67,7 +77,10 @@ export function CourseCard({ course, locale, t, variant = "grid", priority, clas
         <h3 className="text-[15px] font-bold leading-snug text-ink">
           {/* Stretched link keeps the whole card clickable without nesting
               interactive elements inside an anchor. */}
-          <Link href={href} className="line-clamp-2 after:absolute after:inset-0 after:content-['']">
+          <Link
+            href={href}
+            className="line-clamp-2 transition-colors duration-200 group-hover:text-brand-700 after:absolute after:inset-0 after:content-['']"
+          >
             {course.title}
           </Link>
         </h3>
