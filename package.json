@@ -16,7 +16,9 @@
     "db:migrate": "node scripts/set-db-provider.mjs && prisma migrate dev",
     "db:migrate:deploy": "node scripts/set-db-provider.mjs && prisma migrate deploy",
     "db:seed:prod": "tsx prisma/seed-production.ts",
-    "release": "npm run db:migrate:deploy && npm run db:seed:prod"
+    "release": "npm run db:migrate:deploy && npm run db:seed:prod",
+    "db:seed:demo": "SEED_DEMO_DATA=true tsx prisma/seed-demo.ts",
+    "db:unseed:demo": "SEED_DEMO_DATA=remove tsx prisma/seed-demo.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1",

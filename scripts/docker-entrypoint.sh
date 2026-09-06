@@ -99,5 +99,15 @@ else
   echo "  Categories or the admin account may be missing; re-deploy to retry."
 fi
 
+# Optional showcase catalogue, driven entirely by one variable so it can be
+# managed from a host dashboard without shell access:
+#   SEED_DEMO_DATA=true    add fabricated instructors, courses and reviews
+#   SEED_DEMO_DATA=remove  delete them again
+# Adding is a no-op if already present, so redeploys do not duplicate it.
+if [ -n "$SEED_DEMO_DATA" ]; then
+  echo "▸ demo content: $SEED_DEMO_DATA"
+  node seed-demo.mjs || echo "⚠ demo seed did not complete — the site will still start."
+fi
+
 echo "▸ starting server on port ${PORT:-3000}"
 exec node server.js

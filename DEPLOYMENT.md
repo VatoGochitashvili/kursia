@@ -197,6 +197,34 @@ docker run --rm --env-file .env kursia npx prisma migrate deploy
 
 ---
 
+## Optional: demo content
+
+A brand-new marketplace has no courses, so the homepage is mostly marketing.
+To show the product before real instructors arrive, set one variable on the
+service:
+
+| `SEED_DEMO_DATA` | Effect |
+|---|---|
+| `true` | Adds 8 instructors, 10 Georgian courses, 12 students, enrolments and reviews |
+| `remove` | Deletes all of it |
+| unset | Nothing happens |
+
+It runs from the container's entrypoint, so it needs no shell access — set the
+variable, redeploy, and unset it afterwards. Adding twice is a no-op.
+
+**This content is fabricated.** The instructors are invented and the reviews
+were never written by anyone. That is fine for a demo and dishonest once real
+users can sign up, so remove it before launch.
+
+Two safety properties, both tested:
+
+- Every demo account uses an `@example.ge` address, which is how removal finds
+  them. Your admin, and any real instructor or student, is never touched.
+- If a real account has purchased a demo course, removal **refuses** rather
+  than deleting the payment record. Unpublish the course in the admin instead.
+
+Locally: `npm run db:seed:demo` and `npm run db:unseed:demo`.
+
 ## After deploying
 
 **Point a scheduler at `/api/cron` every ~10-15 minutes.** Render's cron is a

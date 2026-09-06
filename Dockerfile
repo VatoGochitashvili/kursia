@@ -40,7 +40,12 @@ RUN npx esbuild prisma/seed-production.ts \
       --bundle --platform=node --format=esm --target=node22 \
       --tsconfig=tsconfig.json \
       --external:@prisma/client --external:prisma \
-      --outfile=/app/seed-production.mjs
+      --outfile=/app/seed-production.mjs \
+ && npx esbuild prisma/seed-demo.ts \
+      --bundle --platform=node --format=esm --target=node22 \
+      --tsconfig=tsconfig.json \
+      --external:@prisma/client --external:prisma \
+      --outfile=/app/seed-demo.mjs
 
 # ── Runtime ─────────────────────────────────────────────────────────────────
 FROM base AS runner
@@ -77,6 +82,7 @@ RUN PRISMA_VERSION=$(node -p "require('./package-lock.json').packages['node_modu
 # Migrations + baseline data run on boot, so no paid "pre-deploy" hook is
 # needed: the container brings itself up unaided on any plan.
 COPY --from=builder --chown=nextjs:nodejs /app/seed-production.mjs ./seed-production.mjs
+COPY --from=builder --chown=nextjs:nodejs /app/seed-demo.mjs ./seed-demo.mjs
 COPY --chown=nextjs:nodejs scripts/docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x ./docker-entrypoint.sh
 
