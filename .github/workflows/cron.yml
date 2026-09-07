@@ -12,12 +12,21 @@ name: Scheduled maintenance
 #   APP_URL       your deployed URL, e.g. https://kursia.onrender.com
 #   CRON_SECRET   the same value as the app's AUTH_SECRET
 #
-# Note: GitHub disables scheduled workflows on repositories with no activity
-# for 60 days. Push a commit occasionally, or re-enable it in the Actions tab.
+# It also keeps the service awake. Render's free tier spins down after 15
+# minutes idle and then takes ~50s to answer the next request, which looks
+# broken to anyone reviewing the site — especially a collaborator in another
+# timezone hitting it cold. A 10-minute ping stays clear of that window;
+# 15 minutes sits exactly on the boundary.
+#
+# Two caveats worth knowing:
+#  • GitHub's scheduled runners are best-effort and are often several minutes
+#    late under load, so treat this as "roughly every 10 minutes".
+#  • GitHub disables scheduled workflows on repositories with no activity for
+#    60 days. Push a commit occasionally, or re-enable it in the Actions tab.
 
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "*/10 * * * *"
   workflow_dispatch: # lets you run it by hand from the Actions tab
 
 # Never let two runs overlap.
