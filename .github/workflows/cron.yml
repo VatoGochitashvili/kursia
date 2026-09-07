@@ -71,3 +71,25 @@ jobs:
 
           echo "::error::/api/cron did not succeed. Check the deployment and that CRON_SECRET matches AUTH_SECRET."
           exit 1
+
+      - name: Keep routes warm
+        # A route is compiled on its first request — 1-3s on a small instance,
+        # versus ~0.13s once warm. Touching each route module here means real
+        # visitors land on warm code. One page per dynamic route is enough:
+        # /courses/[slug] is a single module regardless of which slug is used.
+        if: always()
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+        run: |
+          [ -z "$APP_URL" ] && exit 0
+          for path in / /courses /categories /instructors /become-instructor /certificate; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 60 "$APP_URL$path" || echo 000)
+            echo "  $path -> $code"
+          done
+          # Warm the two per-slug route modules using whatever the sitemap lists.
+          for loc in $(curl -sS --max-time 60 "$APP_URL/sitemap.xml" \
+                        | grep -oE '<loc>[^<]*/(courses|creator)/[^<]*</loc>' \
+                        | sed -E 's|</?loc>||g' | awk -F/ '{print $4"/"$5}' | sort -u -t/ -k1,1 | head -2); do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 60 "$APP_URL/$loc" || echo 000)
+            echo "  /$loc -> $code"
+          done
