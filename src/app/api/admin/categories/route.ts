@@ -6,6 +6,7 @@ import { categorySchema } from "@/lib/validation";
 import { requireAdmin } from "@/lib/auth/rbac";
 import { uniqueSlug } from "@/lib/slug";
 import { audit, AUDIT_ACTIONS } from "@/lib/audit";
+import { revalidateCatalogue } from "@/lib/courses";
 
 export const runtime = "nodejs";
 
@@ -61,6 +62,7 @@ export const POST = handler(async (request) => {
     summary: category.nameKa,
   });
 
+  revalidateCatalogue();
   return jsonCreated(category);
 });
 
@@ -111,6 +113,7 @@ export const PATCH = handler(async (request) => {
     summary: category.nameKa,
   });
 
+  revalidateCatalogue();
   return jsonOk(category);
 });
 
@@ -155,5 +158,6 @@ export const DELETE = handler(async (request) => {
     summary: category.nameKa,
   });
 
+  revalidateCatalogue();
   return jsonOk({ ok: true });
 });

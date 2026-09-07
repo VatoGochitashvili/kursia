@@ -5,6 +5,7 @@ import { requireAdmin } from "@/lib/auth/rbac";
 import { refreshCourseRating } from "@/lib/progress";
 import { audit, AUDIT_ACTIONS } from "@/lib/audit";
 import { cuid } from "@/lib/validation";
+import { revalidateCatalogue } from "@/lib/courses";
 
 export const runtime = "nodejs";
 
@@ -37,6 +38,7 @@ export const POST = handler(async (request) => {
       await db.review.update({ where: { id: body.targetId }, data: { status } });
       // Hidden reviews must stop counting toward the course rating.
       await refreshCourseRating(review.courseId);
+      revalidateCatalogue();
 
       await audit({
         actorId: admin.id,
@@ -77,6 +79,7 @@ export const POST = handler(async (request) => {
         targetId: body.targetId,
         summary: `${course.title}: ${featured ? "featured" : "unfeatured"}`,
       });
+      revalidateCatalogue();
       return jsonOk({ ok: true, isFeatured: course.isFeatured });
     }
   }

@@ -2,6 +2,7 @@ import { beginMutation, handler, jsonOk, readJson } from "@/lib/api";
 import { courseTransitionSchema } from "@/lib/validation";
 import { requireCourseOwner } from "@/lib/auth/rbac";
 import { checkPublishReadiness, transitionCourse } from "@/lib/course-authoring";
+import { revalidateCatalogue } from "@/lib/courses";
 
 export const runtime = "nodejs";
 
@@ -32,6 +33,11 @@ export const POST = handler(async (request, context: Ctx) => {
     actorRole: user.role,
     note: body.note,
   });
+
+  // A publish, unpublish or archive changes what the marketplace shows, so the
+  // cached catalogue must drop now — otherwise a creator publishes and does not
+  // see their course for the length of the TTL.
+  revalidateCatalogue();
 
   return jsonOk(course);
 });

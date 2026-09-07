@@ -1,3 +1,4 @@
+import { revalidateTag, unstable_cache } from "next/cache";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { transliterateGeorgian } from "@/lib/slug";
@@ -187,7 +188,7 @@ export async function searchCourses(params: CourseSearchParams): Promise<CourseS
 
 // ── Homepage / carousel queries ────────────────────────────────────────────
 
-export async function getFeaturedCourses(limit = 8, explicitIds: string[] = []) {
+async function getFeaturedCoursesUncached(limit = 8, explicitIds: string[] = []) {
   if (explicitIds.length > 0) {
     const curated = await db.course.findMany({
       where: { AND: [publicWhere, { id: { in: explicitIds } }] },
@@ -226,7 +227,7 @@ export async function getFeaturedCourses(limit = 8, explicitIds: string[] = []) 
   return [...featured, ...filler];
 }
 
-export const getPopularCourses = (limit = 8) =>
+const getPopularCoursesUncached = (limit = 8) =>
   db.course.findMany({
     where: publicWhere,
     select: COURSE_CARD_SELECT,
@@ -234,7 +235,7 @@ export const getPopularCourses = (limit = 8) =>
     take: limit,
   });
 
-export const getNewCourses = (limit = 8) =>
+const getNewCoursesUncached = (limit = 8) =>
   db.course.findMany({
     where: publicWhere,
     select: COURSE_CARD_SELECT,
@@ -242,7 +243,7 @@ export const getNewCourses = (limit = 8) =>
     take: limit,
   });
 
-export async function getPopularCreators(limit = 6, explicitIds: string[] = []) {
+async function getPopularCreatorsUncached(limit = 6, explicitIds: string[] = []) {
   const where: Prisma.CreatorProfileWhereInput =
     explicitIds.length > 0
       ? { id: { in: explicitIds } }
@@ -288,10 +289,10 @@ export async function getPopularCreators(limit = 6, explicitIds: string[] = []) 
     .slice(0, limit);
 }
 
-export type CreatorCard = Awaited<ReturnType<typeof getPopularCreators>>[number];
+export type CreatorCard = Awaited<ReturnType<typeof getPopularCreatorsUncached>>[number];
 
 /** Category tree with published-course counts, for nav and the homepage. */
-export async function getCategoryTree() {
+async function getCategoryTreeUncached() {
   const categories = await db.category.findMany({
     where: { isActive: true },
     select: {
@@ -313,10 +314,10 @@ export async function getCategoryTree() {
   });
 }
 
-export type CategoryNode = Awaited<ReturnType<typeof getCategoryTree>>[number];
+export type CategoryNode = Awaited<ReturnType<typeof getCategoryTreeUncached>>[number];
 
 /** Headline platform numbers for the homepage. */
-export async function getPlatformStats() {
+async function getPlatformStatsUncached() {
   const [courses, students, creators, ratingAgg] = await Promise.all([
     db.course.count({ where: publicWhere }),
     db.enrollment.count({ where: { revokedAt: null } }),
@@ -332,4 +333,43 @@ export async function getPlatformStats() {
     creators,
     averageRating: Math.round((ratingAgg._avg.ratingAvg ?? 0) * 10) / 10,
   };
+}
+
+// ── Caching ────────────────────────────────────────────────────────────────
+/*
+ * These six queries drive the homepage and the navigation, and they are the
+ * same for every visitor. Rendering them per request meant roughly six database
+ * round trips on every page view — which on a small instance with a managed
+ * Postgres is most of the page's latency, not the rendering.
+ *
+ * The pages themselves stay dynamic (the header reads the session cookie), so
+ * route-level caching is unavailable; this caches the DATA instead, which is
+ * the part that is actually shared.
+ *
+ * Tagged so a publish or a category edit can drop them immediately rather than
+ * waiting out the TTL — see revalidateCatalogue().
+ */
+export const CATALOGUE_TAG = "catalogue";
+
+const cached = <A extends unknown[], R>(
+  fn: (...args: A) => Promise<R>,
+  key: string,
+  revalidate: number,
+) => unstable_cache(fn, [key], { revalidate, tags: [CATALOGUE_TAG] });
+
+export const getFeaturedCourses = cached(getFeaturedCoursesUncached, "featured-courses", 300);
+export const getPopularCourses = cached(getPopularCoursesUncached, "popular-courses", 300);
+export const getNewCourses = cached(getNewCoursesUncached, "new-courses", 300);
+export const getPopularCreators = cached(getPopularCreatorsUncached, "popular-creators", 600);
+export const getCategoryTree = cached(getCategoryTreeUncached, "category-tree", 900);
+export const getPlatformStats = cached(getPlatformStatsUncached, "platform-stats", 300);
+
+/**
+ * Drop the cached catalogue. Call after anything that changes what the public
+ * marketplace shows — publishing, unpublishing, featuring, or editing
+ * categories — so a creator sees their course live immediately instead of
+ * waiting out the TTL.
+ */
+export function revalidateCatalogue(): void {
+  revalidateTag(CATALOGUE_TAG);
 }
