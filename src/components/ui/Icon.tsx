@@ -69,6 +69,24 @@ const PATHS = {
   creditCard: "M21 4H3a2 2 0 00-2 2v12a2 2 0 002 2h18a2 2 0 002-2V6a2 2 0 00-2-2zM1 10h22",
   bank: "M3 21h18M3 10h18M5 6l7-4 7 4M4 10v11M20 10v11M9 10v11M15 10v11",
   logo: "M4 7l8-4 8 4-8 4-8-4zM4 12l8 4 8-4M4 17l8 4 8-4",
+
+  // Wellness, fitness and creator-economy glyphs. The catalogue leads with
+  // gym instructors, coaches and content creators, and a category with no
+  // icon of its own falls back to a book — which reads as "school", exactly
+  // the wrong signal for a strength-training or nutrition category.
+  dumbbell: "M6.5 6.5v11M3 9v5M17.5 6.5v11M21 9v5M6.5 12h11",
+  pulse: "M22 12h-3.5l-2.5 7-4-16-2.5 9H6",
+  lotus: "M12 21c3.9 0 7.3-2.4 8.8-6-3-1.5-6.1-.3-8.8 6-2.7-6.3-5.8-7.5-8.8-6 1.5 3.6 4.9 6 8.8 6zM12 21c-2.3-2.4-3.4-5-3.4-7.6C8.6 10.7 9.8 8.2 12 6c2.2 2.2 3.4 4.7 3.4 7.4 0 2.6-1.1 5.2-3.4 7.6z",
+  leaf: "M11 20A7 7 0 019.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10zM2 21c0-3 1.9-5.4 5.1-6",
+  flame: "M8.5 14.5A2.5 2.5 0 0011 12c0-1.4-.5-2-1-3-1.1-2.1-.2-4 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.2.4-2.3 1-3a2.5 2.5 0 002.5 2.5z",
+  mic: "M12 2a3 3 0 00-3 3v7a3 3 0 006 0V5a3 3 0 00-3-3zM19 10v2a7 7 0 01-14 0v-2M12 19v3M8 22h8",
+  music: "M9 18V5l12-2v13M9 18a3 3 0 11-6 0 3 3 0 016 0zM21 16a3 3 0 11-6 0 3 3 0 016 0z",
+  trendingUp: "M23 6l-9.5 9.5-5-5L1 18M17 6h6v6",
+  zap: "M13 2L3 14h9l-1 8 10-12h-9l1-8z",
+  shoppingBag: "M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6zM3 6h18M16 10a4 4 0 01-8 0",
+  calendar: "M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z",
+  sun: "M12 17a5 5 0 100-10 5 5 0 000 10zM12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4",
+  layers: "M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5",
 } as const;
 
 export type IconName = keyof typeof PATHS;

@@ -16,6 +16,7 @@ export function SearchBar({
   size = "md",
   className,
   autoFocus,
+  submitLabel,
 }: {
   placeholder: string;
   defaultValue?: string;
@@ -23,6 +24,8 @@ export function SearchBar({
   size?: "md" | "lg";
   className?: string;
   autoFocus?: boolean;
+  /** Shown on the large variant's submit button. Localised by the caller. */
+  submitLabel?: string;
 }) {
   const router = useRouter();
   const [value, setValue] = useState(defaultValue);
@@ -60,12 +63,12 @@ export function SearchBar({
           size === "lg" ? "h-14 pl-12 pr-32 text-[15px]" : "h-11 pl-11 pr-4 text-sm",
         )}
       />
-      {size === "lg" && (
+      {size === "lg" && submitLabel && (
         <button
           type="submit"
-          className="absolute right-1.5 h-11 rounded-full bg-brand-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+          className="absolute right-1.5 inline-flex h-11 items-center gap-1.5 rounded-full bg-brand-600 px-6 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-brand-700 hover:shadow-md active:scale-[0.98]"
         >
-          ძიება
+          {submitLabel}
         </button>
       )}
     </form>

@@ -5,49 +5,98 @@
  * shell.
  */
 
+/**
+ * The category tree, in the order it is presented.
+ *
+ * Order is editorial, not alphabetical: the marketplace is positioned around
+ * wellness professionals (trainers, nutritionists, yoga teachers) and digital
+ * creators, so those verticals lead. The long tail of general skill
+ * categories still exists — a gym instructor who also sells a Reels-editing
+ * course should find a home for both — it simply sits below the fold.
+ *
+ * Slugs are permanent: they appear in URLs, sitemaps and the seeded courses,
+ * so a category may be renamed or reordered here but never re-slugged.
+ */
 export const CATEGORIES = [
-  { slug: "biznesi", nameKa: "ბიზნესი", nameEn: "Business", icon: "briefcase", colorHex: "#213ade",
-    descriptionKa: "ბიზნესის დაწყება, მართვა და ზრდა", descriptionEn: "Start, run and grow a business",
+  // ── Wellness & fitness ───────────────────────────────────────────────────
+  { slug: "fitnesi", nameKa: "ფიტნესი და ვარჯიში", nameEn: "Fitness & training", icon: "dumbbell", colorHex: "#f03c06",
+    descriptionKa: "სავარჯიშო პროგრამები, ტექნიკა და ძალის განვითარება", descriptionEn: "Training programmes, technique and strength",
     children: [
-      { slug: "startapi", nameKa: "სტარტაპი", nameEn: "Startups" },
-      { slug: "menejmenti", nameKa: "მენეჯმენტი", nameEn: "Management" },
+      { slug: "dzalismieri-vardzishi", nameKa: "ძალისმიერი ვარჯიში", nameEn: "Strength training" },
+      { slug: "saxlis-vardzishi", nameKa: "სახლის ვარჯიში", nameEn: "Home workouts" },
     ] },
+  { slug: "kveba", nameKa: "კვება და ნუტრიციოლოგია", nameEn: "Nutrition", icon: "leaf", colorHex: "#12b76a",
+    descriptionKa: "კვების გეგმები, მაკროები და ჯანსაღი ჩვევები", descriptionEn: "Meal plans, macros and healthy habits", children: [] },
+  { slug: "ioga", nameKa: "იოგა და მედიტაცია", nameEn: "Yoga & meditation", icon: "lotus", colorHex: "#7c3aed",
+    descriptionKa: "იოგა, სუნთქვა და მაინდფულნესი", descriptionEn: "Yoga, breathwork and mindfulness", children: [] },
+  { slug: "janmrteloba", nameKa: "ჯანმრთელობა და აღდგენა", nameEn: "Health & recovery", icon: "pulse", colorHex: "#e11d48",
+    descriptionKa: "ტრავმის პრევენცია, აღდგენა, ძილი და სტრესი", descriptionEn: "Injury prevention, recovery, sleep and stress", children: [] },
+  { slug: "silamaze", nameKa: "სილამაზე და თვითმოვლა", nameEn: "Beauty & self-care", icon: "sparkles", colorHex: "#db2777",
+    descriptionKa: "კანის მოვლა, მაკიაჟი და თვითმოვლის რუტინა", descriptionEn: "Skincare, make-up and self-care routines", children: [] },
+
+  // ── Creator economy ──────────────────────────────────────────────────────
+  { slug: "kontenti", nameKa: "კონტენტის შექმნა", nameEn: "Content creation", icon: "camera", colorHex: "#3559f0",
+    descriptionKa: "ვიდეო, სცენარი, მონტაჟი და ვიზუალი კრეატორებისთვის", descriptionEn: "Video, scripting, editing and visuals for creators",
+    children: [
+      { slug: "youtube", nameKa: "YouTube", nameEn: "YouTube" },
+      { slug: "mokle-video", nameKa: "მოკლე ვიდეო", nameEn: "Short-form video" },
+    ] },
+  { slug: "kreatoris-biznesi", nameKa: "კრეატორის ბიზნესი", nameEn: "Creator business", icon: "trendingUp", colorHex: "#0891b2",
+    descriptionKa: "აუდიტორიის მონეტიზაცია, სპონსორები და გამოწერები", descriptionEn: "Monetise an audience, sponsorships and subscriptions",
+    children: [
+      { slug: "monetizacia", nameKa: "მონეტიზაცია", nameEn: "Monetisation" },
+      { slug: "sazogadoeba", nameKa: "საზოგადოების მშენებლობა", nameEn: "Community building" },
+    ] },
+  { slug: "podkasti", nameKa: "პოდკასტი და აუდიო", nameEn: "Podcasting & audio", icon: "mic", colorHex: "#9333ea",
+    descriptionKa: "ჩაწერა, მონტაჟი და პოდკასტის გავრცელება", descriptionEn: "Recording, editing and distributing a podcast", children: [] },
+  { slug: "kouchingi", nameKa: "ქოუჩინგი და მენტორობა", nameEn: "Coaching & mentoring", icon: "target", colorHex: "#059669",
+    descriptionKa: "ონლაინ ქოუჩინგი, ჯგუფური პროგრამები და კლიენტები", descriptionEn: "Online coaching, group programmes and clients", children: [] },
+  { slug: "musika", nameKa: "მუსიკა", nameEn: "Music", icon: "music", colorHex: "#f59e0b",
+    descriptionKa: "ინსტრუმენტი, ვოკალი და მუსიკის წარმოება", descriptionEn: "Instruments, vocals and music production", children: [] },
+
+  // ── Business & skills ────────────────────────────────────────────────────
   { slug: "marketingi", nameKa: "მარკეტინგი", nameEn: "Marketing", icon: "megaphone", colorHex: "#ff5710",
     descriptionKa: "ციფრული მარკეტინგი, SMM და რეკლამა", descriptionEn: "Digital marketing, social and ads",
     children: [
       { slug: "smm", nameKa: "სოციალური მედია", nameEn: "Social media" },
       { slug: "seo", nameKa: "SEO", nameEn: "SEO" },
     ] },
-  { slug: "programireba", nameKa: "პროგრამირება", nameEn: "Programming", icon: "code", colorHex: "#12b76a",
-    descriptionKa: "ვებ-დეველოპმენტი, მობილური და მონაცემები", descriptionEn: "Web, mobile and data",
+  { slug: "biznesi", nameKa: "ბიზნესი", nameEn: "Business", icon: "briefcase", colorHex: "#213ade",
+    descriptionKa: "ბიზნესის დაწყება, მართვა და ზრდა", descriptionEn: "Start, run and grow a business",
     children: [
-      { slug: "veb-developmenti", nameKa: "ვებ-დეველოპმენტი", nameEn: "Web development" },
-      { slug: "monatsemta-analizi", nameKa: "მონაცემთა ანალიზი", nameEn: "Data analysis" },
+      { slug: "startapi", nameKa: "სტარტაპი", nameEn: "Startups" },
+      { slug: "menejmenti", nameKa: "მენეჯმენტი", nameEn: "Management" },
     ] },
+  { slug: "gaqidvebi", nameKa: "გაყიდვები", nameEn: "Sales", icon: "handshake", colorHex: "#dc2626",
+    descriptionKa: "B2B, B2C და მოლაპარაკებები", descriptionEn: "B2B, B2C and negotiation", children: [] },
+  { slug: "video", nameKa: "ვიდეო და მონტაჟი", nameEn: "Video & editing", icon: "video", colorHex: "#be123c",
+    descriptionKa: "ვიდეო წარმოება და მონტაჟი", descriptionEn: "Video production and editing", children: [] },
+  { slug: "potografia", nameKa: "ფოტოგრაფია", nameEn: "Photography", icon: "camera", colorHex: "#64748b",
+    descriptionKa: "გადაღება, კომპოზიცია და დამუშავება", descriptionEn: "Shooting, composition and editing", children: [] },
   { slug: "dizaini", nameKa: "დიზაინი", nameEn: "Design", icon: "palette", colorHex: "#9333ea",
     descriptionKa: "გრაფიკული, UI/UX და ბრენდინგი", descriptionEn: "Graphic, UI/UX and branding",
     children: [
       { slug: "ui-ux", nameKa: "UI/UX", nameEn: "UI/UX" },
       { slug: "grafikuli-dizaini", nameKa: "გრაფიკული დიზაინი", nameEn: "Graphic design" },
     ] },
-  { slug: "finansebi", nameKa: "ფინანსები", nameEn: "Finance", icon: "chart", colorHex: "#0891b2",
-    descriptionKa: "პირადი ფინანსები, ბუღალტერია, ინვესტიციები", descriptionEn: "Personal finance, accounting, investing", children: [] },
-  { slug: "kripto", nameKa: "კრიპტო", nameEn: "Crypto", icon: "coins", colorHex: "#f79009",
-    descriptionKa: "ბლოკჩეინი და ციფრული აქტივები", descriptionEn: "Blockchain and digital assets", children: [] },
-  { slug: "potografia", nameKa: "ფოტოგრაფია", nameEn: "Photography", icon: "camera", colorHex: "#64748b",
-    descriptionKa: "გადაღება, კომპოზიცია და დამუშავება", descriptionEn: "Shooting, composition and editing", children: [] },
-  { slug: "video", nameKa: "ვიდეო", nameEn: "Video", icon: "video", colorHex: "#e11d48",
-    descriptionKa: "ვიდეო წარმოება და მონტაჟი", descriptionEn: "Video production and editing", children: [] },
-  { slug: "enebi", nameKa: "ენები", nameEn: "Languages", icon: "globe", colorHex: "#0ea5e9",
-    descriptionKa: "ინგლისური, გერმანული და სხვა", descriptionEn: "English, German and more", children: [] },
-  { slug: "pirovnuli-ganvitareba", nameKa: "პიროვნული განვითარება", nameEn: "Personal development", icon: "sparkles", colorHex: "#7c3aed",
+  { slug: "pirovnuli-ganvitareba", nameKa: "პიროვნული განვითარება", nameEn: "Personal development", icon: "sun", colorHex: "#8b5cf6",
     descriptionKa: "პროდუქტიულობა, კომუნიკაცია, ჩვევები", descriptionEn: "Productivity, communication, habits", children: [] },
-  { slug: "kariera", nameKa: "კარიერა", nameEn: "Career", icon: "target", colorHex: "#059669",
-    descriptionKa: "CV, გასაუბრება და პროფესიული ზრდა", descriptionEn: "CV, interviews and growth", children: [] },
-  { slug: "gaqidvebi", nameKa: "გაყიდვები", nameEn: "Sales", icon: "handshake", colorHex: "#dc2626",
-    descriptionKa: "B2B, B2C და მოლაპარაკებები", descriptionEn: "B2B, B2C and negotiation", children: [] },
+  { slug: "finansebi", nameKa: "ფინანსები", nameEn: "Finance", icon: "chart", colorHex: "#0284c7",
+    descriptionKa: "პირადი ფინანსები, ბუღალტერია, ინვესტიციები", descriptionEn: "Personal finance, accounting, investing", children: [] },
   { slug: "ai", nameKa: "AI", nameEn: "AI", icon: "cpu", colorHex: "#3559f0",
     descriptionKa: "ხელოვნური ინტელექტის ინსტრუმენტები და გამოყენება", descriptionEn: "AI tools and applications", children: [] },
+  { slug: "programireba", nameKa: "პროგრამირება", nameEn: "Programming", icon: "code", colorHex: "#16a34a",
+    descriptionKa: "ვებ-დეველოპმენტი, მობილური და მონაცემები", descriptionEn: "Web, mobile and data",
+    children: [
+      { slug: "veb-developmenti", nameKa: "ვებ-დეველოპმენტი", nameEn: "Web development" },
+      { slug: "monatsemta-analizi", nameKa: "მონაცემთა ანალიზი", nameEn: "Data analysis" },
+    ] },
+  { slug: "kripto", nameKa: "კრიპტო", nameEn: "Crypto", icon: "coins", colorHex: "#f79009",
+    descriptionKa: "ბლოკჩეინი და ციფრული აქტივები", descriptionEn: "Blockchain and digital assets", children: [] },
+  { slug: "kariera", nameKa: "კარიერა", nameEn: "Career", icon: "briefcase", colorHex: "#0d9488",
+    descriptionKa: "CV, გასაუბრება და პროფესიული ზრდა", descriptionEn: "CV, interviews and growth", children: [] },
+  { slug: "enebi", nameKa: "ენები", nameEn: "Languages", icon: "globe", colorHex: "#0ea5e9",
+    descriptionKa: "ინგლისური, გერმანული და სხვა", descriptionEn: "English, German and more", children: [] },
   { slug: "ganatleba", nameKa: "განათლება", nameEn: "Education", icon: "book", colorHex: "#b45309",
     descriptionKa: "სწავლების მეთოდები და მასწავლებლებისთვის", descriptionEn: "Teaching methods and educators", children: [] },
 ];
@@ -184,6 +233,65 @@ export const CREATORS: SeedCreator[] = [
     expertise: ["გაყიდვები", "მოლაპარაკება", "B2B"],
     isVerified: true,
     isFeatured: false,
+  },
+  {
+    email: "nika.chkhaidze@example.ge",
+    fullName: "ნიკა ჩხაიძე",
+    username: "nika.chkhaidze",
+    displayName: "ნიკა ჩხაიძე",
+    headline: "პერსონალური მწვრთნელი · ძალისმიერი ვარჯიში",
+    bio: "9 წელია ვამზადებ ადამიანებს დარბაზში და ონლაინ. ტექნიკა ჯერ, წონა მერე.",
+    instructorBio:
+      "ნიკა სერტიფიცირებული პერსონალური მწვრთნელია და 2016 წლიდან 600-ზე მეტ ადამიანს გაუძღვა ვარჯიშის პროგრამაში. მისი მიდგომა მარტივია: სწორი ტექნიკა, თანდათანობითი დატვირთვა და პროგრამა, რომელსაც რეალურ ცხოვრებაში მიჰყვები — არა ორ კვირაში მიტოვებული გეგმა.",
+    city: "თბილისი",
+    expertise: ["ძალისმიერი ვარჯიში", "ტექნიკა", "პროგრამირება", "ტრავმის პრევენცია"],
+    isVerified: true,
+    isFeatured: true,
+    youtubeUrl: "https://www.youtube.com/@example-nika",
+  },
+  {
+    email: "eka.lomtadze@example.ge",
+    fullName: "ეკა ლომთაძე",
+    username: "eka.lomtadze",
+    displayName: "ეკა ლომთაძე",
+    headline: "ნუტრიციოლოგი · კვების გეგმები",
+    bio: "ვეხმარები ადამიანებს კვების გაგებაში დიეტების გარეშე.",
+    instructorBio:
+      "ეკა ნუტრიციოლოგია და მუშაობს სპორტსმენებთან და ჩვეულებრივ ადამიანებთან, რომლებსაც წონასთან და ენერგიასთან უჭირთ. ის არ ყიდის დიეტებს — ასწავლის, როგორ ააწყო კვება, რომელსაც წლების განმავლობაში მიჰყვები.",
+    city: "თბილისი",
+    expertise: ["ნუტრიციოლოგია", "მაკროები", "წონის კონტროლი", "სპორტული კვება"],
+    isVerified: true,
+    isFeatured: true,
+  },
+  {
+    email: "mariam.ghonghadze@example.ge",
+    fullName: "მარიამ ღონღაძე",
+    username: "mariam.ghonghadze",
+    displayName: "მარიამ ღონღაძე",
+    headline: "იოგას ინსტრუქტორი · სუნთქვა და მაინდფულნესი",
+    bio: "იოგა ჩემთვის მოქნილობა კი არა, თავთან შეთანხმებაა.",
+    instructorBio:
+      "მარიამი 200-საათიანი სერტიფიცირებული იოგას ინსტრუქტორია და ბათუმში საკუთარ სტუდიას უძღვება. მისი კურსები დამწყებზეა გათვლილი — მათზე, ვისაც ჰგონია, რომ „საკმარისად მოქნილი არ ვარ იოგისთვის\".",
+    city: "ბათუმი",
+    expertise: ["იოგა", "სუნთქვა", "მედიტაცია", "ზურგის ჯანმრთელობა"],
+    isVerified: true,
+    isFeatured: true,
+    websiteUrl: "https://example.ge/yoga",
+  },
+  {
+    email: "saba.lominadze@example.ge",
+    fullName: "საბა ლომინაძე",
+    username: "saba.lominadze",
+    displayName: "საბა ლომინაძე",
+    headline: "კონტენტ-კრეატორი · 400K მიმდევარი",
+    bio: "ვქმნი ვიდეოს 2019 წლიდან და ვასწავლი იმას, რაც მართლა ამუშავდა.",
+    instructorBio:
+      "საბა კონტენტ-კრეატორია, რომელმაც აუდიტორია ნულიდან ააწყო და დღეს სრულ განაკვეთზე ცხოვრობს კონტენტით. ის ასწავლის სისტემას — იდეიდან სცენარამდე, მონტაჟიდან მონეტიზაციამდე — და ღიად ჰყვება იმ ციფრებსაც, რომლებიც არ გამოუვიდა.",
+    city: "თბილისი",
+    expertise: ["მოკლე ვიდეო", "YouTube", "სცენარი", "მონეტიზაცია"],
+    isVerified: true,
+    isFeatured: true,
+    youtubeUrl: "https://www.youtube.com/@example-saba",
   },
 ];
 
@@ -751,8 +859,419 @@ export const COURSES: SeedCourse[] = [
       },
     ],
   },
+  // ── Wellness & creator-economy catalogue ─────────────────────────────────
+  {
+    title: "ძალისმიერი ვარჯიშის სრული სისტემა",
+    subtitle: "ტექნიკიდან პროგრამამდე — ისწავლე ისე ვარჯიში, რომ წლების მერეც შეგეძლოს",
+    description:
+      "დარბაზში მისული ადამიანების უმეტესობა არასწორად ვარჯიშობს — არა იმიტომ, რომ ზარმაცია, არამედ იმიტომ, რომ არავის უჩვენებია, როგორ უნდა. ეს კურსი სწორედ ამას ასწორებს.\n\nვიწყებთ ხუთი ძირითადი მოძრაობის ტექნიკით — ბერკეტი, სკვატი, ვერტიკალური და ჰორიზონტალური წევა, ბიძგი — შემდეგ ვსწავლობთ, როგორ ავაწყოთ პროგრამა შენი დღეების, სტაჟისა და მიზნის მიხედვით.\n\nკურსის ბოლოს გექნება საკუთარი, დაწერილი პროგრამა და ის ცოდნა, რომელიც საშუალებას მოგცემს, ის თავად შეცვალო.",
+    creatorEmail: "nika.chkhaidze@example.ge",
+    categorySlug: "fitnesi",
+    subcategorySlug: "dzalismieri-vardzishi",
+    level: "BEGINNER",
+    price: 129,
+    discountPrice: 89,
+    isFeatured: true,
+    thumbSeed: "strength",
+    learningOutcomes: [
+      "შეასრულებ ხუთ ძირითად მოძრაობას სწორი ტექნიკით",
+      "ააწყობ საკუთარ სავარჯიშო პროგრამას კვირაში 3 ან 4 დღეზე",
+      "გაიგებ, რა არის თანდათანობითი დატვირთვა და როგორ გამოიყენო",
+      "იცოდნებ, როდის უნდა გაზარდო წონა და როდის დაისვენო",
+      "შეამცირებ ტრავმის რისკს გახურებისა და ტექნიკის კონტროლით",
+    ],
+    requirements: [
+      "წვდომა დარბაზზე ან ბაზისურ ინვენტარზე",
+      "წინასწარი გამოცდილება არ არის საჭირო",
+      "ექიმის ნებართვა, თუ გაქვს ტრავმა ან ქრონიკული პრობლემა",
+    ],
+    targetAudience: [
+      "დამწყებები, ვისაც დარბაზში შესვლის ეშინია",
+      "ისინი, ვინც წლებია ვარჯიშობს შედეგის გარეშე",
+      "მწვრთნელები, ვისაც ტექნიკის ახსნა სურს კლიენტებისთვის",
+    ],
+    faqs: standardFaqs,
+    modules: [
+      {
+        title: "მოდული 1 — ტექნიკის საფუძვლები",
+        description: "ხუთი მოძრაობა, რომელზეც ყველაფერი დგას",
+        lessons: [
+          { title: "როგორ ვისწავლოთ ამ კურსით", type: "VIDEO", durationSeconds: 14, isFreePreview: true,
+            description: "კურსის სტრუქტურა და როგორ გამოიყენო ვიდეოები დარბაზში." },
+          { title: "სკვატი — ტექნიკა და ხშირი შეცდომები", type: "VIDEO", durationSeconds: 22, isFreePreview: true,
+            description: "ტერფის პოზიცია, მუხლის ტრაექტორია და სიღრმე." },
+          { title: "ბერკეტი (deadlift) — ზურგის დაცვა", type: "VIDEO", durationSeconds: 24,
+            description: "ჰიპ ჰინჯი, ნეიტრალური ზურგი და ღერძის ტრაექტორია." },
+          { title: "წევა და ბიძგი", type: "TEXT",
+            textContent:
+              "ზედა სხეულის ვარჯიში ოთხ ნიმუშზე დგას: ვერტიკალური წევა (მაგ. ჩამოქაჩვა), ჰორიზონტალური წევა (მაგ. ნიჩბოსნობა), ვერტიკალური ბიძგი (მაგ. თავზედა წნევა) და ჰორიზონტალური ბიძგი (მაგ. ბენჩი).\n\nდაბალანსებული პროგრამა ოთხივეს შეიცავს. ყველაზე ხშირი შეცდომა — ბიძგი ბევრია, წევა ცოტა — მხრის წინა ბრუნვას და ტკივილს იწვევს.\n\nპრაქტიკული წესი: კვირის განმავლობაში წევის სერიები ბიძგისას მაინც უნდა უტოლდებოდეს." },
+          { title: "ცოდნის შემოწმება — ტექნიკა", type: "QUIZ",
+            quiz: {
+              title: "მოდული 1 — ტესტი", passingScore: 70,
+              questions: [
+                { prompt: "რატომ არის მნიშვნელოვანი ნეიტრალური ზურგი ბერკეტისას?",
+                  type: "SINGLE_CHOICE",
+                  explanation: "მოხრილი ზურგი დისკებზე არათანაბარ დატვირთვას ქმნის.",
+                  answers: [
+                    { text: "ამცირებს ხერხემლის დისკებზე რისკს", isCorrect: true },
+                    { text: "მეტი წონის აწევის საშუალებას იძლევა ყოველთვის", isCorrect: false },
+                    { text: "მხოლოდ ესთეტიკის საკითხია", isCorrect: false },
+                  ] },
+                { prompt: "დაბალანსებულ პროგრამაში წევა და ბიძგი დაახლოებით თანაბრად უნდა იყოს.",
+                  type: "TRUE_FALSE",
+                  explanation: "დისბალანსი მხრის სახსრის პრობლემებს იწვევს.",
+                  answers: [
+                    { text: "სწორია", isCorrect: true },
+                    { text: "მცდარია", isCorrect: false },
+                  ] },
+              ] } },
+        ],
+      },
+      {
+        title: "მოდული 2 — პროგრამის აწყობა",
+        description: "როგორ ვაქციოთ სავარჯიშოები სისტემად",
+        lessons: [
+          { title: "კვირის სტრუქტურა: 3, 4 თუ 5 დღე", type: "VIDEO", durationSeconds: 19,
+            description: "როგორ გავანაწილოთ მოცულობა შენი განრიგის მიხედვით." },
+          { title: "თანდათანობითი დატვირთვა პრაქტიკაში", type: "VIDEO", durationSeconds: 21,
+            description: "როდის გავზარდოთ წონა, გამეორება ან სერია." },
+          { title: "აღდგენა, ძილი და დელოუდი", type: "TEXT",
+            textContent:
+              "ვარჯიში სტიმულია; ზრდა აღდგენისას ხდება. თუ აღდგენა არ არის, დატვირთვის გაზრდა შედეგს არ იძლევა — მხოლოდ დაღლას აგროვებ.\n\nსამი პრაქტიკული ორიენტირი: ღამეში 7-9 საათი ძილი, საკმარისი ცილა და ყოველ 6-8 კვირაში ერთი მსუბუქი „დელოუდ\" კვირა.\n\nთუ ორ ვარჯიშზე ზედიზედ ვერ ასრულებ დაგეგმილ გამეორებებს, ეს პროგრამის ბრალი ხშირად არაა — აღდგენა შეამოწმე." },
+          { title: "პრაქტიკული დავალება — შენი პირველი 8-კვირიანი გეგმა", type: "TEXT",
+            description: "დაწერე საკუთარი პროგრამა კურსში ნასწავლი წესებით.",
+            textContent:
+              "დროა, ნასწავლი ქაღალდზე გადაიტანო.\n\nდაწერე 8-კვირიანი პროგრამა, რომელიც შეიცავს: კვირაში ვარჯიშის დღეების რაოდენობას, თითოეულ დღეს 4-6 სავარჯიშოს ხუთი ძირითადი ნიმუშიდან, სერიებისა და გამეორებების რაოდენობას და იმ წესს, რომლითაც წონას გაზრდი.\n\nშეამოწმე სამი კითხვით: წევა და ბიძგი დაბალანსებულია? ყოველ ვარჯიშს აქვს გახურება? მერვე კვირაზე დაგეგმილი გაქვს მსუბუქი დელოუდი?\n\nთუ სამივეზე „კი\" გაქვს, პროგრამა მზადაა. დაიწყე და ორი კვირის შემდეგ შეაფასე." },
+        ],
+      },
+    ],
+  },
+  {
+    title: "12 კვირა სახლში — ტრანსფორმაცია ინვენტარის გარეშე",
+    subtitle: "სამი ვარჯიში კვირაში, 30 წუთი, მხოლოდ საკუთარი წონით",
+    description:
+      "დარბაზი ყველასთვის არ არის — და არც უნდა იყოს სავალდებულო. ეს არის 12-კვირიანი პროგრამა, რომელიც სახლში სრულდება, ინვენტარის გარეშე, კვირაში სამ 30-წუთიან ვარჯიშში.\n\nყოველ ვიდეოში რეალურ დროში ვვარჯიშობთ ერთად: გახურება, ძირითადი ბლოკი, გაწელვა. თითოეულ მოძრაობას აქვს გამარტივებული და გართულებული ვერსია, ასე რომ პროგრამა შენს დონეს მიჰყვება.",
+    creatorEmail: "nika.chkhaidze@example.ge",
+    categorySlug: "fitnesi",
+    subcategorySlug: "saxlis-vardzishi",
+    level: "ALL_LEVELS",
+    price: 79,
+    thumbSeed: "homefit",
+    learningOutcomes: [
+      "დაასრულებ სტრუქტურირებულ 12-კვირიან პროგრამას",
+      "შეასრულებ საბაზისო მოძრაობებს სწორი ტექნიკით",
+      "გაზრდი გამძლეობასა და ძალას ინვენტარის გარეშე",
+      "ისწავლი, როგორ გაართულო მოძრაობა წონის დამატების გარეშე",
+    ],
+    requirements: [
+      "2x2 მეტრი თავისუფალი ადგილი",
+      "სავარჯიშო ხალიჩა (სასურველია)",
+      "წინასწარი გამოცდილება არ არის საჭირო",
+    ],
+    targetAudience: [
+      "ვისაც დარბაზზე წვდომა ან დრო არ აქვს",
+      "მშობლები, რომლებიც სახლიდან ვარჯიშობენ",
+      "დამწყებები, ვისაც სტრუქტურა სჭირდება",
+    ],
+    faqs: standardFaqs,
+    modules: [
+      {
+        title: "ბლოკი 1 — საფუძველი (კვირა 1-4)",
+        description: "მოძრაობის ხარისხი და რეგულარობა",
+        lessons: [
+          { title: "პროგრამის მიმოხილვა", type: "VIDEO", durationSeconds: 11, isFreePreview: true,
+            description: "როგორ არის აწყობილი 12 კვირა და როგორ მიჰყვე." },
+          { title: "გახურება, რომელსაც არ გამოტოვებ", type: "VIDEO", durationSeconds: 8, isFreePreview: true },
+          { title: "ვარჯიში A — ქვედა სხეული", type: "VIDEO", durationSeconds: 31 },
+          { title: "ვარჯიში B — ზედა სხეული და კორპუსი", type: "VIDEO", durationSeconds: 29 },
+        ],
+      },
+      {
+        title: "ბლოკი 2 — პროგრესი (კვირა 5-12)",
+        description: "იმავე მოძრაობის გართულებული ვერსიები",
+        lessons: [
+          { title: "როგორ გავართულოთ მოძრაობა", type: "TEXT",
+            textContent:
+              "წონის დამატების გარეშე დატვირთვის გაზრდის ოთხი გზა არსებობს.\n\nპირველი — ბერკეტის შეცვლა: ფეხების ან ხელების პოზიციის ცვლილება მოძრაობას ამძიმებს. მეორე — ტემპი: სამწამიანი დაშვება ბევრად რთულია, ვიდრე ჩვეულებრივი. მესამე — დიაპაზონი: სრული ამპლიტუდა ყოველთვის რთულია ნაწილობრივზე. მეოთხე — დასვენების შემცირება.\n\nერთ ბლოკში ერთ ცვლადს ცვლი, არა ოთხივეს ერთდროულად." },
+          { title: "ვარჯიში C — სრული სხეული", type: "VIDEO", durationSeconds: 33 },
+          { title: "დასკვნითი შემოწმება", type: "QUIZ",
+            quiz: {
+              title: "12 კვირის ტესტი", passingScore: 60,
+              questions: [
+                { prompt: "როგორ გავზარდოთ დატვირთვა ინვენტარის გარეშე?",
+                  type: "MULTIPLE_CHOICE",
+                  explanation: "ბერკეტი, ტემპი, ამპლიტუდა და დასვენება — ოთხივე მუშაობს.",
+                  answers: [
+                    { text: "მოძრაობის ბერკეტის შეცვლით", isCorrect: true },
+                    { text: "ტემპის შენელებით", isCorrect: true },
+                    { text: "ვარჯიშის გამოტოვებით", isCorrect: false },
+                    { text: "დასვენების შემცირებით", isCorrect: true },
+                  ] },
+              ] } },
+        ],
+      },
+    ],
+  },
+  {
+    title: "კვება, რომელსაც წლების მერეც მიჰყვები",
+    subtitle: "მაკროები, პორცია და ჩვევები — დიეტების გარეშე",
+    description:
+      "დიეტების უმეტესობა მუშაობს — სამი კვირა. შემდეგ ცხოვრება ბრუნდება და ყველაფერი უკან მიდის. ეს კურსი საპირისპიროზეა აგებული: ვსწავლობთ პრინციპებს, რომლებიც შენს ცხოვრებას ერგება, არა პირიქით.\n\nგავივლით ენერგეტიკულ ბალანსს, ცილას, პორციის შეფასებას თვალით, სასურსათო მაღაზიაში არჩევანს და იმას, რა უნდა გააკეთო, როცა გეგმა ირღვევა — რადგან აუცილებლად დაირღვევა.",
+    creatorEmail: "eka.lomtadze@example.ge",
+    categorySlug: "kveba",
+    level: "BEGINNER",
+    price: 119,
+    discountPrice: 79,
+    isFeatured: true,
+    thumbSeed: "nutrition",
+    learningOutcomes: [
+      "გამოთვლი საკუთარ კალორიულ საჭიროებას და მაკროებს",
+      "შეაფასებ პორციას ყოველი კვების აწონვის გარეშე",
+      "ააწყობ კვირის მენიუს ბიუჯეტისა და გემოვნების მიხედვით",
+      "გაიგებ, რატომ ბრუნდება წონა და როგორ შეაჩერო ეს ციკლი",
+    ],
+    requirements: ["წინასწარი ცოდნა არ არის საჭირო", "სასურველია სამზარეულოს სასწორი პირველი ორი კვირისთვის"],
+    targetAudience: [
+      "ვინც წლებია დიეტების ციკლშია",
+      "სპორტით დაკავებულები, ვისაც კვების ოპტიმიზაცია სურს",
+      "მწვრთნელები, ვისაც კლიენტებისთვის ბაზისური ცოდნა სჭირდება",
+    ],
+    faqs: standardFaqs,
+    modules: [
+      {
+        title: "მოდული 1 — საფუძვლები",
+        description: "ენერგია, მაკროები და რეალობა",
+        lessons: [
+          { title: "რატომ ვერ მუშაობს დიეტები", type: "VIDEO", durationSeconds: 16, isFreePreview: true,
+            description: "რა ხდება, როცა შეზღუდვა მთავრდება." },
+          { title: "კალორია, ცილა, ცხიმი, ნახშირწყალი", type: "VIDEO", durationSeconds: 23, isFreePreview: true },
+          { title: "შენი რიცხვების გამოთვლა", type: "TEXT",
+            textContent:
+              "დაიწყე შენარჩუნების კალორიით: სხეულის წონა კილოგრამებში, გამრავლებული 30-ზე, არის საწყისი შეფასება საშუალო აქტიურობისთვის.\n\nცილა: 1.6-2.2 გრამი კილოგრამზე. ეს ყველაზე მნიშვნელოვანი ერთი რიცხვია — ის ინარჩუნებს კუნთს და ამცირებს შიმშილს.\n\nდანარჩენი კალორია გაანაწილე ცხიმსა და ნახშირწყალს შორის ისე, როგორც შენ გირჩევნია. აქ „სწორი\" თანაფარდობა არ არსებობს — არსებობს ის, რასაც მიჰყვები.\n\nორი კვირის შემდეგ შეადარე წონა და შესაბამისად შეასწორე, არა ყოველდღიურად." },
+          { title: "ცოდნის შემოწმება", type: "QUIZ",
+            quiz: {
+              title: "მოდული 1 — ტესტი", passingScore: 70,
+              questions: [
+                { prompt: "რომელი მაკროა ყველაზე მნიშვნელოვანი კუნთის შენარჩუნებისთვის?",
+                  type: "SINGLE_CHOICE",
+                  answers: [
+                    { text: "ცილა", isCorrect: true },
+                    { text: "ნახშირწყალი", isCorrect: false },
+                    { text: "ცხიმი", isCorrect: false },
+                  ] },
+                { prompt: "წონა ყოველდღიურად უნდა შევამოწმოთ და გეგმა ყოველდღე შევცვალოთ.",
+                  type: "TRUE_FALSE",
+                  explanation: "ყოველდღიური რყევა წყალია, არა ცხიმი. ტენდენციას უყურებ კვირებში.",
+                  answers: [
+                    { text: "სწორია", isCorrect: false },
+                    { text: "მცდარია", isCorrect: true },
+                  ] },
+              ] } },
+        ],
+      },
+      {
+        title: "მოდული 2 — ცხოვრებაში გატარება",
+        description: "მაღაზია, რესტორანი და დარღვეული გეგმა",
+        lessons: [
+          { title: "კვირის მენიუ 40 წუთში", type: "VIDEO", durationSeconds: 20 },
+          { title: "რესტორანში და სტუმრად", type: "VIDEO", durationSeconds: 14 },
+          { title: "პრაქტიკული დავალება — შენი 7-დღიანი გეგმა", type: "TEXT",
+            description: "ააწყე ერთი კვირის მენიუ შენს რიცხვებზე.",
+            textContent:
+              "აიღე მოდულ 1-ში გამოთვლილი კალორია და ცილა და ააწყე შვიდი დღე.\n\nდაიწყე ცილით: ყოველ კვებაზე ერთი ცილის წყარო. შემდეგ დაამატე ბოსტნეული ყოველ ძირითად კვებაზე. დარჩენილი კალორია გაანაწილე ისე, როგორც გირჩევნია.\n\nერთი პირობა: მენიუში მინიმუმ ხუთი კერძი უნდა იყოს ისეთი, რომელიც უკვე გიყვარს და მოგზადება იცი. თუ მთელი კვირა უცხო რეცეპტებია, სამშაბათს მიატოვებ.\n\nბოლოს დაწერე ერთი წინადადება: რას აკეთებ, როცა გეგმა ირღვევა?" },
+        ],
+      },
+    ],
+  },
+  {
+    title: "იოგა დამწყებთათვის — 30 დღე",
+    subtitle: "დღეში 20 წუთი მოქნილობის, სუნთქვისა და მშვიდი თავისთვის",
+    description:
+      "„მე იოგისთვის საკმარისად მოქნილი არ ვარ\" — ეს ყველაზე ხშირი წინადადებაა, რომელსაც ვისმენ. ზუსტად ამიტომ არსებობს ეს კურსი.\n\n30 დღე, დღეში 20 წუთი. ვიწყებთ სუნთქვით და უმარტივესი პოზებით, ვასრულებთ სრული 30-წუთიანი პრაქტიკით. ყოველ პოზას აქვს ვარიაცია ბლოკით ან კედლით, ასე რომ პირველივე დღეს შეგიძლია დაიწყო — იმის მიუხედავად, თითებამდე მიწვდები თუ არა.",
+    creatorEmail: "mariam.ghonghadze@example.ge",
+    categorySlug: "ioga",
+    level: "BEGINNER",
+    price: 89,
+    discountPrice: 59,
+    thumbSeed: "yoga",
+    learningOutcomes: [
+      "შეასრულებ 20 ძირითად პოზას უსაფრთხო ტექნიკით",
+      "ისწავლი დიაფრაგმულ სუნთქვას და გამოიყენებ სტრესის დროს",
+      "გაზრდი მოქნილობას თეძოსა და ზურგის არეში",
+      "ააწყობ ყოველდღიურ 20-წუთიან პრაქტიკას",
+    ],
+    requirements: ["სავარჯიშო ხალიჩა", "სასურველია იოგას ბლოკი ან წიგნების დასტა"],
+    targetAudience: [
+      "სრული დამწყებები",
+      "ვინც მთელი დღე კომპიუტერთან ზის",
+      "ვისაც სტრესის მართვის ინსტრუმენტი სჭირდება",
+    ],
+    faqs: standardFaqs,
+    modules: [
+      {
+        title: "კვირა 1 — სუნთქვა და საფუძველი",
+        lessons: [
+          { title: "სანამ დაიწყებ", type: "VIDEO", durationSeconds: 9, isFreePreview: true,
+            description: "როგორ დავიცვათ თავი და რას ნიშნავს „კარგი\" ტკივილი." },
+          { title: "დიაფრაგმული სუნთქვა", type: "VIDEO", durationSeconds: 12, isFreePreview: true },
+          { title: "მზის მისალმება ნაბიჯ-ნაბიჯ", type: "VIDEO", durationSeconds: 18 },
+        ],
+      },
+      {
+        title: "კვირა 2-4 — პრაქტიკა",
+        lessons: [
+          { title: "თეძოს გახსნა", type: "VIDEO", durationSeconds: 24 },
+          { title: "ზურგი და პოზა კომპიუტერთან მუშაობის შემდეგ", type: "VIDEO", durationSeconds: 22 },
+          { title: "საღამოს დამამშვიდებელი პრაქტიკა", type: "VIDEO", durationSeconds: 26 },
+          { title: "პრაქტიკის შენარჩუნება 30 დღის შემდეგ", type: "TEXT",
+            textContent:
+              "30 დღე ჩვევის დასაწყისია, არა დასასრული. ყველაზე ხშირად პრაქტიკა მაშინ წყდება, როცა ადამიანი ფიქრობს, რომ ან 30 წუთი უნდა, ან არაფერი.\n\nდაიმახსოვრე ორი წესი. პირველი: ხუთი წუთი ითვლება. ცუდი დღეს ხალიჩაზე დგომა და სამი პოზა უკეთესია, ვიდრე გამოტოვება. მეორე: დღე კი არა, ორი დღე ზედიზედ არ გამოტოვო.\n\nდაისახე კვირაში ოთხი პრაქტიკა, არა შვიდი. ოთხი, რომელსაც ასრულებ, სჯობს შვიდს, რომელსაც გეგმავ." },
+        ],
+      },
+    ],
+  },
+  {
+    title: "მოკლე ვიდეო, რომელსაც ბოლომდე უყურებენ",
+    subtitle: "იდეიდან პირველ 100 000 ნახვამდე — სისტემა, არა იღბალი",
+    description:
+      "ალგორითმი შენი მტერი არ არის. ის უბრალოდ ზომავს, ადამიანი ბოლომდე უყურებს თუ არა შენს ვიდეოს — და თითქმის ყველაფერი, რაც მნიშვნელოვანია, პირველ სამ წამში ხდება.\n\nამ კურსში ვშლით მოკლე ვიდეოს ნაწილებად: კაუჭი, სტრუქტურა, ტემპი, ტიტრები და ბოლო კადრი. ვმუშაობთ რეალურ მაგალითებზე — ჩემს ვიდეოებზე, რომლებმაც იმუშავა, და იმაზეც, რომლებმაც არა.",
+    creatorEmail: "saba.lominadze@example.ge",
+    categorySlug: "kontenti",
+    subcategorySlug: "mokle-video",
+    level: "ALL_LEVELS",
+    price: 149,
+    discountPrice: 99,
+    isFeatured: true,
+    thumbSeed: "shortform",
+    learningOutcomes: [
+      "დაწერ კაუჭს, რომელიც პირველ 3 წამში აჩერებს მაყურებელს",
+      "ააწყობ ვიდეოს სტრუქტურას, რომელიც ბოლომდე ინარჩუნებს ყურადღებას",
+      "გადაიღებ და დაამონტაჟებ ტელეფონით, პროფესიული ტექნიკის გარეშე",
+      "წაიკითხავ ანალიტიკას და გაიგებ, რატომ ვერ იმუშავა ვიდეომ",
+      "ააწყობ კონტენტის კალენდარს, რომელსაც რეალურად მიჰყვები",
+    ],
+    requirements: ["ტელეფონი კამერით", "უფასო მონტაჟის აპლიკაცია", "წინასწარი გამოცდილება არ არის საჭირო"],
+    targetAudience: [
+      "კრეატორები, ვისაც აუდიტორიის ზრდა სურს",
+      "მწვრთნელები და სპეციალისტები, ვინც კლიენტებს კონტენტით იზიდავს",
+      "მცირე ბიზნესის მფლობელები",
+    ],
+    faqs: standardFaqs,
+    modules: [
+      {
+        title: "მოდული 1 — კაუჭი და სტრუქტურა",
+        description: "პირველი სამი წამი, რომელიც ყველაფერს წყვეტს",
+        lessons: [
+          { title: "როგორ მუშაობს რეკომენდაციის ალგორითმი", type: "VIDEO", durationSeconds: 17, isFreePreview: true,
+            description: "შენარჩუნება, გადახედვა და გაზიარება — რას ზომავს პლატფორმა." },
+          { title: "კაუჭის 7 ტიპი", type: "VIDEO", durationSeconds: 25, isFreePreview: true },
+          { title: "სცენარის შაბლონი", type: "TEXT",
+            textContent:
+              "მოკლე ვიდეოს სამუშაო სტრუქტურა ოთხ ნაწილს შეიცავს.\n\nკაუჭი (0-3 წამი): დაპირება ან დაძაბულობა. „სამ წელიწადს დამჭირდა ამის გასაგებად\" მუშაობს; „გამარჯობა, დღეს გიამბობთ\" — არა.\n\nკონტექსტი (3-8 წამი): რატომ უნდა აინტერესებდეს ეს კონკრეტულ ადამიანს.\n\nშინაარსი (8-40 წამი): ერთი იდეა. ერთი. ორი იდეა ორი ვიდეოა.\n\nდახურვა: ან ციკლს ხურავს კაუჭზე, ან შემდეგ ნაბიჯს აძლევს. კითხვა კომენტარისთვის აქ მუშაობს — მაგრამ მხოლოდ მაშინ, თუ ის რეალურად საინტერესოა." },
+          { title: "ცოდნის შემოწმება", type: "QUIZ",
+            quiz: {
+              title: "მოდული 1 — ტესტი", passingScore: 70,
+              questions: [
+                { prompt: "რას ზომავს ალგორითმი პირველ რიგში?",
+                  type: "SINGLE_CHOICE",
+                  explanation: "შენარჩუნება (retention) არის მთავარი სიგნალი.",
+                  answers: [
+                    { text: "რამდენ ხანს უყურებენ ვიდეოს", isCorrect: true },
+                    { text: "რამდენი მიმდევარი გყავს", isCorrect: false },
+                    { text: "რამდენად ძვირი კამერით გადაიღე", isCorrect: false },
+                  ] },
+                { prompt: "ერთი ვიდეო რამდენ ძირითად იდეას უნდა შეიცავდეს?",
+                  type: "SINGLE_CHOICE",
+                  answers: [
+                    { text: "ერთს", isCorrect: true },
+                    { text: "სამს", isCorrect: false },
+                    { text: "რაც შეიძლება მეტს", isCorrect: false },
+                  ] },
+              ] } },
+        ],
+      },
+      {
+        title: "მოდული 2 — გადაღება, მონტაჟი, გამოქვეყნება",
+        lessons: [
+          { title: "განათება და ხმა ტელეფონით", type: "VIDEO", durationSeconds: 19 },
+          { title: "მონტაჟის ტემპი და ტიტრები", type: "VIDEO", durationSeconds: 23 },
+          { title: "ანალიტიკის კითხვა", type: "VIDEO", durationSeconds: 21 },
+          { title: "პრაქტიკული დავალება — შენი პირველი 10 ვიდეო", type: "TEXT",
+            description: "დაგეგმე 10 ვიდეო კურსის შაბლონით.",
+            textContent:
+              "ჩამოწერე 10 იდეა. თითოეულისთვის დაწერე მხოლოდ სამი რამ: კაუჭი (ერთი წინადადება), ერთი იდეა, რომელსაც ვიდეო ასწავლის, და დახურვა.\n\nარ დაწერო სრული სცენარი — ჯერ არა. ათი კაუჭი გვერდიგვერდ ბევრად უკეთ გაჩვენებს, რომელი სამი ღირს გადაღებად.\n\nშემდეგ გადაიღე ეს სამი ერთ დღეს. სამი ვიდეო ერთ სესიაზე ბევრად ადვილია, ვიდრე სამ სხვადასხვა დღეს." },
+        ],
+      },
+    ],
+  },
+  {
+    title: "აუდიტორიიდან შემოსავლამდე",
+    subtitle: "როგორ აქციო მიმდევრები მდგრად შემოსავლად — ქართულ რეალობაში",
+    description:
+      "მიმდევრების რაოდენობა შემოსავალი არ არის. ვიცნობ 8000-მიმდევრიან კრეატორს, რომელიც კარგად ცხოვრობს კონტენტით, და 300 000-იანს, რომელსაც არაფერი შემოსდის.\n\nეს კურსი მონეტიზაციის ხუთ რეალურ გზას შლის: ციფრული პროდუქტი, ონლაინ კურსი, გამოწერა, სპონსორობა და მომსახურება. თითოეულზე ვსაუბრობთ კონკრეტულად — რა ფასი, რა მოცულობის აუდიტორია სჭირდება, რა კონვერსიაა რეალისტური და როგორ მუშაობს ეს საქართველოში, ქართული გადახდებით.",
+    creatorEmail: "saba.lominadze@example.ge",
+    categorySlug: "kreatoris-biznesi",
+    subcategorySlug: "monetizacia",
+    level: "INTERMEDIATE",
+    price: 199,
+    discountPrice: 149,
+    thumbSeed: "monetise",
+    learningOutcomes: [
+      "აირჩევ მონეტიზაციის მოდელს შენი აუდიტორიის ზომაზე",
+      "დააწესებ ფასს ისე, რომ არც გაასხვისო და არც წაგება იყოს",
+      "ააწყობ პირველ ციფრულ პროდუქტს ერთ თვეში",
+      "მოამზადებ სპონსორის შეთავაზებას მედია-კიტით",
+      "გაიგებ, როგორ იღებ და აღრიცხავ შემოსავალს საქართველოში",
+    ],
+    requirements: [
+      "აქტიური აუდიტორია ნებისმიერ პლატფორმაზე (თუნდაც მცირე)",
+      "წინასწარი ბიზნეს-ცოდნა არ არის საჭირო",
+    ],
+    targetAudience: [
+      "კრეატორები, ვისაც აუდიტორია აქვს და შემოსავალი არა",
+      "მწვრთნელები და ნუტრიციოლოგები, ვისაც ონლაინ პროდუქტი სურს",
+      "სპეციალისტები, ვინც პირად ბრენდზე მუშაობს",
+    ],
+    faqs: standardFaqs,
+    modules: [
+      {
+        title: "მოდული 1 — მოდელის არჩევა",
+        lessons: [
+          { title: "ხუთი გზა და ვისთვის მუშაობს თითოეული", type: "VIDEO", durationSeconds: 26, isFreePreview: true },
+          { title: "რეალისტური ციფრები", type: "TEXT",
+            textContent:
+              "მოდელის არჩევამდე ერთი გამოთვლა გააკეთე.\n\nციფრული პროდუქტის კონვერსია აუდიტორიიდან ჩვეულებრივ 0.5-2%-ია — და ეს იმ ნაწილიდან, რომელიც შენს პოსტს ნახავს, არა მთელი მიმდევრებიდან.\n\nე.ი. 10 000 მიმდევარი, საიდანაც პოსტს 2 000 ხედავს, 1% კონვერსიით და 100 ლარიანი პროდუქტით — დაახლოებით 2 000 ლარი გაშვებაზე.\n\nეს არც ცუდი რიცხვია და არც სასწაული. ის მთავარია, რომ გადაწყვეტილება მოლოდინზე კი არა, არითმეტიკაზე დააფუძნო." },
+          { title: "ფასწარმოქმნა", type: "VIDEO", durationSeconds: 22 },
+          { title: "ცოდნის შემოწმება", type: "QUIZ",
+            quiz: {
+              title: "მოდული 1 — ტესტი", passingScore: 70,
+              questions: [
+                { prompt: "მიმდევრების დიდი რაოდენობა ავტომატურად ნიშნავს შემოსავალს.",
+                  type: "TRUE_FALSE",
+                  explanation: "მნიშვნელოვანია ნდობა და შეთავაზების შესაბამისობა, არა მხოლოდ რიცხვი.",
+                  answers: [
+                    { text: "სწორია", isCorrect: false },
+                    { text: "მცდარია", isCorrect: true },
+                  ] },
+              ] } },
+        ],
+      },
+      {
+        title: "მოდული 2 — გაშვება",
+        lessons: [
+          { title: "პირველი პროდუქტი 30 დღეში", type: "VIDEO", durationSeconds: 28 },
+          { title: "სპონსორის შეთავაზება და მედია-კიტი", type: "VIDEO", durationSeconds: 24 },
+          { title: "გადახდები და აღრიცხვა საქართველოში", type: "VIDEO", durationSeconds: 20,
+            description: "ინდივიდუალური მეწარმე, გადასახადი და ქართული საგადახდო სისტემები." },
+          { title: "პრაქტიკული დავალება — შენი მონეტიზაციის გეგმა", type: "TEXT",
+            description: "აღწერე არჩეული მოდელი, ფასი და პირველი გაშვების თარიღი.",
+            textContent:
+              "დაწერე ერთ გვერდზე: რომელ მოდელს ირჩევ და რატომ; რა ფასი გაქვს და რაზე დააფუძნე; რამდენ ადამიანს სჭირდება შეძენა, რომ პირველი გაშვება წარმატებულად ჩათვალო; და კონკრეტული თარიღი.\n\nთარიღი ყველაზე მნიშვნელოვანია. მოდელისა და ფასის შერჩევა შეიძლება უსასრულოდ დახვეწო — გაშვების თარიღი კი ან არსებობს, ან არა.\n\nჩაწერე ის კალენდარში დღესვე." },
+        ],
+      },
+    ],
+  },
 ];
-
 export const STUDENTS = [
   { email: "mariam.kvaratskhelia@example.ge", fullName: "მარიამ კვარაცხელია", username: "mariam.k", city: "თბილისი" },
   { email: "luka.gelashvili@example.ge", fullName: "ლუკა გელაშვილი", username: "luka.g", city: "თბილისი" },

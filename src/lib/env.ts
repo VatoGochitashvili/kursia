@@ -66,7 +66,7 @@ const schema = z.object({
 
   PLATFORM_NAME: z.string().min(1).default("Kursia"),
   PLATFORM_NAME_KA: z.string().min(1).default("კურსია"),
-  PLATFORM_TAGLINE_KA: z.string().default("ისწავლე. შექმენი. გამოიმუშავე."),
+  PLATFORM_TAGLINE_KA: z.string().default("ცოდნა. საზოგადოება. შემოსავალი."),
   PLATFORM_SUPPORT_EMAIL: z.string().email().default("info@kursia.ge"),
 
   APP_URL: z.string().url().default("http://localhost:3000"),

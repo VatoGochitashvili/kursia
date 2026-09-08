@@ -58,6 +58,12 @@ const THUMBS: Record<string, string> = {
   photo: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=70&auto=format&fit=crop",
   english: "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=800&q=70&auto=format&fit=crop",
   productivity: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&q=70&auto=format&fit=crop",
+  strength: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=70&auto=format&fit=crop",
+  homefit: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=70&auto=format&fit=crop",
+  nutrition: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=70&auto=format&fit=crop",
+  yoga: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&q=70&auto=format&fit=crop",
+  shortform: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=800&q=70&auto=format&fit=crop",
+  monetise: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=70&auto=format&fit=crop",
 };
 
 const AVATARS = [

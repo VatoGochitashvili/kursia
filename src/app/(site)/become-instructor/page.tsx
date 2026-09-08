@@ -97,11 +97,31 @@ export default async function BecomeInstructorPage() {
     },
     {
       question:
+        locale === "en"
+          ? "I coach clients in person. Why put a programme online?"
+          : "კლიენტებს ცოცხლად ვამზადებ. რატომ უნდა გავიტანო პროგრამა ონლაინ?",
+      answer:
+        locale === "en"
+          ? "Because your time is the one thing you cannot scale. A programme you record once keeps selling while you are with the client in front of you — and it reaches the people who will never make it to your gym or studio."
+          : "იმიტომ, რომ შენი დრო ერთადერთია, რისი გამრავლებაც შეუძლებელია. ერთხელ ჩაწერილი პროგრამა იყიდება მაშინაც, როცა შენ სხვა კლიენტთან ხარ — და სწვდება იმ ადამიანებს, რომლებიც შენს დარბაზში ან სტუდიაში ვერასდროს მოვლენ.",
+    },
+    {
+      question:
+        locale === "en"
+          ? "I already have an audience on Instagram or YouTube. Does that help?"
+          : "უკვე მყავს აუდიტორია Instagram-ზე ან YouTube-ზე. ეს მეხმარება?",
+      answer:
+        locale === "en"
+          ? "It is the biggest single advantage you can bring. You do not need the platform to find you buyers — you need a place that can take payment in GEL, deliver the content, and pay you out. That is exactly what this is."
+          : "ეს ყველაზე დიდი უპირატესობაა, რაც შეიძლება გქონდეს. შენ პლატფორმა იმისთვის არ გჭირდება, რომ მყიდველი გიპოვოს — გჭირდება ადგილი, რომელიც ლარში მიიღებს გადახდას, მიაწვდის კონტენტს და შენ გადმოგირიცხავს. ზუსტად ესაა.",
+    },
+    {
+      question:
         locale === "en" ? "What equipment do I need?" : "რა ტექნიკა მჭირდება?",
       answer:
         locale === "en"
-          ? "A computer and a decent microphone are enough to start. Clear audio matters far more to students than camera quality."
-          : "დასაწყისისთვის საკმარისია კომპიუტერი და ნორმალური მიკროფონი. სტუდენტისთვის ხმის სიცხადე გაცილებით მნიშვნელოვანია, ვიდრე კამერის ხარისხი.",
+          ? "A phone and a quiet room are enough to start. Clear audio matters far more to students than camera quality — a shaky handheld clip with clean sound beats a beautiful one you cannot hear."
+          : "დასაწყისისთვის საკმარისია ტელეფონი და მშვიდი ოთახი. სტუდენტისთვის ხმის სიცხადე გაცილებით მნიშვნელოვანია, ვიდრე კამერის ხარისხი — ხელით გადაღებული, მაგრამ კარგად გასაგონი ვიდეო სჯობს ლამაზს, რომელიც არ ისმის.",
     },
   ];
 
@@ -121,7 +141,7 @@ export default async function BecomeInstructorPage() {
         <div className="container-page py-16 sm:py-20">
           <div className="max-w-2xl">
             <p className="eyebrow mb-4">{t.nav.becomeCreator}</p>
-            <h1 className="text-balance text-4xl leading-[1.1] sm:text-5xl lg:text-6xl">
+            <h1 className="text-balance text-4xl/[1.2] sm:text-5xl/[1.18] lg:text-6xl/[1.16]">
               {t.home.creatorCtaTitle}
             </h1>
             <p className="mt-5 text-pretty text-[17px] leading-relaxed text-ink-muted">
@@ -160,6 +180,31 @@ export default async function BecomeInstructorPage() {
             </dl>
           </div>
         </div>
+      </section>
+
+      <section className="container-page py-16">
+        <SectionHeading title={t.home.audienceTitle} subtitle={t.home.audienceSubtitle} />
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { icon: "dumbbell" as IconName, title: t.home.audience1Title, body: t.home.audience1Body, tint: "#f03c06" },
+            { icon: "leaf" as IconName, title: t.home.audience2Title, body: t.home.audience2Body, tint: "#12b76a" },
+            { icon: "camera" as IconName, title: t.home.audience3Title, body: t.home.audience3Body, tint: "#3559f0" },
+            { icon: "target" as IconName, title: t.home.audience4Title, body: t.home.audience4Body, tint: "#9333ea" },
+          ].map((a) => (
+            <li key={a.title}>
+              <Card className="h-full p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                <span
+                  className="inline-flex h-12 w-12 items-center justify-center rounded-2xl"
+                  style={{ backgroundColor: `${a.tint}14`, color: a.tint }}
+                >
+                  <Icon name={a.icon} size={23} />
+                </span>
+                <h3 className="mt-4 text-[17px]">{a.title}</h3>
+                <p className="mt-2 text-[14px] leading-relaxed text-ink-muted">{a.body}</p>
+              </Card>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section className="container-page py-16">

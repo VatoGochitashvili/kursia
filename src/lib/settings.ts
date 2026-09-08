@@ -42,7 +42,7 @@ export const SETTING_DEFAULTS: PlatformSettings = {
   platformName: env.PLATFORM_NAME,
   platformNameKa: env.PLATFORM_NAME_KA,
   taglineKa: env.PLATFORM_TAGLINE_KA,
-  taglineEn: "Learn. Create. Earn.",
+  taglineEn: "Knowledge. Community. Income.",
   logoUrl: "",
   supportEmail: env.PLATFORM_SUPPORT_EMAIL,
   currency: env.DEFAULT_CURRENCY,
@@ -58,11 +58,13 @@ export const SETTING_DEFAULTS: PlatformSettings = {
     "hero",
     "categories",
     "featured",
+    "audience",
     "popular",
     "new",
     "creators",
     "howItWorks",
     "studentBenefits",
+    "earnings",
     "creatorBenefits",
     "testimonials",
     "faq",
@@ -72,9 +74,9 @@ export const SETTING_DEFAULTS: PlatformSettings = {
   featuredCreatorIds: [],
   paymentProviders: env.PAYMENT_PROVIDERS,
   defaultPaymentProvider: env.PAYMENT_DEFAULT_PROVIDER,
-  seoDefaultTitleKa: "ონლაინ კურსები ქართულად",
+  seoDefaultTitleKa: "ონლაინ პროგრამები მწვრთნელებისა და კრეატორებისგან",
   seoDefaultDescriptionKa:
-    "აღმოაჩინე ქართული და საერთაშორისო ონლაინ კურსები — ბიზნესი, პროგრამირება, დიზაინი, მარკეტინგი და სხვა. ისწავლე შენი ტემპით.",
+    "ვარჯიში, კვება, იოგა, კონტენტის შექმნა და მონეტიზაცია — ქართული ონლაინ პროგრამები პრაქტიკოსებისგან. ან შექმენი საკუთარი და გამოიმუშავე შენი აუდიტორიით.",
 };
 
 type Key = keyof PlatformSettings;

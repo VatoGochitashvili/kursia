@@ -33,7 +33,36 @@ const db = new PrismaClient();
 const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL;
 const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD;
 
+/**
+ * Settings and category ordering both ship with the code but can be edited by
+ * an administrator. This seed runs on every container boot, so it needs to be
+ * able to deliver a change — a new tagline, a reordered catalogue — to a
+ * database that was seeded by an earlier release. Once a human has saved
+ * anything through the admin UI, their choices outrank the file and the seed
+ * goes back to creating only what is missing.
+ */
+async function adminHasEdited(actions: string[]) {
+  const edits = await db.auditLog.count({ where: { action: { in: actions } } });
+  return edits > 0;
+}
+
+// These literals mirror AUDIT_ACTIONS in src/lib/audit.ts. They are not
+// imported because that module pulls in next/headers, which has no business
+// inside a standalone seed bundle.
+const SETTINGS_ACTIONS = ["settings.updated"];
+const CATEGORY_ACTIONS = ["category.created", "category.updated", "category.deleted"];
+
+/** Presentation copy an admin is unlikely to have hand-tuned before launch. */
+const REFRESHABLE_SETTINGS = new Set<keyof typeof SETTING_DEFAULTS>([
+  "taglineKa",
+  "taglineEn",
+  "seoDefaultTitleKa",
+  "seoDefaultDescriptionKa",
+  "homepageSections",
+]);
+
 async function seedSettings() {
+  const curated = await adminHasEdited(SETTINGS_ACTIONS);
   const keys = Object.keys(SETTING_DEFAULTS) as (keyof typeof SETTING_DEFAULTS)[];
 
   for (const key of keys) {
@@ -43,32 +72,35 @@ async function seedSettings() {
       valueType: SETTING_VALUE_TYPES[key],
       group: SETTING_GROUPS[key],
     };
-    // Never overwrite a value an administrator has already tuned.
-    await db.platformSetting.upsert({ where: { key }, create: row, update: {} });
+    // Money, commission and payment settings are never touched after
+    // creation — only copy the seed still owns, and only until an admin has
+    // saved the settings form for the first time.
+    const update =
+      !curated && REFRESHABLE_SETTINGS.has(key) ? { value: row.value } : {};
+    await db.platformSetting.upsert({ where: { key }, create: row, update });
   }
 
-  return keys.length;
+  return { count: keys.length, curated };
 }
 
 async function seedCategories() {
+  const curated = await adminHasEdited(CATEGORY_ACTIONS);
   let created = 0;
   let order = 0;
 
   for (const cat of CATEGORIES) {
+    const presentation = {
+      nameKa: cat.nameKa,
+      nameEn: cat.nameEn,
+      icon: cat.icon,
+      colorHex: cat.colorHex,
+      descriptionKa: cat.descriptionKa,
+      descriptionEn: cat.descriptionEn,
+    };
     const parent = await db.category.upsert({
       where: { slug: cat.slug },
-      create: {
-        slug: cat.slug,
-        nameKa: cat.nameKa,
-        nameEn: cat.nameEn,
-        descriptionKa: cat.descriptionKa,
-        descriptionEn: cat.descriptionEn,
-        icon: cat.icon,
-        colorHex: cat.colorHex,
-        sortOrder: order,
-      },
-      // Only refresh presentation; leave sortOrder and isActive as configured.
-      update: { nameKa: cat.nameKa, nameEn: cat.nameEn, icon: cat.icon, colorHex: cat.colorHex },
+      create: { slug: cat.slug, ...presentation, sortOrder: order },
+      update: curated ? presentation : { ...presentation, sortOrder: order },
       select: { id: true },
     });
     order++;
@@ -85,14 +117,16 @@ async function seedCategories() {
           parentId: parent.id,
           sortOrder: childOrder,
         },
-        update: { nameKa: child.nameKa, nameEn: child.nameEn },
+        update: curated
+          ? { nameKa: child.nameKa, nameEn: child.nameEn }
+          : { nameKa: child.nameKa, nameEn: child.nameEn, parentId: parent.id, sortOrder: childOrder },
       });
       childOrder++;
       created++;
     }
   }
 
-  return created;
+  return { count: created, curated };
 }
 
 async function seedAdmin() {
@@ -142,10 +176,16 @@ async function main() {
   console.log("🌱 production seed");
 
   const settings = await seedSettings();
-  console.log(`  ✓ ${settings} platform settings ensured`);
+  console.log(
+    `  ✓ ${settings.count} platform settings ensured` +
+      (settings.curated ? " (left as the administrator configured them)" : ""),
+  );
 
   const categories = await seedCategories();
-  console.log(`  ✓ ${categories} categories ensured`);
+  console.log(
+    `  ✓ ${categories.count} categories ensured` +
+      (categories.curated ? " (ordering left to the administrator)" : ""),
+  );
 
   const admin = await seedAdmin();
   console.log(`  ✓ admin: ${admin}`);

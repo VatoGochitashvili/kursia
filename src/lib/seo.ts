@@ -35,6 +35,12 @@ export interface PageSeoInput {
   image?: string | null;
   type?: "website" | "article" | "profile";
   noindex?: boolean;
+  /**
+   * Skip the root layout's `%s · Brand` template. Set this on pages whose
+   * title already names the brand — otherwise the tab reads "Brand — tagline
+   * · Brand".
+   */
+  titleIsAbsolute?: boolean;
   publishedTime?: Date | null;
   modifiedTime?: Date | null;
 }
@@ -46,7 +52,7 @@ export async function buildMetadata(input: PageSeoInput): Promise<Metadata> {
   const image = input.image ?? absolute("/og-default.svg");
 
   return {
-    title: input.title,
+    title: input.titleIsAbsolute ? { absolute: input.title } : input.title,
     description,
     metadataBase: new URL(siteUrl),
     alternates: alternates(input.path, input.locale),

@@ -70,11 +70,11 @@ export const ka = {
   nav: {
     courses: "კურსები",
     categories: "კატეგორიები",
-    creators: "ინსტრუქტორები",
-    becomeCreator: "გახდი ინსტრუქტორი",
+    creators: "კრეატორები",
+    becomeCreator: "გახდი კრეატორი",
     myLearning: "ჩემი სწავლა",
     dashboard: "დეშბორდი",
-    creatorStudio: "ინსტრუქტორის სტუდია",
+    creatorStudio: "კრეატორის სტუდია",
     admin: "ადმინი",
     login: "შესვლა",
     register: "რეგისტრაცია",
@@ -90,57 +90,87 @@ export const ka = {
   },
 
   home: {
-    heroEyebrow: "ქართული ონლაინ სასწავლო პლატფორმა",
-    heroTitleLine1: "ისწავლე.",
-    heroTitleLine2: "შექმენი.",
-    heroTitleLine3: "გამოიმუშავე.",
+    heroEyebrow: "კრეატორებისა და მწვრთნელების პლატფორმა",
+    // Three nouns rather than three verbs: Georgian verbs conjugate for the
+    // addressee, and a display headline that shouts commands at a visitor who
+    // has not decided which side of the marketplace they are on reads badly
+    // in both directions.
+    heroTitleLine1: "ცოდნა.",
+    heroTitleLine2: "საზოგადოება.",
+    heroTitleLine3: "შემოსავალი.",
     heroSubtitle:
-      "ათასობით ქართული და საერთაშორისო კურსი ერთ სივრცეში. ისწავლე შენი ტემპით ან შექმენი საკუთარი კურსი და გამოიმუშავე ცოდნით.",
-    heroSearchPlaceholder: "რისი სწავლა გინდა? მაგ. ციფრული მარკეტინგი",
+      "პლატფორმა მწვრთნელების, ნუტრიციოლოგების, იოგას ინსტრუქტორებისა და ციფრული კრეატორებისთვის. ისწავლე პრაქტიკოსებისგან — ან შექმენი საკუთარი პროგრამა და გამოიმუშავე შენივე აუდიტორიით.",
+    heroSearchPlaceholder: "რას ეძებ? მაგ. ვარჯიში, კვება, კონტენტი",
     heroSearchCta: "ძიება",
-    heroPrimaryCta: "კურსების დათვალიერება",
-    heroSecondaryCta: "გახდი ინსტრუქტორი",
+    heroPrimaryCta: "დაათვალიერე კურსები",
+    heroSecondaryCta: "დაიწყე გაყიდვა",
+    heroTrust: "დაწყება უფასოა · საკომისიო მხოლოდ გაყიდვისას",
     statCourses: "კურსი",
     statStudents: "სტუდენტი",
-    statCreators: "ინსტრუქტორი",
+    statCreators: "კრეატორი",
     statRating: "საშუალო შეფასება",
     trustedBy: "გვენდობა",
 
     categoriesTitle: "აირჩიე მიმართულება",
-    categoriesSubtitle: "იპოვე კურსი შენთვის საინტერესო სფეროში",
+    categoriesSubtitle: "ფიტნესიდან და კვებიდან კონტენტამდე და მონეტიზაციამდე",
 
     featuredTitle: "რჩეული კურსები",
     featuredSubtitle: "ხელით შერჩეული საუკეთესო კურსები",
 
-    popularTitle: "პოპულარული კურსები",
-    popularSubtitle: "რასაც ყველაზე მეტი სტუდენტი სწავლობს",
+    popularTitle: "პოპულარული ახლა",
+    popularSubtitle: "რასაც ყველაზე მეტი სტუდენტი გადის",
 
     newTitle: "ახალი კურსები",
     newSubtitle: "ახლახან დამატებული",
 
-    creatorsTitle: "წამყვანი ინსტრუქტორები",
-    creatorsSubtitle: "ისწავლე პრაქტიკოსებისგან",
+    creatorsTitle: "კრეატორები პლატფორმაზე",
+    creatorsSubtitle: "მწვრთნელები, ნუტრიციოლოგები და ციფრული კრეატორები",
 
     howItWorksTitle: "როგორ მუშაობს",
-    howItWorksSubtitle: "სამი ნაბიჯი სწავლის დაწყებამდე",
-    step1Title: "იპოვე კურსი",
-    step1Body: "მოძებნე კატეგორიებით, ფასით ან შეფასებით და ნახე სილაბუსი შეძენამდე.",
+    howItWorksSubtitle: "სამი ნაბიჯი დაწყებამდე",
+    step1Title: "იპოვე შენი კურსი",
+    step1Body: "მოძებნე მიმართულებით, ფასით ან შეფასებით და ნახე სილაბუსი შეძენამდე.",
     step2Title: "შეიძინე უსაფრთხოდ",
     step2Body: "გადაიხადე ქართული ბარათით ლარში. წვდომა იხსნება მყისიერად.",
-    step3Title: "ისწავლე და მიიღე სერტიფიკატი",
-    step3Body: "ისწავლე ნებისმიერ მოწყობილობაზე, თვალი ადევნე პროგრესს და მიიღე სერტიფიკატი.",
+    step3Title: "გაიარე და მიიღე შედეგი",
+    step3Body: "ივარჯიშე ან ისწავლე ნებისმიერ მოწყობილობაზე, თვალი ადევნე პროგრესს და მიიღე სერტიფიკატი.",
+
+    // ── Who the platform is built for ──────────────────────────────────────
+    audienceTitle: "ვისთვის ავაშენეთ",
+    audienceSubtitle: "თუ ადამიანებს რაღაცას ასწავლი ონლაინ, ეს შენი ადგილია",
+    audience1Title: "ფიტნეს-ინსტრუქტორები",
+    audience1Body: "გაყიდე სავარჯიშო პროგრამა ან 12-კვირიანი ჩელენჯი დარბაზის კედლების გარეთ.",
+    audience2Title: "ნუტრიციოლოგები და ველნეს-ქოუჩები",
+    audience2Body: "აქციე კვების გეგმა და კონსულტაცია პროდუქტად, რომელიც შენს გარეშეც იყიდება.",
+    audience3Title: "ციფრული კრეატორები",
+    audience3Body: "მიმდევრები უკვე გყავს — მიეცი მათ, რის შესყიდვაც შეუძლიათ, არა მხოლოდ უფასო კონტენტი.",
+    audience4Title: "ექსპერტები და მენტორები",
+    audience4Body: "შეფუთე ის, რაც უკვე იცი, კურსად, ჯგუფურ პროგრამად ან საზოგადოებად.",
+
+    // ── Creator monetisation band ──────────────────────────────────────────
+    earningsEyebrow: "კრეატორებისთვის",
+    earningsTitle: "შენი აუდიტორია უკვე გისმენს",
+    earningsBody:
+      "დაგრჩება გაყიდვის {share}% — ყოველი შეკვეთა, საკომისიო და ბალანსი რეალურ დროში ჩანს. გატანა ქართულ საბანკო ანგარიშზე, ლარში.",
+    earningsPoint1Title: "შენ იტოვებ {share}%-ს",
+    earningsPoint1Body: "ყოველი გაყიდვიდან. ყოველთვიური გადასახადი არ არსებობს.",
+    earningsPoint2Title: "გადახდა ქართულად",
+    earningsPoint2Body: "ლარი, ქართული ბარათი, საქართველოს ბანკი და თიბისი.",
+    earningsPoint3Title: "ყველაფერი ერთ ადგილას",
+    earningsPoint3Body: "კურსი, ვიდეო, ქვიზი, სერტიფიკატი, ანალიტიკა და გატანა.",
+    earningsCta: "გახსენი კრეატორის ანგარიში",
 
     studentBenefitsTitle: "რატომ სტუდენტებისთვის",
     studentBenefit1Title: "ქართულად",
     studentBenefit1Body: "კურსები ქართულ ენაზე, ქართული კონტექსტითა და მაგალითებით.",
     studentBenefit2Title: "სამუდამო წვდომა",
     studentBenefit2Body: "ერთხელ იხდი — კურსი სამუდამოდ შენია, განახლებების ჩათვლით.",
-    studentBenefit3Title: "ისწავლე ტელეფონიდან",
+    studentBenefit3Title: "ივარჯიშე ტელეფონიდან",
     studentBenefit3Body: "პლატფორმა სრულად მუშაობს ტელეფონზე. გააგრძელე იქიდან, სადაც შეწყვიტე.",
     studentBenefit4Title: "სერტიფიკატი",
     studentBenefit4Body: "დაასრულე კურსი და მიიღე დამოწმებადი სერტიფიკატი.",
 
-    creatorBenefitsTitle: "რატომ ინსტრუქტორებისთვის",
+    creatorBenefitsTitle: "რატომ კრეატორებისთვის",
     creatorBenefit1Title: "გამჭვირვალე შემოსავალი",
     creatorBenefit1Body: "ხედავ ყოველ გაყიდვას, საკომისიოსა და ბალანსს რეალურ დროში.",
     creatorBenefit2Title: "მძლავრი კონსტრუქტორი",
@@ -151,7 +181,7 @@ export const ka = {
     creatorBenefit4Body: "მოითხოვე გატანა ქართულ საბანკო ანგარიშზე.",
 
     testimonialsTitle: "რას ამბობენ",
-    testimonialsSubtitle: "სტუდენტები და ინსტრუქტორები",
+    testimonialsSubtitle: "სტუდენტები და კრეატორები",
 
     faqTitle: "ხშირად დასმული კითხვები",
     faqSubtitle: "ვერ იპოვე პასუხი? დაგვიკავშირდი",
