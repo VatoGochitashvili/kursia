@@ -49,6 +49,27 @@ const pick = <T,>(arr: T[]): T => arr[Math.floor(rand() * arr.length)]!;
 const randInt = (min: number, max: number) => min + Math.floor(rand() * (max - min + 1));
 const daysAgo = (n: number) => new Date(Date.now() - n * 86_400_000);
 
+/**
+ * A payment reference for a demo purchase.
+ *
+ * Derived from the buyer and the course rather than from `rand()`. The RNG is
+ * seeded to a constant so a full run reproduces the same catalogue, which
+ * means an incremental run replays the identical sequence — and regenerates
+ * references that are already in the database, tripping the unique index on
+ * Purchase.reference. Keying on the pair is both stable and unique, since a
+ * buyer never purchases the same course twice.
+ */
+function purchaseReference(paidAt: Date, userId: string, courseId: string): string {
+  let hash = 0x811c9dc5;
+  const pair = `${userId}:${courseId}`;
+  for (let i = 0; i < pair.length; i++) {
+    hash ^= pair.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  const date = paidAt.toISOString().slice(2, 10).replace(/-/g, "");
+  return `DEMO-${date}-${hash.toString(16).toUpperCase().padStart(8, "0")}`;
+}
+
 const THUMBS: Record<string, string> = {
   marketing: "https://images.unsplash.com/photo-1533750349088-cd871a92f312?w=800&q=70&auto=format&fit=crop",
   python: "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800&q=70&auto=format&fit=crop",
@@ -143,13 +164,18 @@ async function removeDemo() {
 
 // ── Add ─────────────────────────────────────────────────────────────────────
 
+/**
+ * Add anything from seed-data that is not in the database yet.
+ *
+ * This used to bail out entirely the moment a single demo account existed,
+ * which meant a later release could never ship new demo content to a running
+ * deployment — the catalogue froze at whatever the first run created. It is
+ * incremental instead: existing accounts and courses are left exactly as they
+ * are (including their purchase history), and only genuinely new rows are
+ * written. Nothing here ever updates an existing row, so a demo course an
+ * admin has since edited or unpublished stays that way.
+ */
 async function addDemo() {
-  const already = await db.user.count({ where: { email: { endsWith: DEMO_DOMAIN } } });
-  if (already > 0) {
-    console.log(`  demo content already present (${already} accounts) — nothing to do`);
-    return;
-  }
-
   const categories = await db.category.findMany({ select: { id: true, slug: true } });
   const categoryBySlug = new Map(categories.map((c) => [c.slug, c.id]));
   if (categoryBySlug.size === 0) {
@@ -161,7 +187,19 @@ async function addDemo() {
   const creatorIdByEmail = new Map<string, string>();
   let avatarIndex = 0;
 
+  let creatorsAdded = 0;
+
   for (const c of CREATORS) {
+    const existing = await db.user.findUnique({
+      where: { email: c.email },
+      select: { creatorProfile: { select: { id: true } } },
+    });
+    if (existing?.creatorProfile) {
+      creatorIdByEmail.set(c.email, existing.creatorProfile.id);
+      avatarIndex++;
+      continue;
+    }
+
     const user = await db.user.create({
       data: {
         email: c.email,
@@ -198,13 +236,24 @@ async function addDemo() {
       select: { creatorProfile: { select: { id: true } } },
     });
     creatorIdByEmail.set(c.email, user.creatorProfile!.id);
+    creatorsAdded++;
   }
-  console.log(`  ✓ ${CREATORS.length} instructors`);
+  console.log(`  ✓ ${creatorsAdded} instructors added (${CREATORS.length - creatorsAdded} already present)`);
 
   // ── Students ─────────────────────────────────────────────────────────────
   const studentHash = await hashPassword(DEMO_STUDENT_PASSWORD);
   const studentIds: string[] = [];
+  let studentsAdded = 0;
+
   for (const s of STUDENTS) {
+    const existing = await db.user.findUnique({ where: { email: s.email }, select: { id: true } });
+    if (existing) {
+      // Still collect them: they are the buyers for any newly added course.
+      studentIds.push(existing.id);
+      avatarIndex++;
+      continue;
+    }
+
     const user = await db.user.create({
       data: {
         email: s.email,
@@ -224,13 +273,17 @@ async function addDemo() {
       select: { id: true },
     });
     studentIds.push(user.id);
+    studentsAdded++;
   }
-  console.log(`  ✓ ${STUDENTS.length} students`);
+  console.log(`  ✓ ${studentsAdded} students added (${STUDENTS.length - studentsAdded} already present)`);
 
   // ── Courses ──────────────────────────────────────────────────────────────
   const created: { id: string; creatorId: string; priceMinor: number; title: string }[] = [];
 
   for (const course of COURSES) {
+    const slug = slugify(course.title);
+    if (await db.course.findUnique({ where: { slug }, select: { id: true } })) continue;
+
     const creatorId = creatorIdByEmail.get(course.creatorEmail)!;
     const publishedAt = daysAgo(randInt(15, 240));
     const priceMinor = Math.round(course.price * 100);
@@ -238,7 +291,7 @@ async function addDemo() {
 
     const row = await db.course.create({
       data: {
-        slug: slugify(course.title),
+        slug,
         title: course.title,
         subtitle: course.subtitle,
         description: course.description,
@@ -361,7 +414,7 @@ async function addDemo() {
       title: course.title,
     });
   }
-  console.log(`  ✓ ${COURSES.length} published courses`);
+  console.log(`  ✓ ${created.length} courses added (${COURSES.length - created.length} already present)`);
 
   // ── Enrolments, sales and reviews ────────────────────────────────────────
   let purchases = 0;
@@ -382,12 +435,7 @@ async function addDemo() {
 
       const purchase = await db.purchase.create({
         data: {
-          reference: `DEMO-${paidAt.toISOString().slice(2, 10).replace(/-/g, "")}-${Math.floor(
-            rand() * 0xffffff,
-          )
-            .toString(16)
-            .toUpperCase()
-            .padStart(6, "0")}`,
+          reference: purchaseReference(paidAt, userId, course.id),
           userId,
           courseId: course.id,
           creatorId: course.creatorId,

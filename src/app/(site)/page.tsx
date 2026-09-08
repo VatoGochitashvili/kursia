@@ -63,6 +63,16 @@ export default async function HomePage() {
   const creatorShare = String(100 - bpsToPercent(settings.commissionBps));
   const marketplaceEmpty = featured.length === 0 && popular.length === 0;
 
+  // The category tree is ordered editorially, wellness first. That is the
+  // right order for the hero chips, which carry no counts. The tile grid
+  // below shows a course count, and a tile reading "0 courses" is a dead end
+  // — so tiles lead with the categories that actually have something in them,
+  // keeping the editorial order within each group.
+  const tileCategories = [
+    ...categories.filter((c) => c.courseCount > 0),
+    ...categories.filter((c) => c.courseCount === 0),
+  ].slice(0, 12);
+
   return (
     <>
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
@@ -332,7 +342,7 @@ export default async function HomePage() {
           action={<SeeAllLink href={p("/categories")} label={t.common.seeAll} />}
         />
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
-          {categories.slice(0, 12).map((c) => (
+          {tileCategories.map((c) => (
             <li key={c.slug}>
               <CategoryTile
                 href={p(`/category/${c.slug}`)}
