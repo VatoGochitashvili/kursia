@@ -92,11 +92,20 @@ export default async function ProfilePage() {
               city: t.profile.city,
               phone: t.profile.phone,
               socialLinks: t.profile.socialLinks,
-              changePhoto: locale === "en" ? "Change photo" : "ფოტოს შეცვლა",
-              uploading: t.common.saving,
-              photoHint: "JPG / PNG / WebP · max 4MB",
+              currentPhoto: locale === "en" ? "Profile photo" : "პროფილის ფოტო",
               save: t.common.save,
               saved: t.common.saved,
+            }}
+            uploaderLabels={{
+              drop: t.upload.dropImage,
+              browse: t.upload.browse,
+              uploading: t.upload.uploading,
+              replace: t.upload.replace,
+              remove: t.upload.remove,
+              cancel: t.upload.cancel,
+              tooLarge: t.upload.tooLarge,
+              wrongType: t.upload.wrongType,
+              hint: t.upload.avatarHint,
             }}
           />
         </div>

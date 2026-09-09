@@ -30,7 +30,7 @@ export default async function CourseBuilderPage({
         id: true, slug: true, title: true, subtitle: true, description: true,
         thumbnailUrl: true, categoryId: true, subcategoryId: true, language: true,
         level: true, status: true, priceMinor: true, discountPriceMinor: true,
-        currency: true, hasCertificate: true, metaTitle: true, metaDescription: true,
+        currency: true, metaTitle: true, metaDescription: true,
         learningOutcomes: true, requirements: true, targetAudience: true,
         reviewerNote: true,
         faqs: { orderBy: { sortOrder: "asc" }, select: { question: true, answer: true } },
@@ -77,7 +77,6 @@ export default async function CourseBuilderPage({
             ? ""
             : String(toMajor(course.discountPriceMinor, course.currency)),
         currency: course.currency,
-        hasCertificate: course.hasCertificate,
         metaTitle: course.metaTitle ?? "",
         metaDescription: course.metaDescription ?? "",
         learningOutcomes: parseStringArray(course.learningOutcomes),

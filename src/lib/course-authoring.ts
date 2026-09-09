@@ -66,7 +66,6 @@ export interface UpdateCourseInput {
   learningOutcomes?: string[];
   requirements?: string[];
   targetAudience?: string[];
-  hasCertificate?: boolean;
   metaTitle?: string;
   metaDescription?: string;
   faqs?: { question: string; answer: string }[];
@@ -124,7 +123,6 @@ export async function updateCourse(courseId: string, input: UpdateCourseInput) {
       ...(input.targetAudience !== undefined
         ? { targetAudience: serializeStringArray(input.targetAudience) }
         : {}),
-      hasCertificate: input.hasCertificate,
       metaTitle: empty(input.metaTitle),
       metaDescription: empty(input.metaDescription),
     },

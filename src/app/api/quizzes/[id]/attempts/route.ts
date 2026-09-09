@@ -102,8 +102,8 @@ export const POST = handler(async (request, context: { params: Promise<{ id: str
     select: { id: true },
   });
 
-  // Passing the quiz completes the lesson, which advances course progress and
-  // can trigger certificate issue — all through the same progress pipeline.
+  // Passing the quiz completes the lesson, which advances course progress
+  // through the same pipeline as any other lesson completion.
   let progress = null;
   if (isPassed && access.enrolled) {
     progress = await saveLessonProgress({

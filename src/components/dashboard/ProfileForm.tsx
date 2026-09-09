@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { api, errorMessage, fieldError } from "@/lib/client/fetcher";
 import { Button } from "@/components/ui/Button";
 import { Alert, Avatar, Card, Field, Input, Textarea } from "@/components/ui/primitives";
-import { Icon } from "@/components/ui/Icon";
+import { MediaUploader, type UploaderLabels } from "@/components/ui/MediaUploader";
+import { useToast } from "@/components/ui/Toast";
 
 export interface ProfileValues {
   fullName: string;
@@ -25,16 +26,18 @@ export interface ProfileValues {
 export function ProfileForm({
   initial,
   labels,
+  uploaderLabels,
 }: {
   initial: ProfileValues;
   labels: Record<string, string>;
+  uploaderLabels: UploaderLabels;
 }) {
   const router = useRouter();
+  const toast = useToast();
   const [values, setValues] = useState(initial);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const [saved, setSaved] = useState(false);
-  const [uploading, setUploading] = useState(false);
 
   const set = <K extends keyof ProfileValues>(key: K, value: ProfileValues[K]) =>
     setValues((v) => ({ ...v, [key]: value }));
@@ -47,6 +50,7 @@ export function ProfileForm({
     try {
       await api.patch("/api/profile", values);
       setSaved(true);
+      toast.show(labels.saved, "success");
       router.refresh();
     } catch (err) {
       setError(err);
@@ -55,21 +59,6 @@ export function ProfileForm({
     }
   }
 
-  async function uploadAvatar(file: File) {
-    setUploading(true);
-    setError(null);
-    try {
-      const form = new FormData();
-      form.set("file", file);
-      form.set("kind", "avatar");
-      const result = await api.upload<{ url: string }>("/api/uploads", form);
-      set("avatarUrl", result.url);
-    } catch (err) {
-      setError(err);
-    } finally {
-      setUploading(false);
-    }
-  }
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
@@ -79,24 +68,20 @@ export function ProfileForm({
       <Card className="p-5">
         <h2 className="mb-4 text-lg">{labels.publicProfile}</h2>
 
-        <div className="mb-5 flex flex-wrap items-center gap-4">
-          <Avatar src={values.avatarUrl || null} name={values.fullName || "?"} size={72} />
-          <div>
-            <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-line-strong px-4 py-2.5 text-[13px] font-semibold text-ink transition-colors hover:bg-surface-muted">
-              <Icon name="upload" size={15} />
-              {uploading ? labels.uploading : labels.changePhoto}
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/avif"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) void uploadAvatar(file);
-                }}
-              />
-            </label>
-            <p className="mt-1.5 text-[11px] text-ink-subtle">{labels.photoHint}</p>
-          </div>
+        <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center">
+          <Avatar src={values.avatarUrl || null} name={values.fullName || "?"} size={80} />
+          <MediaUploader
+            kind="avatar"
+            preview="image"
+            value={values.avatarUrl || null}
+            valueLabel={labels.currentPhoto}
+            onUploaded={(result) => set("avatarUrl", result.url ?? "")}
+            onRemove={() => set("avatarUrl", "")}
+            labels={uploaderLabels}
+            icon="camera"
+            compact
+            className="flex-1"
+          />
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">

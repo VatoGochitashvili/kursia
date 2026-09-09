@@ -3,6 +3,7 @@ import { Noto_Sans_Georgian, Inter } from "next/font/google";
 import { getLocale, LOCALE_META } from "@/i18n";
 import { getSettings } from "@/lib/settings";
 import { organizationSchema, siteUrl, websiteSchema } from "@/lib/seo";
+import { ToastProvider } from "@/components/ui/Toast";
 import { JsonLd } from "@/components/ui/primitives";
 import "./globals.css";
 
@@ -83,7 +84,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         >
           {locale === "en" ? "Skip to content" : "მთავარ შინაარსზე გადასვლა"}
         </a>
-        {children}
+        <ToastProvider>{children}</ToastProvider>
         <JsonLd
           data={[
             organizationSchema({

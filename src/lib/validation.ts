@@ -161,7 +161,6 @@ export const updateCourseSchema = z
     learningOutcomes: z.array(z.string().trim().min(1).max(300)).max(30).optional(),
     requirements: z.array(z.string().trim().min(1).max(300)).max(30).optional(),
     targetAudience: z.array(z.string().trim().min(1).max(300)).max(30).optional(),
-    hasCertificate: z.boolean().optional(),
     metaTitle: z.string().trim().max(70).optional(),
     metaDescription: z.string().trim().max(180).optional(),
     faqs: z

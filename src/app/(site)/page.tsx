@@ -911,18 +911,18 @@ function HomeFaq({
         : `დიახ. თუ კურსი არ დაგაკმაყოფილათ, თანხის დაბრუნება შესაძლებელია შეძენიდან ${settings.refundWindowDays} დღის განმავლობაში.`,
     },
     {
-      q: en ? "Do I get a certificate?" : "მივიღებ სერტიფიკატს?",
+      q: en ? "Can I follow a course on my phone?" : "შემიძლია კურსის გავლა ტელეფონიდან?",
       a: en
-        ? "Yes. Complete a course 100% and a certificate with a unique ID is issued automatically. Anyone can verify it on a public page."
-        : "დიახ. კურსის 100%-ით დასრულების შემდეგ ავტომატურად გაიცემა სერტიფიკატი უნიკალური ID-ით. მისი ნამდვილობის შემოწმება ნებისმიერს შეუძლია საჯარო გვერდზე.",
+        ? "Yes. The whole platform works on a phone, which is where most people actually train. Your progress syncs, so you can start a lesson on a laptop and finish it at the gym."
+        : "დიახ. პლატფორმა სრულად მუშაობს ტელეფონზე — სწორედ იქიდან ვარჯიშობს ხალხის უმეტესობა. პროგრესი ინახება, ასე რომ გაკვეთილი კომპიუტერზე დაიწყე და დარბაზში დაასრულე.",
     },
     {
       q: en
         ? "I am a trainer with in-person clients. What does the platform give me?"
         : "მწვრთნელი ვარ და კლიენტები ცოცხლად მყავს — რას მაძლევს პლატფორმა?",
       a: en
-        ? "The ability to sell one recorded programme over and over, without spending more of your time. Video, quizzes, progress tracking, payment and certificates are already built; you only bring the content."
-        : "შესაძლებლობას, რომ ერთხელ ჩაწერილი პროგრამა უსასრულოდ გაიყიდოს — შენი დროის დამატებითი დახარჯვის გარეშე. ვიდეო, ქვიზები, პროგრესის თვალყური, გადახდა და სერტიფიკატი უკვე აწყობილია; შენ მხოლოდ შინაარსი შემოგაქვს.",
+        ? "The ability to sell one recorded programme over and over, without spending more of your time. Video, quizzes, progress tracking and payment are already built; you only bring the content."
+        : "შესაძლებლობას, რომ ერთხელ ჩაწერილი პროგრამა უსასრულოდ გაიყიდოს — შენი დროის დამატებითი დახარჯვის გარეშე. ვიდეო, ქვიზები, პროგრესის თვალყური და გადახდა უკვე აწყობილია; შენ მხოლოდ შინაარსი შემოგაქვს.",
     },
     {
       q: en ? "How do I become a creator?" : "როგორ გავხდე კრეატორი?",

@@ -21,7 +21,6 @@ export async function Footer() {
         { label: t.nav.courses, href: p("/courses") },
         { label: t.nav.categories, href: p("/categories") },
         { label: t.nav.creators, href: p("/instructors") },
-        { label: t.footer.verifyCertificate, href: p("/certificate") },
       ],
     },
     {

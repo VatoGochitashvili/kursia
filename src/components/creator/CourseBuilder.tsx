@@ -8,6 +8,7 @@ import { Button, ButtonLink } from "@/components/ui/Button";
 import {
   Alert, Card, Checkbox, Field, Input, Select, Textarea,
 } from "@/components/ui/primitives";
+import { MediaUploader } from "@/components/ui/MediaUploader";
 import { Icon } from "@/components/ui/Icon";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { CurriculumEditor, type EditorModule } from "./CurriculumEditor";
@@ -32,7 +33,6 @@ export interface BuilderCourse {
   price: string;
   discountPrice: string;
   currency: string;
-  hasCertificate: boolean;
   metaTitle: string;
   metaDescription: string;
   learningOutcomes: string[];
@@ -85,7 +85,6 @@ export function CourseBuilder({
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const [readiness, setReadiness] = useState<ReadinessIssue[] | null>(null);
-  const [uploadingThumb, setUploadingThumb] = useState(false);
   const [quizLessonId, setQuizLessonId] = useState<string | null>(null);
 
   const set = <K extends keyof BuilderCourse>(key: K, value: BuilderCourse[K]) => {
@@ -121,7 +120,6 @@ export function CourseBuilder({
         learningOutcomes: values.learningOutcomes,
         requirements: values.requirements,
         targetAudience: values.targetAudience,
-        hasCertificate: values.hasCertificate,
         metaTitle: values.metaTitle,
         metaDescription: values.metaDescription,
         faqs: values.faqs,
@@ -165,22 +163,6 @@ export function CourseBuilder({
     }
   }
 
-  async function uploadThumbnail(file: File) {
-    setUploadingThumb(true);
-    setError(null);
-    try {
-      const form = new FormData();
-      form.set("file", file);
-      form.set("kind", "thumbnail");
-      form.set("courseId", course.id);
-      const result = await api.upload<{ url: string | null; key: string }>("/api/uploads", form);
-      set("thumbnailUrl", result.url ?? `/api/files/${result.key}`);
-    } catch (err) {
-      setError(err);
-    } finally {
-      setUploadingThumb(false);
-    }
-  }
 
   const isDraft = ["DRAFT", "CHANGES_REQUESTED", "REJECTED"].includes(values.status);
   const canSubmit = isDraft;
@@ -410,37 +392,56 @@ export function CourseBuilder({
               <h2 className="mb-3 text-base">
                 {locale === "en" ? "Course image" : "კურსის ფოტო"}
               </h2>
-              <div className="relative mb-3 aspect-video overflow-hidden rounded-xl bg-surface-sunken">
+              <div className="relative mb-3 aspect-video overflow-hidden rounded-xl bg-surface-sunken ring-1 ring-line">
                 {values.thumbnailUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element -- the
                   // thumbnail can live on any configured storage host.
                   <img
                     src={values.thumbnailUrl}
                     alt=""
-                    className="h-full w-full object-cover"
+                    className="h-full w-full animate-fade-in object-cover"
                   />
                 ) : (
-                  <div className="flex h-full items-center justify-center text-ink-subtle">
+                  <div className="flex h-full flex-col items-center justify-center gap-1.5 text-ink-subtle">
                     <Icon name="camera" size={26} />
+                    <span className="text-[11px]">
+                      {locale === "en" ? "No image yet" : "ფოტო ჯერ არ არის"}
+                    </span>
                   </div>
                 )}
               </div>
-              <label className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-line-strong px-4 py-2.5 text-[13px] font-semibold text-ink transition-colors hover:bg-surface-muted">
-                <Icon name="upload" size={15} />
-                {uploadingThumb ? t.common.saving : t.common.upload}
-                <input
-                  type="file"
-                  className="hidden"
-                  accept="image/jpeg,image/png,image/webp,image/avif"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) void uploadThumbnail(file);
-                  }}
-                />
-              </label>
-              <p className="mt-2 text-[11px] text-ink-subtle">
-                {locale === "en" ? "16:9 · at least 1280×720 · max 8MB" : "16:9 · მინიმუმ 1280×720 · მაქს. 8MB"}
-              </p>
+              <MediaUploader
+                kind="thumbnail"
+                courseId={course.id}
+                preview="image"
+                // The preview above already shows the image, so the uploader
+                // itself stays in its drop-zone state rather than repeating it.
+                value={null}
+                onUploaded={(result) => set("thumbnailUrl", result.url ?? `/api/files/${result.key}`)}
+                labels={{
+                  drop: t.upload.dropImage,
+                  browse: t.upload.browse,
+                  uploading: t.upload.uploading,
+                  replace: t.upload.replace,
+                  remove: t.upload.remove,
+                  cancel: t.upload.cancel,
+                  tooLarge: t.upload.tooLarge,
+                  wrongType: t.upload.wrongType,
+                  hint: t.upload.thumbnailHint,
+                }}
+                icon="camera"
+                compact
+              />
+              {values.thumbnailUrl && (
+                <button
+                  type="button"
+                  onClick={() => set("thumbnailUrl", "")}
+                  className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-semibold text-danger-700 transition-colors hover:underline"
+                >
+                  <Icon name="trash" size={13} />
+                  {t.upload.remove}
+                </button>
+              )}
             </Card>
 
             <Card className="p-5">
@@ -480,6 +481,7 @@ export function CourseBuilder({
           courseId={course.id}
           initialModules={modules}
           locale={locale}
+          uploadLabels={t.upload}
           labels={{
             modules: t.common.modules,
             lessons: t.common.lessons,
@@ -555,14 +557,6 @@ export function CourseBuilder({
               />
             </Field>
           </div>
-
-          <label className="mt-5 flex cursor-pointer items-center gap-2.5 text-[13px] text-ink-muted">
-            <Checkbox
-              checked={values.hasCertificate}
-              onChange={(e) => set("hasCertificate", e.target.checked)}
-            />
-            {t.courses.includesCertificate}
-          </label>
 
           <Alert tone="brand" className="mt-5">
             {locale === "en"

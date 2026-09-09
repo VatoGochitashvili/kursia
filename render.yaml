@@ -50,8 +50,6 @@ services:
         generateValue: true
       - key: MEDIA_SIGNING_SECRET
         generateValue: true
-      - key: CERTIFICATE_SIGNING_SECRET
-        generateValue: true
 
       # ── URLs ────────────────────────────────────────────────────────────
       # Render injects its own hostname; replace both with your real domain

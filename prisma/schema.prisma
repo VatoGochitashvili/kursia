@@ -48,7 +48,6 @@ model User {
   lessonProgress LessonProgress[]
   quizAttempts   QuizAttempt[]
   submissions    AssignmentSubmission[]
-  certificates   Certificate[]
   notifications  Notification[]
   comments       Comment[]
   commentLikes   CommentLike[]
@@ -218,7 +217,6 @@ model Course {
 
   isFeatured   Boolean   @default(false)
   featuredRank Int?
-  hasCertificate Boolean @default(true)
 
   metaTitle       String?
   metaDescription String?
@@ -242,7 +240,6 @@ model Course {
   reviews      Review[]
   wishlist     Wishlist[]
   faqs         CourseFaq[]
-  certificates Certificate[]
   views        CourseView[]
   reviewEvents CourseReviewEvent[]
   follows      Follow[]
@@ -852,27 +849,7 @@ model AssignmentSubmission {
   @@index([userId])
 }
 
-// ───────────────────── Certificates, notices, analytics ───────────────────
-
-model Certificate {
-  id             String   @id @default(cuid())
-  /// Public, human-transcribable verification code (e.g. KRS-8F2A-91QD).
-  code           String   @unique
-  userId         String
-  courseId       String
-  studentName    String
-  courseTitle    String
-  instructorName String
-  issuedAt       DateTime @default(now())
-  revokedAt      DateTime?
-  serialHash     String                 // tamper check over the fields above
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, courseId])
-  @@index([code])
-}
+// ───────────────────────── Notices and analytics ──────────────────────────
 
 model Notification {
   id        String   @id @default(cuid())

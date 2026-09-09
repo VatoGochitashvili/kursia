@@ -4,8 +4,13 @@ import { useRef, useState } from "react";
 import { api, errorMessage } from "@/lib/client/fetcher";
 import { Button } from "@/components/ui/Button";
 import { Alert, Card, Checkbox, Field, Input, Select, Textarea } from "@/components/ui/primitives";
+import { MediaUploader } from "@/components/ui/MediaUploader";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { formatDuration } from "@/lib/format";
+import type { Dictionary } from "@/i18n";
+
+/** The `upload` section of the dictionary, passed down whole. */
+type UploadDictionary = Dictionary["upload"];
 import { cn } from "@/lib/cn";
 import type { Locale } from "@/lib/enums";
 
@@ -55,11 +60,13 @@ export function CurriculumEditor({
   initialModules,
   locale,
   labels,
+  uploadLabels,
 }: {
   courseId: string;
   initialModules: EditorModule[];
   locale: Locale;
   labels: Record<string, string>;
+  uploadLabels: UploadDictionary;
 }) {
   const [modules, setModules] = useState(initialModules);
   const [error, setError] = useState<unknown>(null);
@@ -365,6 +372,7 @@ export function CurriculumEditor({
                     lesson={lesson}
                     locale={locale}
                     labels={labels}
+                    uploadLabels={uploadLabels}
                     onChange={(patch) => updateLesson(lesson.id, patch)}
                     onClose={() => setEditingLesson(null)}
                   />
@@ -451,6 +459,7 @@ function LessonEditor({
   lesson,
   locale,
   labels,
+  uploadLabels,
   onChange,
   onClose,
 }: {
@@ -458,55 +467,10 @@ function LessonEditor({
   lesson: EditorLesson;
   locale: Locale;
   labels: Record<string, string>;
+  uploadLabels: UploadDictionary;
   onChange: (patch: Partial<EditorLesson>) => void;
   onClose: () => void;
 }) {
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [progress, setProgress] = useState(0);
-
-  async function upload(file: File, kind: "video" | "pdf" | "captions") {
-    setUploading(true);
-    setUploadError(null);
-    setProgress(0);
-
-    try {
-      const form = new FormData();
-      form.set("file", file);
-      form.set("kind", kind);
-      form.set("courseId", courseId);
-      form.set("lessonId", lesson.id);
-
-      // XHR rather than fetch: video uploads are large and a progress bar is
-      // the difference between "working" and "frozen".
-      const result = await new Promise<{ key: string }>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", "/api/uploads");
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) setProgress(Math.round((event.loaded / event.total) * 100));
-        };
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve(JSON.parse(xhr.responseText));
-          } else {
-            try {
-              reject(new Error(JSON.parse(xhr.responseText).error?.message ?? "Upload failed"));
-            } catch {
-              reject(new Error("Upload failed"));
-            }
-          }
-        };
-        xhr.onerror = () => reject(new Error("Upload failed"));
-        xhr.send(form);
-      });
-
-      if (kind !== "captions") onChange({ assetKey: result.key });
-    } catch (err) {
-      setUploadError(err instanceof Error ? err.message : "Upload failed");
-    } finally {
-      setUploading(false);
-    }
-  }
 
   const acceptFor = (kind: "video" | "pdf" | "captions") =>
     kind === "video"
@@ -572,7 +536,7 @@ function LessonEditor({
             </p>
 
             {lesson.assetKey ? (
-              <p className="mb-2 inline-flex items-center gap-1.5 rounded-lg bg-success-50 px-2.5 py-1.5 text-[12px] font-medium text-success-700">
+              <p className="mb-2 inline-flex animate-fade-in items-center gap-1.5 rounded-lg bg-success-50 px-2.5 py-1.5 text-[12px] font-medium text-success-700">
                 <Icon name="check" size={13} />
                 {labels.uploaded}
               </p>
@@ -583,48 +547,53 @@ function LessonEditor({
               </p>
             )}
 
-            <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-line-strong bg-surface px-4 py-2.5 text-[13px] font-semibold text-ink transition-colors hover:bg-surface-muted">
-              <Icon name="upload" size={15} />
-              {uploading ? `${progress}%` : lesson.assetKey ? labels.replaceFile : labels.uploadFile}
-              <input
-                type="file"
-                className="hidden"
-                accept={acceptFor(lesson.type === "VIDEO" ? "video" : "pdf")}
-                disabled={uploading}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) void upload(file, lesson.type === "VIDEO" ? "video" : "pdf");
-                }}
-              />
-            </label>
+            <MediaUploader
+              kind={lesson.type === "VIDEO" ? "video" : "pdf"}
+              courseId={courseId}
+              lessonId={lesson.id}
+              preview={lesson.type === "VIDEO" ? "video" : "file"}
+              // The badge above already reports whether an asset exists, and
+              // the stored key is a UUID that means nothing to the author.
+              value={null}
+              onUploaded={(result) => onChange({ assetKey: result.key })}
+              labels={{
+                drop: lesson.type === "VIDEO" ? uploadLabels.dropVideo : uploadLabels.dropFile,
+                browse: uploadLabels.browse,
+                uploading: uploadLabels.uploading,
+                replace: uploadLabels.replace,
+                remove: uploadLabels.remove,
+                cancel: uploadLabels.cancel,
+                tooLarge: uploadLabels.tooLarge,
+                wrongType: uploadLabels.wrongType,
+                hint: lesson.type === "VIDEO" ? uploadLabels.videoHint : uploadLabels.pdfHint,
+              }}
+              icon={lesson.type === "VIDEO" ? "video" : "file"}
+            />
 
             {lesson.type === "VIDEO" && (
-              <label className="ms-2 inline-flex cursor-pointer items-center gap-2 rounded-xl border border-line-strong bg-surface px-4 py-2.5 text-[13px] font-semibold text-ink transition-colors hover:bg-surface-muted">
-                <Icon name="file" size={15} />
-                {labels.captions}
-                <input
-                  type="file"
-                  className="hidden"
-                  accept={acceptFor("captions")}
-                  disabled={uploading}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) void upload(file, "captions");
+              <div className="mt-3">
+                <p className="mb-1.5 text-[12px] font-semibold text-ink-muted">{labels.captions}</p>
+                <MediaUploader
+                  kind="captions"
+                  courseId={courseId}
+                  lessonId={lesson.id}
+                  preview="file"
+                  value={null}
+                  onUploaded={() => undefined}
+                  labels={{
+                    drop: uploadLabels.dropFile,
+                    browse: uploadLabels.browse,
+                    uploading: uploadLabels.uploading,
+                    replace: uploadLabels.replace,
+                    remove: uploadLabels.remove,
+                    cancel: uploadLabels.cancel,
+                    tooLarge: uploadLabels.tooLarge,
+                    wrongType: uploadLabels.wrongType,
                   }}
-                />
-              </label>
-            )}
-
-            {uploading && (
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-sunken">
-                <div
-                  className="h-full rounded-full bg-brand-500 transition-[width]"
-                  style={{ width: `${progress}%` }}
+                  icon="file"
+                  compact
                 />
               </div>
-            )}
-            {uploadError && (
-              <p className="mt-2 text-[12px] font-medium text-danger-700">{uploadError}</p>
             )}
           </div>
         )}

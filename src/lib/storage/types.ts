@@ -54,7 +54,6 @@ export const STORAGE_PREFIX = {
   captions: "captions",
   resource: "resources",
   submission: "submissions",
-  certificate: "certificates",
 } as const;
 
 export type StoragePrefix = (typeof STORAGE_PREFIX)[keyof typeof STORAGE_PREFIX];

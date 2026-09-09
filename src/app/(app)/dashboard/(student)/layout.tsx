@@ -17,10 +17,9 @@ export default async function DashboardLayout({
   const [{ locale, t }, user] = await Promise.all([getI18n(), getSessionUser()]);
   if (!user) redirect(localePath("/login?next=/dashboard", locale));
 
-  const [unread, wishlistCount, certificateCount] = await Promise.all([
+  const [unread, wishlistCount] = await Promise.all([
     db.notification.count({ where: { userId: user.id, readAt: null } }),
     db.wishlist.count({ where: { userId: user.id } }),
-    db.certificate.count({ where: { userId: user.id, revokedAt: null } }),
   ]);
 
   const p = (path: string) => localePath(path, locale);
@@ -31,12 +30,6 @@ export default async function DashboardLayout({
       items: [
         { href: p("/dashboard"), label: t.dashboard.myCourses, icon: "book", exact: true },
         { href: p("/dashboard/wishlist"), label: t.nav.wishlist, icon: "heart", badge: wishlistCount },
-        {
-          href: p("/dashboard/certificates"),
-          label: t.nav.certificates,
-          icon: "award",
-          badge: certificateCount,
-        },
         { href: p("/dashboard/purchases"), label: t.nav.purchases, icon: "creditCard" },
       ],
     },
@@ -71,7 +64,6 @@ export default async function DashboardLayout({
       mobileTabs={[
         { href: p("/dashboard"), label: t.dashboard.myCourses, icon: "book", exact: true },
         { href: p("/dashboard/wishlist"), label: t.nav.wishlist, icon: "heart" },
-        { href: p("/dashboard/certificates"), label: t.nav.certificates, icon: "award" },
         { href: p("/dashboard/notifications"), label: t.nav.notifications, icon: "bell", badge: unread },
       ]}
     >

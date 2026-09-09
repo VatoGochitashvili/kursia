@@ -270,11 +270,11 @@ function buildContent(
             ],
           },
           {
-            heading: ka ? "სერტიფიკატი არ გამოჩნდა" : "My certificate hasn't appeared",
+            heading: ka ? "პროგრესი არ განახლდა" : "My progress hasn't updated",
             body: [
               ka
-                ? "სერტიფიკატი გენერირდება კურსის 100%-ით დასრულებისას. შეამოწმეთ, ყველა გაკვეთილი მონიშნულია თუ არა დასრულებულად."
-                : "A certificate is generated when a course reaches 100%. Check that every lesson is marked complete.",
+                ? "პროგრესი ითვლება მხოლოდ გამოქვეყნებული გაკვეთილებიდან და ინახება ავტომატურად. თუ რიცხვი არ შეიცვალა, განაახლეთ გვერდი — და შეამოწმეთ, გაკვეთილი მონიშნულია თუ არა დასრულებულად."
+                : "Progress counts only published lessons and saves automatically. If the number has not moved, refresh the page — and check the lesson is actually marked complete.",
             ],
           },
         ],

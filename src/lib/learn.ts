@@ -26,7 +26,7 @@ export async function loadLearnView(input: {
   const course = await db.course.findUnique({
     where: { slug: input.slug },
     select: {
-      id: true, slug: true, title: true, status: true, hasCertificate: true,
+      id: true, slug: true, title: true, status: true,
       creatorId: true,
       creator: { select: { slug: true, displayName: true, userId: true } },
       modules: {
@@ -116,13 +116,6 @@ export async function loadLearnView(input: {
   ]);
 
   const progressByLesson = new Map(progressRows.map((r) => [r.lessonId, r]));
-  const certificate = enrollment?.completedAt
-    ? await db.certificate.findUnique({
-        where: { userId_courseId: { userId: input.viewer.id, courseId: course.id } },
-        select: { code: true },
-      })
-    : null;
-
   return {
     course,
     access,
@@ -146,7 +139,6 @@ export async function loadLearnView(input: {
     completedLessons: progressRows.filter((r) => r.isCompleted).length,
     progressPercent: enrollment?.progressPercent ?? 0,
     isComplete: Boolean(enrollment?.completedAt),
-    certificateCode: certificate?.code ?? null,
   };
 }
 

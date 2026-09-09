@@ -312,7 +312,6 @@ async function addDemo() {
         targetAudience: JSON.stringify(course.targetAudience),
         isFeatured: course.isFeatured ?? false,
         featuredRank: course.isFeatured ? randInt(1, 20) : null,
-        hasCertificate: true,
         submittedAt: publishedAt,
         reviewedAt: publishedAt,
         publishedAt,

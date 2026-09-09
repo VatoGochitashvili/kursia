@@ -1,5 +1,4 @@
 import { db } from "@/lib/db";
-import { issueCertificate } from "@/lib/certificates";
 
 /**
  * Progress tracking.
@@ -23,12 +22,10 @@ export interface ProgressSnapshot {
   completedLessons: number;
   progressPercent: number;
   isComplete: boolean;
-  certificateCode?: string;
 }
 
 /**
  * Recompute and persist a student's progress for one course.
- * Issues a certificate the first time the course reaches 100%.
  */
 export async function recomputeProgress(
   userId: string,
@@ -69,11 +66,6 @@ export async function recomputeProgress(
     progressPercent: percent,
     isComplete,
   };
-
-  if (isComplete) {
-    const cert = await issueCertificate(userId, courseId);
-    if (cert) snapshot.certificateCode = cert.code;
-  }
 
   return snapshot;
 }

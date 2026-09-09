@@ -4,7 +4,7 @@
  * Produces a marketplace that behaves like a live one: real users with hashed
  * passwords, published courses with curricula, genuine purchases that flow
  * through the same fulfilment path as production (so creator balances and the
- * ledger are internally consistent), reviews, progress and certificates.
+ * ledger are internally consistent), reviews and progress.
  *
  *   npm run db:reset     # wipe + push schema + seed
  *   npm run db:seed      # seed only (idempotent-ish: clears app tables first)
@@ -24,7 +24,6 @@ import {
   SETTING_VALUE_TYPES,
   encodeSetting,
 } from "../src/lib/settings";
-import { issueCertificate } from "../src/lib/certificates";
 import { CATEGORIES, COURSES, CREATORS, REVIEW_TEXTS, STUDENTS } from "./seed-data";
 
 const db = new PrismaClient();
@@ -95,7 +94,7 @@ async function wipe() {
     db.assignmentSubmission, db.assignment,
     db.lessonNote, db.lessonProgress, db.lessonResource, db.lesson, db.courseModule,
     db.commentLike, db.comment, db.review, db.wishlist, db.follow,
-    db.certificate, db.enrollment,
+    db.enrollment,
     db.balanceEntry, db.payout, db.payoutMethod, db.creatorBalance,
     db.webhookEvent, db.refund, db.transaction, db.purchase,
     db.courseView, db.courseReviewEvent, db.courseFaq, db.course,
@@ -277,7 +276,6 @@ async function main() {
         targetAudience: JSON.stringify(course.targetAudience),
         isFeatured: course.isFeatured ?? false,
         featuredRank: course.isFeatured ? randInt(1, 20) : null,
-        hasCertificate: true,
         submittedAt: publishedAt,
         reviewedAt: publishedAt,
         publishedAt,
@@ -538,10 +536,6 @@ async function main() {
         reviewCount++;
       }
 
-      // Certificates for completed courses.
-      if (percent === 100) {
-        await issueCertificate(userId, course.id).catch(() => undefined);
-      }
     }
 
     // Refresh denormalised rating from the reviews just created.
@@ -614,13 +608,13 @@ async function main() {
   console.log("  ✓ 1 course awaiting moderation");
 
   // ── Summary ──────────────────────────────────────────────────────────────
-  const [users, courses, enrollments, certificates] = await Promise.all([
-    db.user.count(), db.course.count(), db.enrollment.count(), db.certificate.count(),
+  const [users, courses, enrollments] = await Promise.all([
+    db.user.count(), db.course.count(), db.enrollment.count(),
   ]);
 
   console.log(`
 ✅ Seed complete
-   users ${users} · courses ${courses} · enrolments ${enrollments} · certificates ${certificates}
+   users ${users} · courses ${courses} · enrolments ${enrollments}
 
    Sign in with:
      admin     ${ADMIN_EMAIL} / ${ADMIN_PASSWORD}

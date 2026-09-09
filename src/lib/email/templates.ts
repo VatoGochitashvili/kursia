@@ -140,17 +140,6 @@ export function renderTemplate(
         cta: { label: t(locale, "კურსის რედაქტირება", "Edit course"), url: s("url") },
       };
 
-    case "certificateIssued":
-      return {
-        subject: t(locale, "თქვენი სერტიფიკატი მზადაა", "Your certificate is ready"),
-        heading: t(locale, "გილოცავთ კურსის დასრულებას!", "Congratulations on finishing!"),
-        lines: [
-          t(locale, `კურსი: ${s("courseTitle")}`, `Course: ${s("courseTitle")}`),
-          t(locale, `სერტიფიკატის ID: ${s("code")}`, `Certificate ID: ${s("code")}`),
-        ],
-        cta: { label: t(locale, "სერტიფიკატის ნახვა", "View certificate"), url: s("url") },
-      };
-
     case "payoutStatus":
       return {
         subject: t(locale, `გადარიცხვის სტატუსი — ${s("status")}`, `Payout ${s("status")}`),

@@ -58,11 +58,11 @@ case "$DATABASE_URL" in
     ;;
 esac
 
-# Signing secrets gate sessions, media grants and certificates. Without them
+# Signing secrets gate sessions and media grants. Without them
 # the app would fall back to a constant dev value, so anyone could forge a
 # session cookie. Refuse to start rather than run insecurely.
 missing=""
-for var in AUTH_SECRET MEDIA_SIGNING_SECRET CERTIFICATE_SIGNING_SECRET; do
+for var in AUTH_SECRET MEDIA_SIGNING_SECRET; do
   eval "value=\$$var"
   case "$value" in
     "" | replace-me*) missing="$missing $var" ;;

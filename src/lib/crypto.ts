@@ -70,7 +70,7 @@ export const randomToken = (bytes = 32) => randomBytes(bytes).toString("base64ur
 export const hashToken = (token: string) =>
   createHash("sha256").update(token).digest("base64url");
 
-// ── Detached HMAC signatures (cookies, media grants, certificates) ─────────
+// ── Detached HMAC signatures (cookies, media grants) ──────────────────────
 
 export const sign = (payload: string, secret: string) =>
   createHmac("sha256", secret).update(payload).digest("base64url");

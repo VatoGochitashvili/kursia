@@ -176,15 +176,6 @@ export default async function LearnPage({ params, searchParams }: Props) {
                   <div>
                     <p className="text-[15px] font-bold text-ink">{t.learn.courseComplete}</p>
                     <p className="mt-0.5 text-[13px] text-ink-muted">{t.learn.courseCompleteBody}</p>
-                    {view.certificateCode && (
-                      <ButtonLink
-                        className="mt-3"
-                        size="sm"
-                        href={p(`/certificate/${view.certificateCode}`)}
-                      >
-                        {t.learn.viewCertificate}
-                      </ButtonLink>
-                    )}
                   </div>
                 </div>
               </Card>

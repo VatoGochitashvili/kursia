@@ -148,9 +148,6 @@ export default async function CoursePage({ params }: Props) {
     ...(course.modules.some((m) => m.lessons.some((l) => l.type === "QUIZ"))
       ? [{ icon: "check" as IconName, label: t.courses.includesQuiz }]
       : []),
-    ...(course.hasCertificate
-      ? [{ icon: "award" as IconName, label: t.courses.includesCertificate }]
-      : []),
     { icon: "unlock", label: t.courses.includesLifetime },
     { icon: "globe", label: t.courses.includesMobile },
   ];

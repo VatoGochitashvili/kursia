@@ -32,7 +32,7 @@ export const en: Dictionary = {
     dashboard: "Dashboard", creatorStudio: "Creator studio", admin: "Admin",
     login: "Log in", register: "Sign up", logout: "Log out",
     profile: "Profile", settings: "Settings", notifications: "Notifications",
-    wishlist: "Wishlist", purchases: "Purchases", certificates: "Certificates",
+    wishlist: "Wishlist", purchases: "Purchases",
     menu: "Menu", language: "Language",
   },
 
@@ -67,7 +67,7 @@ export const en: Dictionary = {
     step2Title: "Pay securely",
     step2Body: "Pay in GEL with a Georgian card. Access opens immediately.",
     step3Title: "Do the work, get the result",
-    step3Body: "Train or study on any device, track your progress and earn a certificate.",
+    step3Body: "Train or study on any device, and track your progress lesson by lesson.",
 
     audienceTitle: "Who we built this for",
     audienceSubtitle: "If you teach people anything online, this is your place",
@@ -89,7 +89,7 @@ export const en: Dictionary = {
     earningsPoint2Title: "Paid the Georgian way",
     earningsPoint2Body: "GEL, Georgian cards, Bank of Georgia and TBC.",
     earningsPoint3Title: "Everything in one place",
-    earningsPoint3Body: "Course, video, quizzes, certificates, analytics and payouts.",
+    earningsPoint3Body: "Course, video, quizzes, progress, analytics and payouts.",
     earningsCta: "Open a creator account",
 
     studentBenefitsTitle: "Why students choose us",
@@ -99,8 +99,8 @@ export const en: Dictionary = {
     studentBenefit2Body: "Pay once — the course is yours forever, updates included.",
     studentBenefit3Title: "Train from your phone",
     studentBenefit3Body: "Fully usable on a phone. Pick up exactly where you left off.",
-    studentBenefit4Title: "Certificate",
-    studentBenefit4Body: "Finish a course and receive a verifiable certificate.",
+    studentBenefit4Title: "Progress you can see",
+    studentBenefit4Body: "Every lesson is tracked — you always know where you stopped and what is left.",
 
     creatorBenefitsTitle: "Why creators choose us",
     creatorBenefit1Title: "Transparent earnings",
@@ -177,7 +177,6 @@ export const en: Dictionary = {
     includesVideo: "{n} video lessons",
     includesResources: "Downloadable resources",
     includesQuiz: "Quizzes and tests",
-    includesCertificate: "Certificate of completion",
     includesLifetime: "Lifetime access", includesMobile: "Access on mobile",
     moneyBack: "{days}-day money-back guarantee",
     shareCourse: "Share", reportCourse: "Report",
@@ -196,8 +195,8 @@ export const en: Dictionary = {
     noComments: "No comments yet. Be the first!",
     postComment: "Post", reply: "Reply", like: "Like",
     courseComplete: "Congratulations! Course complete",
-    courseCompleteBody: "Your certificate is ready",
-    viewCertificate: "View certificate", playbackSpeed: "Speed",
+    courseCompleteBody: "Every lesson is complete",
+    playbackSpeed: "Speed",
     quality: "Quality", captions: "Captions", resumeFrom: "Resume from {time}",
   },
 
@@ -216,7 +215,7 @@ export const en: Dictionary = {
     welcome: "Welcome, {name}", myCourses: "My courses",
     continueLearning: "Continue learning", recentlyViewed: "Recently viewed",
     completedCourses: "Completed courses", wishlist: "Wishlist",
-    certificates: "Certificates", purchaseHistory: "Purchase history",
+    purchaseHistory: "Purchase history",
     noCourses: "You don't have any courses yet",
     noCoursesHint: "Browse the catalogue and start learning",
     browseCourses: "Browse courses", inProgress: "In progress",
@@ -224,6 +223,17 @@ export const en: Dictionary = {
   },
 
   creator: {
+    deleteCourse: "Delete course",
+    courseDeleted: "Course deleted",
+    courseArchived: "Course archived",
+    deleteCourseTitle: "Delete this course?",
+    deleteCourseBody:
+      "The course, its modules, lessons and uploaded files are removed permanently. This cannot be undone.",
+    archiveCourseTitle: "This course will be archived",
+    archiveCourseBody:
+      "Students are already enrolled, so this course is archived rather than deleted. It disappears from the catalogue, and the students who paid keep access to what they bought.",
+    confirmDeleteCourse: "Yes, delete it",
+    confirmArchiveCourse: "Yes, archive it",
     studio: "Creator studio", overview: "Overview", myCourses: "My courses",
     newCourse: "New course", sales: "Sales", students: "Students",
     earnings: "Earnings", payouts: "Payouts", analytics: "Analytics",
@@ -295,18 +305,6 @@ export const en: Dictionary = {
     instructorReply: "Instructor's reply", report: "Report",
   },
 
-  certificate: {
-    title: "Certificate", verifyTitle: "Verify a certificate",
-    verifySubtitle: "Enter a certificate ID to verify it",
-    valid: "This certificate is genuine",
-    invalid: "This certificate could not be verified",
-    notFound: "No such certificate exists",
-    revoked: "This certificate has been revoked",
-    tampered: "This certificate's data has been altered",
-    issuedTo: "Issued to", courseName: "Course", instructor: "Instructor",
-    issuedOn: "Issued on", certificateId: "Certificate ID",
-    fingerprint: "Digital signature", verifyAt: "Verify", print: "Print",
-  },
 
   profile: {
     title: "Profile", editProfile: "Edit profile",
@@ -326,13 +324,29 @@ export const en: Dictionary = {
     empty: "No notifications", new: "New",
   },
 
+  upload: {
+    dropImage: "Drop an image here",
+    dropVideo: "Drop a video here",
+    dropFile: "Drop a file here",
+    browse: "or choose a file",
+    uploading: "Uploading…",
+    replace: "Replace",
+    remove: "Remove",
+    cancel: "Cancel",
+    tooLarge: "That file is too large",
+    wrongType: "That file type is not supported",
+    avatarHint: "JPG, PNG or WebP — 4MB max",
+    thumbnailHint: "16:10, at least 1280×800 — 8MB max",
+    videoHint: "MP4 or WebM — 3GB max",
+    pdfHint: "PDF — 100MB max",
+  },
+
   footer: {
     tagline: "Georgia's online learning platform", platform: "Platform",
     learn: "Learn", teach: "Teach", company: "Company", legal: "Legal",
     about: "About", contact: "Contact", terms: "Terms of Service",
     privacy: "Privacy Policy", refundPolicy: "Refund Policy", help: "Help",
     allRights: "All rights reserved",
-    verifyCertificate: "Verify a certificate",
   },
 
   seo: {

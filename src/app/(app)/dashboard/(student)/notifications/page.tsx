@@ -32,7 +32,6 @@ const TYPE_ICON: Record<string, IconName> = {
   PAYOUT_REQUESTED: "bank",
   PAYOUT_PAID: "bank",
   PAYOUT_REJECTED: "alert",
-  CERTIFICATE_ISSUED: "award",
   SECURITY_PASSWORD_CHANGED: "shield",
   CREATOR_VERIFIED: "check",
   ACCOUNT_SUSPENDED: "alert",

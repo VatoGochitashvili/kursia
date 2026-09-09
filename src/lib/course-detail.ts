@@ -17,7 +17,7 @@ export async function getCourseBySlug(slug: string) {
       learningOutcomes: true, requirements: true, targetAudience: true,
       durationSeconds: true, lessonCount: true, moduleCount: true,
       studentCount: true, ratingAvg: true, ratingCount: true,
-      hasCertificate: true, metaTitle: true, metaDescription: true,
+      metaTitle: true, metaDescription: true,
       publishedAt: true, updatedAt: true, createdAt: true,
       creator: {
         select: {

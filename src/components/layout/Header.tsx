@@ -109,7 +109,6 @@ export async function Header() {
               creatorStudio: t.nav.creatorStudio,
               admin: t.nav.admin,
               wishlist: t.nav.wishlist,
-              certificates: t.nav.certificates,
               settings: t.nav.settings,
               logout: t.nav.logout,
               login: t.nav.login,

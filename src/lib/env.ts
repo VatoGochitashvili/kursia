@@ -76,7 +76,6 @@ const schema = z.object({
 
   AUTH_SECRET: secret("AUTH_SECRET"),
   MEDIA_SIGNING_SECRET: secret("MEDIA_SIGNING_SECRET"),
-  CERTIFICATE_SIGNING_SECRET: secret("CERTIFICATE_SIGNING_SECRET"),
 
   STORAGE_DRIVER: z.enum(["local", "s3"]).default("local"),
   STORAGE_LOCAL_ROOT: z.string().default("./storage"),

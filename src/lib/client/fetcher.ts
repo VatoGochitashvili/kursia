@@ -71,7 +71,71 @@ export const api = {
     request<T>(url, { method: "PUT", body: body === undefined ? undefined : JSON.stringify(body) }),
   delete: <T,>(url: string) => request<T>(url, { method: "DELETE" }),
   upload: <T,>(url: string, form: FormData) => request<T>(url, { method: "POST", body: form }),
+  uploadWithProgress: uploadWithProgress,
 };
+
+/**
+ * Upload a file and report progress.
+ *
+ * fetch() cannot report upload progress, and this endpoint accepts videos up
+ * to 3GB — a multi-minute upload with no feedback is indistinguishable from a
+ * hung page, so this one path uses XMLHttpRequest. The error envelope is
+ * parsed exactly as `request` does, so callers handle failures identically.
+ *
+ * Returns an object carrying the promise and an `abort()`, so a component
+ * unmounting (or a user changing their mind) can cancel an upload in flight
+ * instead of leaving it running.
+ */
+function uploadWithProgress<T>(
+  url: string,
+  form: FormData,
+  onProgress?: (percent: number) => void,
+): { promise: Promise<T>; abort: () => void } {
+  const xhr = new XMLHttpRequest();
+
+  const promise = new Promise<T>((resolve, reject) => {
+    xhr.open("POST", url, true);
+    xhr.withCredentials = true;
+
+    xhr.upload.addEventListener("progress", (event) => {
+      if (!event.lengthComputable || !onProgress) return;
+      // Cap at 99: the last percent belongs to the server writing the object,
+      // and showing 100% while the request is still open reads as a stall.
+      onProgress(Math.min(99, Math.round((event.loaded / event.total) * 100)));
+    });
+
+    xhr.addEventListener("load", () => {
+      const data = xhr.responseText ? safeParse(xhr.responseText) : null;
+      if (xhr.status >= 200 && xhr.status < 300) {
+        onProgress?.(100);
+        resolve(data as T);
+        return;
+      }
+      const envelope = (
+        data as { error?: { code?: string; message?: string; fields?: Record<string, string[]> } } | null
+      )?.error;
+      reject(
+        new ApiRequestError({
+          code: envelope?.code ?? "UNKNOWN",
+          message: envelope?.message ?? "ატვირთვა ვერ მოხერხდა. სცადეთ თავიდან.",
+          fields: envelope?.fields,
+          status: xhr.status,
+        }),
+      );
+    });
+
+    xhr.addEventListener("error", () =>
+      reject(new ApiRequestError({ code: "NETWORK", message: "ქსელის შეცდომა. შეამოწმეთ კავშირი.", status: 0 })),
+    );
+    xhr.addEventListener("abort", () =>
+      reject(new ApiRequestError({ code: "ABORTED", message: "ატვირთვა გაუქმდა", status: 0 })),
+    );
+
+    xhr.send(form);
+  });
+
+  return { promise, abort: () => xhr.abort() };
+}
 
 /** First message for a field, if the server rejected it. */
 export const fieldError = (

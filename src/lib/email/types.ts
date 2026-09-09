@@ -20,7 +20,6 @@ export const EMAIL_TEMPLATES = [
   "courseSold",
   "courseApproved",
   "courseRejected",
-  "certificateIssued",
   "payoutStatus",
   "genericNotification",
 ] as const;

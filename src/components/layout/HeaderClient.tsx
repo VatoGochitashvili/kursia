@@ -171,7 +171,6 @@ export function HeaderClient({ user, categories, labels, localeSwitch }: Props) 
                     <MenuLink href="/admin" icon="shield" label={labels.admin} />
                   )}
                   <MenuLink href="/dashboard/wishlist" icon="heart" label={labels.wishlist} />
-                  <MenuLink href="/dashboard/certificates" icon="award" label={labels.certificates} />
                   <MenuLink href="/dashboard/profile" icon="settings" label={labels.settings} />
                 </nav>
                 <div className="border-t border-line p-1.5">

@@ -11,6 +11,7 @@ import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { ButtonLink } from "@/components/ui/Button";
 import { Card, EmptyState } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
+import { CourseActions } from "@/components/creator/CourseActions";
 
 export const metadata: Metadata = { title: "My courses", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -31,6 +32,19 @@ export default async function CreatorCoursesPage() {
   });
 
   const p = (path: string) => localePath(path, locale);
+
+  const courseActionLabels = {
+    delete: t.common.delete,
+    deleteTitle: t.creator.deleteCourseTitle,
+    deleteBody: t.creator.deleteCourseBody,
+    archiveTitle: t.creator.archiveCourseTitle,
+    archiveBody: t.creator.archiveCourseBody,
+    confirmDelete: t.creator.confirmDeleteCourse,
+    confirmArchive: t.creator.confirmArchiveCourse,
+    cancel: t.common.cancel,
+    deleted: t.creator.courseDeleted,
+    archived: t.creator.courseArchived,
+  };
 
   return (
     <>
@@ -144,6 +158,11 @@ export default async function CreatorCoursesPage() {
                             {t.common.open}
                           </ButtonLink>
                         )}
+                        <CourseActions
+                          courseId={course.id}
+                          studentCount={course.studentCount}
+                          labels={courseActionLabels}
+                        />
                         <span className="ms-auto text-[11px] text-ink-subtle">
                           {t.courses.lastUpdated} {formatDate(course.updatedAt, locale)}
                         </span>

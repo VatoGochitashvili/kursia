@@ -84,7 +84,6 @@ export const ka = {
     notifications: "შეტყობინებები",
     wishlist: "სასურველები",
     purchases: "შენაძენები",
-    certificates: "სერტიფიკატები",
     menu: "მენიუ",
     language: "ენა",
   },
@@ -133,7 +132,7 @@ export const ka = {
     step2Title: "შეიძინე უსაფრთხოდ",
     step2Body: "გადაიხადე ქართული ბარათით ლარში. წვდომა იხსნება მყისიერად.",
     step3Title: "გაიარე და მიიღე შედეგი",
-    step3Body: "ივარჯიშე ან ისწავლე ნებისმიერ მოწყობილობაზე, თვალი ადევნე პროგრესს და მიიღე სერტიფიკატი.",
+    step3Body: "ივარჯიშე ან ისწავლე ნებისმიერ მოწყობილობაზე და თვალი ადევნე პროგრესს გაკვეთილ-გაკვეთილ.",
 
     // ── Who the platform is built for ──────────────────────────────────────
     audienceTitle: "ვისთვის ავაშენეთ",
@@ -157,7 +156,7 @@ export const ka = {
     earningsPoint2Title: "გადახდა ქართულად",
     earningsPoint2Body: "ლარი, ქართული ბარათი, საქართველოს ბანკი და თიბისი.",
     earningsPoint3Title: "ყველაფერი ერთ ადგილას",
-    earningsPoint3Body: "კურსი, ვიდეო, ქვიზი, სერტიფიკატი, ანალიტიკა და გატანა.",
+    earningsPoint3Body: "კურსი, ვიდეო, ქვიზი, პროგრესი, ანალიტიკა და გატანა.",
     earningsCta: "გახსენი კრეატორის ანგარიში",
 
     studentBenefitsTitle: "რატომ სტუდენტებისთვის",
@@ -167,8 +166,8 @@ export const ka = {
     studentBenefit2Body: "ერთხელ იხდი — კურსი სამუდამოდ შენია, განახლებების ჩათვლით.",
     studentBenefit3Title: "ივარჯიშე ტელეფონიდან",
     studentBenefit3Body: "პლატფორმა სრულად მუშაობს ტელეფონზე. გააგრძელე იქიდან, სადაც შეწყვიტე.",
-    studentBenefit4Title: "სერტიფიკატი",
-    studentBenefit4Body: "დაასრულე კურსი და მიიღე დამოწმებადი სერტიფიკატი.",
+    studentBenefit4Title: "პროგრესი, რომელიც ჩანს",
+    studentBenefit4Body: "ყოველი გაკვეთილი აღირიცხება — ყოველთვის იცი, სად შეჩერდი და რამდენი დაგრჩა.",
 
     creatorBenefitsTitle: "რატომ კრეატორებისთვის",
     creatorBenefit1Title: "გამჭვირვალე შემოსავალი",
@@ -288,7 +287,6 @@ export const ka = {
     includesVideo: "{n} ვიდეო გაკვეთილი",
     includesResources: "ჩამოსატვირთი მასალები",
     includesQuiz: "ქვიზები და ტესტები",
-    includesCertificate: "დასრულების სერტიფიკატი",
     includesLifetime: "სამუდამო წვდომა",
     includesMobile: "წვდომა ტელეფონიდან",
     moneyBack: "{days} დღიანი დაბრუნების გარანტია",
@@ -319,8 +317,7 @@ export const ka = {
     reply: "პასუხი",
     like: "მოწონება",
     courseComplete: "გილოცავთ! კურსი დასრულებულია",
-    courseCompleteBody: "შენი სერტიფიკატი მზადაა",
-    viewCertificate: "სერტიფიკატის ნახვა",
+    courseCompleteBody: "ყველა გაკვეთილი დასრულებულია",
     playbackSpeed: "სიჩქარე",
     quality: "ხარისხი",
     captions: "სუბტიტრები",
@@ -355,7 +352,6 @@ export const ka = {
     recentlyViewed: "ბოლოს ნანახი",
     completedCourses: "დასრულებული კურსები",
     wishlist: "სასურველები",
-    certificates: "სერტიფიკატები",
     purchaseHistory: "შენაძენების ისტორია",
     noCourses: "ჯერ არცერთი კურსი არ გაქვთ",
     noCoursesHint: "დაათვალიერეთ კატალოგი და დაიწყეთ სწავლა",
@@ -366,6 +362,17 @@ export const ka = {
   },
 
   creator: {
+    deleteCourse: "კურსის წაშლა",
+    courseDeleted: "კურსი წაიშალა",
+    courseArchived: "კურსი დაარქივდა",
+    deleteCourseTitle: "წავშალოთ ეს კურსი?",
+    deleteCourseBody:
+      "კურსი, მისი მოდულები, გაკვეთილები და ატვირთული ფაილები სამუდამოდ წაიშლება. ამ მოქმედების დაბრუნება შეუძლებელია.",
+    archiveCourseTitle: "კურსი დაარქივდება",
+    archiveCourseBody:
+      "ამ კურსზე უკვე არიან ჩარიცხული სტუდენტები, ამიტომ ის არ წაიშლება — დაარქივდება. კატალოგიდან გაქრება, სტუდენტები კი შეინარჩუნებენ წვდომას იმაზე, რაშიც გადაიხადეს.",
+    confirmDeleteCourse: "დიახ, წავშალოთ",
+    confirmArchiveCourse: "დიახ, დავარქივოთ",
     studio: "ინსტრუქტორის სტუდია",
     overview: "მიმოხილვა",
     myCourses: "ჩემი კურსები",
@@ -495,24 +502,6 @@ export const ka = {
     report: "საჩივარი",
   },
 
-  certificate: {
-    title: "სერტიფიკატი",
-    verifyTitle: "სერტიფიკატის დამოწმება",
-    verifySubtitle: "შეიყვანე სერტიფიკატის ID დასამოწმებლად",
-    valid: "სერტიფიკატი ნამდვილია",
-    invalid: "სერტიფიკატი ვერ დამოწმდა",
-    notFound: "ასეთი სერტიფიკატი არ არსებობს",
-    revoked: "სერტიფიკატი გაუქმებულია",
-    tampered: "სერტიფიკატის მონაცემები შეცვლილია",
-    issuedTo: "გაცემულია",
-    courseName: "კურსი",
-    instructor: "ინსტრუქტორი",
-    issuedOn: "გაცემის თარიღი",
-    certificateId: "სერტიფიკატის ID",
-    fingerprint: "ციფრული ხელმოწერა",
-    verifyAt: "დამოწმება",
-    print: "ბეჭდვა",
-  },
 
   profile: {
     title: "პროფილი",
@@ -542,6 +531,23 @@ export const ka = {
     new: "ახალი",
   },
 
+  upload: {
+    dropImage: "გადმოაგდე სურათი აქ",
+    dropVideo: "გადმოაგდე ვიდეო აქ",
+    dropFile: "გადმოაგდე ფაილი აქ",
+    browse: "ან აირჩიე ფაილი",
+    uploading: "იტვირთება…",
+    replace: "შეცვლა",
+    remove: "წაშლა",
+    cancel: "გაუქმება",
+    tooLarge: "ფაილი ძალიან დიდია",
+    wrongType: "ფაილის ტიპი მხარდაუჭერელია",
+    avatarHint: "JPG, PNG ან WebP — მაქსიმუმ 4MB",
+    thumbnailHint: "16:10, მინიმუმ 1280×800 — მაქსიმუმ 8MB",
+    videoHint: "MP4 ან WebM — მაქსიმუმ 3GB",
+    pdfHint: "PDF — მაქსიმუმ 100MB",
+  },
+
   footer: {
     tagline: "ქართული ონლაინ სასწავლო პლატფორმა",
     platform: "პლატფორმა",
@@ -556,7 +562,6 @@ export const ka = {
     refundPolicy: "დაბრუნების პოლიტიკა",
     help: "დახმარება",
     allRights: "ყველა უფლება დაცულია",
-    verifyCertificate: "სერტიფიკატის დამოწმება",
   },
 
   seo: {
