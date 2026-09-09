@@ -67,13 +67,30 @@ export function DashboardShell({
                   href={item.href}
                   aria-current={isActive(item) ? "page" : undefined}
                   className={cn(
-                    "flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors",
+                    "group relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium",
+                    "transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]",
                     isActive(item)
-                      ? "bg-brand-50 text-brand-700"
-                      : "text-ink-muted hover:bg-surface-sunken hover:text-ink",
+                      ? "bg-brand-50 font-semibold text-brand-700"
+                      : "text-ink-muted hover:translate-x-0.5 hover:bg-surface-sunken hover:text-ink",
                   )}
                 >
-                  <Icon name={item.icon} size={17} className="shrink-0" />
+                  {/* A bar on the leading edge, so the active row is legible
+                      without relying on the tint alone. */}
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "absolute inset-y-1.5 start-0 w-[3px] rounded-full bg-brand-500 transition-all duration-300",
+                      isActive(item) ? "opacity-100" : "scale-y-0 opacity-0",
+                    )}
+                  />
+                  <Icon
+                    name={item.icon}
+                    size={17}
+                    className={cn(
+                      "shrink-0 transition-transform duration-300",
+                      isActive(item) ? "scale-110" : "group-hover:scale-110",
+                    )}
+                  />
                   <span className="truncate">{item.label}</span>
                   {item.badge !== undefined && item.badge > 0 && (
                     <span className="ms-auto inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-accent-500 px-1.5 text-[10px] font-bold text-white">

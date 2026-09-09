@@ -37,6 +37,9 @@
     }
     /* Reveal must land in its visible state, never stay faded out. */
     .reveal { opacity: 1 !important; transform: none !important; }
+    /* A 0.01ms sweep is a flicker; suppress the decoration instead. */
+    .sheen::after { display: none !important; }
+    .lift:hover { transform: none !important; }
   }
 
   body {
@@ -152,6 +155,39 @@
 
   .aurora {
     animation: aurora 22s ease-in-out infinite;
+  }
+
+  /* Cards that respond to the pointer. Transform and shadow only, so the
+     browser can composite the whole thing off the main thread. */
+  .lift {
+    @apply transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)];
+  }
+  .lift:hover {
+    @apply -translate-y-1 shadow-lg;
+  }
+
+  /* A sheen that sweeps across on hover. Purely decorative, and skipped
+     entirely under reduced-motion by the rule at the top of this file. */
+  .sheen {
+    position: relative;
+    overflow: hidden;
+  }
+  .sheen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+      100deg,
+      transparent 20%,
+      rgb(255 255 255 / 0.28) 50%,
+      transparent 80%
+    );
+    transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+  }
+  .sheen:hover::after {
+    transform: translateX(100%);
   }
 
   .rail {

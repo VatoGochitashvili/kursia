@@ -44,7 +44,7 @@ export function CreatorCard({
   return (
     <article
       className={cn(
-        "group relative flex flex-col items-center overflow-hidden rounded-2xl border border-line bg-surface text-center",
+        "group sheen relative flex flex-col items-center overflow-hidden rounded-2xl border border-line bg-surface text-center",
         "transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:border-brand-200 hover:shadow-xl",
         className,
       )}

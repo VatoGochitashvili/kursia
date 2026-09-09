@@ -7,9 +7,10 @@ type Size = "sm" | "md" | "lg" | "xl";
 
 const VARIANTS: Record<Variant, string> = {
   primary:
-    "bg-brand-600 text-white shadow-sm hover:bg-brand-700 active:bg-brand-800 disabled:bg-brand-300",
+    "bg-brand-600 text-white shadow-sm hover:-translate-y-px hover:bg-brand-700 hover:shadow-md " +
+    "active:translate-y-0 active:bg-brand-800 disabled:translate-y-0 disabled:bg-brand-300 disabled:shadow-sm",
   secondary:
-    "bg-ink text-white hover:bg-ink/90 active:bg-ink disabled:bg-ink/40",
+    "bg-ink text-white hover:-translate-y-px hover:bg-ink/90 hover:shadow-md active:translate-y-0 active:bg-ink disabled:bg-ink/40",
   outline:
     "border border-line-strong bg-surface text-ink hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 disabled:opacity-50",
   ghost: "text-ink-muted hover:bg-surface-sunken hover:text-ink disabled:opacity-50",
@@ -25,8 +26,9 @@ const SIZES: Record<Size, string> = {
 };
 
 const BASE =
-  "inline-flex items-center justify-center font-semibold transition-all duration-150 " +
-  "disabled:cursor-not-allowed select-none whitespace-nowrap active:scale-[0.98]";
+  "inline-flex items-center justify-center font-semibold " +
+  "transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] " +
+  "disabled:cursor-not-allowed select-none whitespace-nowrap active:scale-[0.97]";
 
 interface CommonProps {
   variant?: Variant;
