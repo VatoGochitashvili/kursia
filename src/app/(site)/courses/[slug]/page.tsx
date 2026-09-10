@@ -33,6 +33,8 @@ import { RatingSummary, ReviewList } from "@/components/course/ReviewList";
 import {
   Alert, Avatar, Badge, Breadcrumbs, Card, JsonLd, Stars,
 } from "@/components/ui/primitives";
+import { CoursePreviewPlayer } from "@/components/course/CoursePreviewPlayer";
+import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { Icon, type IconName } from "@/components/ui/Icon";
 
 /**
@@ -161,6 +163,7 @@ export default async function CoursePage({ params }: Props) {
 
   return (
     <>
+      <ScrollProgress />
       {course.status !== "PUBLISHED" && (
         <div className="container-page pt-4">
           <Alert tone="warn" title={t.creator[`status${course.status}` as keyof typeof t.creator] as string}>
@@ -266,13 +269,10 @@ export default async function CoursePage({ params }: Props) {
                     `preload="metadata"` fetches the header, not the file.
                   */}
                   {course.previewVideoUrl ? (
-                    <video
+                    <CoursePreviewPlayer
                       src={course.previewVideoUrl}
-                      poster={course.thumbnailUrl ?? undefined}
-                      controls
-                      playsInline
-                      preload="metadata"
-                      className="h-full w-full bg-ink object-cover"
+                      poster={course.thumbnailUrl}
+                      title={course.title}
                     />
                   ) : course.thumbnailUrl ? (
                     <Image

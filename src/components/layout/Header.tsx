@@ -8,6 +8,7 @@ import { categoryIcon } from "@/components/ui/Icon";
 import { SearchBar } from "./SearchBar";
 import { HeaderClient, type HeaderUser, type NavCategory } from "./HeaderClient";
 import { Logo } from "./Logo";
+import { StickyHeader } from "./StickyHeader";
 
 /**
  * Server-rendered header: the brand, primary links and the search form arrive
@@ -50,7 +51,7 @@ export async function Header() {
   const otherLocale = locale === "ka" ? "en" : "ka";
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line bg-surface/85 backdrop-blur-xl">
+    <StickyHeader>
       <div className="container-page flex h-16 items-center gap-3">
         <Link
           href={localePath("/", locale)}
@@ -125,6 +126,6 @@ export async function Header() {
       <div className="border-t border-line px-4 py-2 md:hidden">
         <SearchBar placeholder={t.home.heroSearchPlaceholder} action={localePath("/courses", locale)} />
       </div>
-    </header>
+    </StickyHeader>
   );
 }

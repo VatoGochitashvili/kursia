@@ -26,6 +26,12 @@
   html {
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;
+    /*
+     * The header is sticky, so an anchor that scrolls to the top of the
+     * viewport lands *underneath* it — the heading you jumped to is the one
+     * thing you cannot see. Reserve its height, plus a little breathing room.
+     */
+    scroll-padding-top: calc(var(--header-height) + 1rem);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -40,6 +46,8 @@
     /* A 0.01ms sweep is a flicker; suppress the decoration instead. */
     .sheen::after { display: none !important; }
     .lift:hover { transform: none !important; }
+    .spotlight::before { display: none !important; }
+    .marquee-track { animation: none !important; }
   }
 
   body {
@@ -76,6 +84,15 @@
 
   :focus-visible {
     @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-surface;
+    /* On a dark section the brand ring alone disappears into the background;
+       the outline underneath it keeps the focused element findable. */
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    border-radius: inherit;
+  }
+  .bg-ink :focus-visible,
+  [data-dark] :focus-visible {
+    @apply ring-white ring-offset-ink;
   }
 
   ::selection {
@@ -163,7 +180,49 @@
     @apply transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)];
   }
   .lift:hover {
-    @apply -translate-y-1 shadow-lg;
+    @apply -translate-y-1 shadow-lift;
+  }
+
+  /*
+   * Pointer-tracking highlight. <Spotlight> publishes the cursor position as
+   * --spot-x/--spot-y on the container; this paints a soft radial gradient
+   * over the whole group at that point. It sits above the group's background
+   * and below its content, and never intercepts a click.
+   */
+  .spotlight::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: var(--spot-opacity, 0);
+    transition: opacity 0.35s ease;
+    background: radial-gradient(
+      var(--spot-size, 380px) circle at var(--spot-x, 50%) var(--spot-y, 50%),
+      rgb(var(--spot-color, 53 89 240) / 1),
+      transparent 70%
+    );
+  }
+  .spotlight > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /*
+   * A very fine grain over flat colour fields. Large blocks of pure #fff and
+   * pure #0d1117 band visibly on cheap panels; a couple of percent of noise
+   * hides that and is what stops a big gradient looking like a screenshot of
+   * a gradient. Inlined as a data URI so it costs no request.
+   */
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   /* A sheen that sweeps across on hover. Purely decorative, and skipped
@@ -190,6 +249,22 @@
     transform: translateX(100%);
   }
 
+  /*
+   * Marquee. The track holds two identical copies of the content and slides
+   * exactly half its own width, which lands the second copy precisely where
+   * the first began — so the loop has no seam. Percentages are of the track,
+   * so this holds at any content width without measuring anything.
+   */
+  .marquee-track {
+    animation-name: marquee-slide;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    will-change: transform;
+  }
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+
   .rail {
     @apply flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2;
     scrollbar-width: none;
@@ -214,6 +289,11 @@
 
 @keyframes shimmer {
   100% { transform: translateX(100%); }
+}
+
+@keyframes marquee-slide {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
 
 /* Slow, living background wash for the hero. Large and low-contrast, so it

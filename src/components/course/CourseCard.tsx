@@ -34,11 +34,16 @@ export function CourseCard({ course, locale, t, variant = "grid", priority, clas
         // that picks up the brand colour.
         "group relative flex flex-col overflow-hidden rounded-2xl border border-line bg-surface",
         "transition-[transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
-        "hover:-translate-y-1.5 hover:border-brand-200 hover:shadow-xl",
+        "hover:-translate-y-1.5 hover:border-brand-200 hover:shadow-lift-lg",
         variant === "rail" && "w-[17rem] shrink-0",
         className,
       )}
     >
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 z-10 h-px scale-x-0 bg-gradient-to-r from-transparent via-brand-400 to-transparent opacity-0 transition-all duration-500 group-hover:scale-x-100 group-hover:opacity-100"
+      />
+
       <div className="relative aspect-[16/10] overflow-hidden bg-surface-sunken">
         {course.thumbnailUrl ? (
           <Image
@@ -47,7 +52,7 @@ export function CourseCard({ course, locale, t, variant = "grid", priority, clas
             fill
             sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 300px"
             priority={priority}
-            className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.07]"
+            className="object-cover transition-transform duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.08]"
           />
         ) : (
           <div className="flex h-full items-center justify-center text-ink-subtle">
@@ -123,7 +128,7 @@ export function CourseCard({ course, locale, t, variant = "grid", priority, clas
 
         <div className="mt-auto flex items-end justify-between gap-2 pt-3.5">
           <div className="flex items-baseline gap-2">
-            <span className="text-[17px] font-bold tracking-tight text-ink">
+            <span className="text-[17px] font-bold tracking-tight text-ink transition-colors duration-300 group-hover:text-brand-700">
               {formatMoney(price, course.currency, {
                 freeLabel: t.common.free,
                 locale: locale === "en" ? "en-GB" : "ka-GE",

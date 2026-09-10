@@ -43,6 +43,11 @@ const config: Config = {
         lg: "0 12px 16px -4px rgb(16 24 40 / 0.08), 0 4px 6px -2px rgb(16 24 40 / 0.03)",
         xl: "0 20px 24px -4px rgb(16 24 40 / 0.08), 0 8px 8px -4px rgb(16 24 40 / 0.03)",
         glow: "0 0 0 1px rgb(53 89 240 / 0.14), 0 8px 30px -6px rgb(53 89 240 / 0.28)",
+        // Stacked, tightening shadows. Real objects cast light at several
+        // distances at once; one large blur just looks like a grey halo.
+        lift: "0 1px 2px rgb(16 24 40 / 0.04), 0 4px 8px -2px rgb(16 24 40 / 0.06), 0 16px 24px -8px rgb(16 24 40 / 0.10)",
+        "lift-lg":
+          "0 1px 2px rgb(16 24 40 / 0.04), 0 8px 16px -4px rgb(16 24 40 / 0.08), 0 28px 44px -12px rgb(16 24 40 / 0.14)",
       },
       keyframes: {
         "fade-up": { from: { opacity: "0", transform: "translateY(10px)" }, to: { opacity: "1", transform: "none" } },
