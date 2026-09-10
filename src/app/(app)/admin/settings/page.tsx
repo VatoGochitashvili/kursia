@@ -6,6 +6,8 @@ import { availableProviders } from "@/lib/payments";
 import { bpsToPercent, toMajor } from "@/lib/money";
 import { PageHeader } from "@/components/layout/DashboardShell";
 import { SettingsForm } from "@/components/admin/SettingsForm";
+import { Alert } from "@/components/ui/primitives";
+import { env } from "@/lib/env";
 
 export const metadata: Metadata = { title: "Settings", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -28,6 +30,30 @@ export default async function AdminSettingsPage() {
             : "ეს პარამეტრები მართავს პლატფორმას — საკომისიო, ბრენდინგი და მოდერაცია."
         }
       />
+
+      {/*
+        Uploads land on the container's own disk with the local driver. That
+        is exactly right in development and quietly destructive in
+        production on a host with an ephemeral filesystem — every avatar,
+        thumbnail and video a user uploads disappears at the next deploy or
+        restart, having appeared to work perfectly. Say so where the person
+        who can fix it will see it.
+      */}
+      {env.NODE_ENV === "production" && env.STORAGE_DRIVER === "local" && (
+        <Alert
+          tone="warn"
+          className="mb-5"
+          title={
+            locale === "en"
+              ? "Uploaded files will not survive a restart"
+              : "ატვირთული ფაილები რესტარტს ვერ გადაიტანს"
+          }
+        >
+          {locale === "en"
+            ? "STORAGE_DRIVER is set to \"local\", so avatars, thumbnails and videos are written to this container's disk. Most hosts — Render's free tier included — give a container a fresh filesystem on every deploy, so those files are lost while the database still points at them. Set STORAGE_DRIVER=s3 with S3_ENDPOINT, S3_BUCKET, S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY (Cloudflare R2 and Backblaze B2 both work and have free tiers)."
+            : "STORAGE_DRIVER არის \"local\", ამიტომ ავატარები, ქავერები და ვიდეოები იწერება ამ კონტეინერის დისკზე. ჰოსტინგების უმეტესობა — მათ შორის Render-ის უფასო გეგმა — ყოველ დეპლოიზე კონტეინერს ახალ ფაილურ სისტემას აძლევს, ასე რომ ეს ფაილები იკარგება, მონაცემთა ბაზა კი კვლავ მათზე მიუთითებს. დააყენეთ STORAGE_DRIVER=s3 და მიუთითეთ S3_ENDPOINT, S3_BUCKET, S3_ACCESS_KEY_ID და S3_SECRET_ACCESS_KEY (Cloudflare R2 და Backblaze B2 ორივე მუშაობს და უფასო ლიმიტი აქვს)."}
+        </Alert>
+      )}
 
       <SettingsForm
         locale={locale}
