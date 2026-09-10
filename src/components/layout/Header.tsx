@@ -9,6 +9,7 @@ import { SearchBar } from "./SearchBar";
 import { HeaderClient, type HeaderUser, type NavCategory } from "./HeaderClient";
 import { Logo } from "./Logo";
 import { StickyHeader } from "./StickyHeader";
+import { MobileHeaderSearch } from "./MobileHeaderSearch";
 
 /**
  * Server-rendered header: the brand, primary links and the search form arrive
@@ -122,10 +123,13 @@ export async function Header() {
         </div>
       </div>
 
-      {/* Mobile search sits below the bar so the header stays uncluttered. */}
-      <div className="border-t border-line px-4 py-2 md:hidden">
-        <SearchBar placeholder={t.home.heroSearchPlaceholder} action={localePath("/courses", locale)} />
-      </div>
+      {/* Mobile search sits below the bar so the header stays uncluttered —
+          except on the homepage, whose hero already leads with one. */}
+      <MobileHeaderSearch
+        placeholder={t.home.heroSearchPlaceholder}
+        action={localePath("/courses", locale)}
+        homePaths={["/", "/en"]}
+      />
     </StickyHeader>
   );
 }
