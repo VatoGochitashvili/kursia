@@ -6,6 +6,8 @@ import { CreatorCard } from "@/components/course/CreatorCard";
 import { Breadcrumbs, EmptyState, JsonLd } from "@/components/ui/primitives";
 import { ButtonLink } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
+import { Stagger } from "@/components/ui/Stagger";
+import { Spotlight } from "@/components/ui/Spotlight";
 
 export const revalidate = 900;
 
@@ -52,11 +54,13 @@ export default async function InstructorsPage() {
             }
           />
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <Spotlight className="-m-3 rounded-3xl p-3" size={440}>
+            <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" step={55}>
             {creators.map((creator) => (
               <CreatorCard key={creator.id} creator={creator} locale={locale} t={t} />
             ))}
-          </div>
+          </Stagger>
+          </Spotlight>
         )}
       </div>
 

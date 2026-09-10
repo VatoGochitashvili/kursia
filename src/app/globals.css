@@ -154,6 +154,24 @@
     transform: none;
   }
 
+  /*
+   * Staggered reveal. <Stagger> sets --stagger-step on the container and
+   * adds this class only while the cascade is pending, so the delays never
+   * linger to slow down a later hover or layout transition.
+   *
+   * Capped at the eighth child: past roughly half a second the last item
+   * lands well after the reader has already looked at it, which reads as the
+   * page lagging rather than as intent.
+   */
+  .stagger > *:nth-child(2) { transition-delay: calc(1 * var(--stagger-step, 70ms)); }
+  .stagger > *:nth-child(3) { transition-delay: calc(2 * var(--stagger-step, 70ms)); }
+  .stagger > *:nth-child(4) { transition-delay: calc(3 * var(--stagger-step, 70ms)); }
+  .stagger > *:nth-child(5) { transition-delay: calc(4 * var(--stagger-step, 70ms)); }
+  .stagger > *:nth-child(6) { transition-delay: calc(5 * var(--stagger-step, 70ms)); }
+  .stagger > *:nth-child(7) { transition-delay: calc(6 * var(--stagger-step, 70ms)); }
+  .stagger > *:nth-child(8) { transition-delay: calc(7 * var(--stagger-step, 70ms)); }
+  .stagger > *:nth-child(n + 9) { transition-delay: calc(7 * var(--stagger-step, 70ms)); }
+
   /* Living gradient for display headlines. */
   .text-gradient-animated {
     background-image: linear-gradient(

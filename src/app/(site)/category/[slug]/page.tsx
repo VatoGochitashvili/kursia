@@ -13,6 +13,8 @@ import { Breadcrumbs, EmptyState, JsonLd, Tag } from "@/components/ui/primitives
 import { ButtonLink } from "@/components/ui/Button";
 import { Icon, categoryIcon } from "@/components/ui/Icon";
 import { Suspense } from "react";
+import { Stagger } from "@/components/ui/Stagger";
+import { Spotlight } from "@/components/ui/Spotlight";
 
 /**
  * Category hub — /category/[slug].
@@ -192,7 +194,8 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           />
         ) : (
           <>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <Spotlight className="-m-3 rounded-3xl p-3" size={440}>
+              <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" step={55}>
               {results.courses.map((course, i) => (
                 <CourseCard
                   key={course.id}
@@ -202,7 +205,8 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                   priority={i < 4}
                 />
               ))}
-            </div>
+            </Stagger>
+            </Spotlight>
 
             <Pagination
               page={results.page}

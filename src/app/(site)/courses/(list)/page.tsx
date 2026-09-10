@@ -13,6 +13,8 @@ import { Breadcrumbs, EmptyState, JsonLd } from "@/components/ui/primitives";
 import { SearchBar } from "@/components/layout/SearchBar";
 import { ButtonLink } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
+import { Stagger } from "@/components/ui/Stagger";
+import { Spotlight } from "@/components/ui/Spotlight";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -177,7 +179,8 @@ export default async function CoursesPage({ searchParams }: { searchParams: Sear
               />
             ) : (
               <>
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <Spotlight className="-m-3 rounded-3xl p-3" size={460}>
+                  <Stagger className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" step={55}>
                   {results.courses.map((course, i) => (
                     <CourseCard
                       key={course.id}
@@ -187,7 +190,8 @@ export default async function CoursesPage({ searchParams }: { searchParams: Sear
                       priority={i < 3}
                     />
                   ))}
-                </div>
+                </Stagger>
+                </Spotlight>
 
                 <Pagination
                   page={results.page}

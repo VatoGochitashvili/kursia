@@ -51,8 +51,22 @@ export function Reveal({
     const rect = node.getBoundingClientRect();
     if (rect.top < window.innerHeight * 0.9) {
       setArmed(true);
-      requestAnimationFrame(() => requestAnimationFrame(() => setShown(true)));
-      return;
+      /*
+       * rAF is the nice path, but it does not run at all while the tab is
+       * hidden — so a page opened in a background tab, or restored behind
+       * another, would sit here with its content faded out forever. The
+       * observer branch below already guards against that; this branch
+       * returned early and skipped the guard entirely.
+       */
+      let done = false;
+      const show = () => {
+        if (done) return;
+        done = true;
+        setShown(true);
+      };
+      requestAnimationFrame(() => requestAnimationFrame(show));
+      const onscreenFailsafe = setTimeout(show, 1500);
+      return () => clearTimeout(onscreenFailsafe);
     }
 
     setArmed(true);

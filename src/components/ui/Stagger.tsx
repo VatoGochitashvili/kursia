@@ -35,27 +35,36 @@ import { cn } from "@/lib/cn";
  * a <ul> and its <li>s, and would become the grid item in place of the child
  * the layout was written for.
  *
+ * The per-item delay comes from `:nth-child` rules in globals.css, driven by
+ * a --stagger-step custom property set on this container, NOT from an inline
+ * style on each child. Cloning can only add a `style` prop, and a child like
+ * <CourseCard> is a component that forwards `className` but not `style` — so
+ * an inline delay silently vanished and every card animated at once, which
+ * is the exact thing this component exists to avoid. A CSS rule applies to
+ * whatever the child renders, component or plain element.
+ *
  * The cascade is capped — past a few hundred milliseconds the last item
  * arrives well after the reader's eye, which reads as lag, not polish.
  */
 export function Stagger({
   children,
   step = 70,
-  maxDelay = 560,
   className,
   as: As = "div",
 }: {
   children: ReactNode;
   /** Gap between consecutive children, in milliseconds. */
   step?: number;
-  /** Nothing waits longer than this, however many children there are. */
-  maxDelay?: number;
   className?: string;
   as?: "div" | "ul" | "ol";
 }) {
   const ref = useRef<HTMLElement>(null);
   const [armed, setArmed] = useState(false);
   const [shown, setShown] = useState(false);
+  // The delays have to outlive the moment the transition starts. Dropping
+  // them in the same commit that adds `reveal-in` strips the delay before
+  // the browser ever begins the animation, and every child moves at once.
+  const [cascading, setCascading] = useState(false);
 
   useEffect(() => {
     const node = ref.current;
@@ -67,13 +76,28 @@ export function Stagger({
     }
 
     setArmed(true);
+    setCascading(true);
 
     // Already on screen at mount: run the cascade now rather than waiting for
     // a scroll that may never come.
     const rect = node.getBoundingClientRect();
     if (rect.top < window.innerHeight * 0.92) {
-      requestAnimationFrame(() => requestAnimationFrame(() => setShown(true)));
-      return;
+      /*
+       * rAF is the nice path, but it does not run at all while the tab is
+       * hidden — so a page opened in a background tab, or restored behind
+       * another, would sit here with its content faded out forever. The
+       * observer branch below already guards against that; this branch
+       * returned early and skipped the guard entirely.
+       */
+      let done = false;
+      const show = () => {
+        if (done) return;
+        done = true;
+        setShown(true);
+      };
+      requestAnimationFrame(() => requestAnimationFrame(show));
+      const onscreenFailsafe = setTimeout(show, 1500);
+      return () => clearTimeout(onscreenFailsafe);
     }
 
     const observer = new IntersectionObserver(
@@ -100,20 +124,25 @@ export function Stagger({
     };
   }, []);
 
-  let index = 0;
+  // Once every child has arrived, stop delaying transitions on this subtree —
+  // otherwise a card would sit still for up to half a second before answering
+  // a hover, using the very delay that staggered its entrance.
+  useEffect(() => {
+    if (!shown || !cascading) return;
+    const settle = setTimeout(() => setCascading(false), step * 8 + 800);
+    return () => clearTimeout(settle);
+  }, [shown, cascading, step]);
 
   return (
-    <As ref={ref as never} className={className}>
+    <As
+      ref={ref as never}
+      className={cn(cascading && "stagger", className)}
+      style={{ "--stagger-step": `${step}ms` } as CSSProperties}
+    >
       {Children.map(children, (child) => {
-        if (!isValidElement<{ className?: string; style?: CSSProperties }>(child)) return child;
-
-        const delay = Math.min(index++ * step, maxDelay);
+        if (!isValidElement<{ className?: string }>(child)) return child;
         return cloneElement(child, {
           className: cn(child.props.className, armed && "reveal", shown && "reveal-in"),
-          style:
-            armed && !shown
-              ? { ...child.props.style, transitionDelay: `${delay}ms` }
-              : child.props.style,
         });
       })}
     </As>

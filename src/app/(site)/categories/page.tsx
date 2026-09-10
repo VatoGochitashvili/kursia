@@ -5,6 +5,7 @@ import { getCategoryTree } from "@/lib/courses";
 import { breadcrumbSchema, buildMetadata } from "@/lib/seo";
 import { Breadcrumbs, Card, JsonLd } from "@/components/ui/primitives";
 import { Icon, categoryIcon } from "@/components/ui/Icon";
+import { Stagger } from "@/components/ui/Stagger";
 
 export const revalidate = 3600;
 
@@ -43,7 +44,7 @@ export default async function CategoriesPage() {
       </div>
 
       <div className="container-page py-10">
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Stagger as="ul" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" step={45}>
           {categories.map((category) => (
             <li key={category.slug}>
               <Card className="h-full p-5 transition-all hover:border-brand-200 hover:shadow-md">
@@ -84,7 +85,7 @@ export default async function CategoriesPage() {
               </Card>
             </li>
           ))}
-        </ul>
+        </Stagger>
       </div>
 
       <JsonLd
