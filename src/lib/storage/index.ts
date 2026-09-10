@@ -48,6 +48,21 @@ export const UPLOAD_KINDS = {
     extensions: ["jpg", "jpeg", "png", "webp", "avif"],
     mimeTypes: ["image/jpeg", "image/png", "image/webp", "image/avif"],
   },
+  /**
+   * Course trailer shown on the public course page.
+   *
+   * Deliberately written to the `previews` prefix, which is in
+   * PUBLIC_PREFIXES: a marketing asset has to be playable by a visitor who
+   * is not signed in, and /api/media binds every grant to one account. The
+   * cap is far below the lesson-video cap because a trailer that runs longer
+   * than a couple of minutes is not a trailer.
+   */
+  coursePreview: {
+    prefix: "previews",
+    maxBytes: 300 * MB,
+    extensions: ["mp4", "webm", "mov", "m4v"],
+    mimeTypes: ["video/mp4", "video/webm", "video/quicktime", "video/x-m4v"],
+  },
   video: {
     prefix: "lessons/video",
     maxBytes: 3000 * MB,

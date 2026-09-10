@@ -25,6 +25,7 @@ export interface BuilderCourse {
   subtitle: string;
   description: string;
   thumbnailUrl: string;
+  previewVideoUrl: string;
   categoryId: string;
   subcategoryId: string;
   language: string;
@@ -111,6 +112,7 @@ export function CourseBuilder({
         subtitle: values.subtitle,
         description: values.description,
         thumbnailUrl: values.thumbnailUrl,
+        previewVideoUrl: values.previewVideoUrl,
         categoryId: values.categoryId,
         subcategoryId: values.subcategoryId,
         language: values.language,
@@ -436,6 +438,58 @@ export function CourseBuilder({
                 <button
                   type="button"
                   onClick={() => set("thumbnailUrl", "")}
+                  className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-semibold text-danger-700 transition-colors hover:underline"
+                >
+                  <Icon name="trash" size={13} />
+                  {t.upload.remove}
+                </button>
+              )}
+            </Card>
+
+            <Card className="p-5">
+              <h2 className="mb-1 text-base">
+                {locale === "en" ? "Course trailer" : "კურსის ტრეილერი"}
+              </h2>
+              <p className="mb-3 text-[12px] leading-relaxed text-ink-subtle">
+                {locale === "en"
+                  ? "A short video on the public course page. Visitors can watch it without signing in, so keep it to a minute or two."
+                  : "მოკლე ვიდეო კურსის საჯარო გვერდზე. მას ნახავს ისიც, ვინც არ არის შესული — ამიტომ ერთი-ორი წუთი სავსებით საკმარისია."}
+              </p>
+
+              {values.previewVideoUrl && (
+                <video
+                  key={values.previewVideoUrl}
+                  src={values.previewVideoUrl}
+                  controls
+                  preload="metadata"
+                  className="mb-3 aspect-video w-full animate-fade-in rounded-xl bg-ink ring-1 ring-line"
+                />
+              )}
+
+              <MediaUploader
+                kind="coursePreview"
+                courseId={course.id}
+                preview="video"
+                value={null}
+                onUploaded={(result) => set("previewVideoUrl", result.url ?? "")}
+                labels={{
+                  drop: t.upload.dropVideo,
+                  browse: t.upload.browse,
+                  uploading: t.upload.uploading,
+                  replace: t.upload.replace,
+                  remove: t.upload.remove,
+                  cancel: t.upload.cancel,
+                  tooLarge: t.upload.tooLarge,
+                  wrongType: t.upload.wrongType,
+                  hint: t.upload.previewHint,
+                }}
+                icon="play"
+                compact
+              />
+              {values.previewVideoUrl && (
+                <button
+                  type="button"
+                  onClick={() => set("previewVideoUrl", "")}
                   className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-semibold text-danger-700 transition-colors hover:underline"
                 >
                   <Icon name="trash" size={13} />

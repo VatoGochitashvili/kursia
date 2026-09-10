@@ -338,6 +338,7 @@ export const en: Dictionary = {
     avatarHint: "JPG, PNG or WebP — 4MB max",
     thumbnailHint: "16:10, at least 1280×800 — 8MB max",
     videoHint: "MP4 or WebM — 3GB max",
+    previewHint: "MP4 or WebM — 300MB max",
     pdfHint: "PDF — 100MB max",
   },
 

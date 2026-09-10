@@ -545,6 +545,7 @@ export const ka = {
     avatarHint: "JPG, PNG ან WebP — მაქსიმუმ 4MB",
     thumbnailHint: "16:10, მინიმუმ 1280×800 — მაქსიმუმ 8MB",
     videoHint: "MP4 ან WebM — მაქსიმუმ 3GB",
+    previewHint: "MP4 ან WebM — მაქსიმუმ 300MB",
     pdfHint: "PDF — მაქსიმუმ 100MB",
   },
 

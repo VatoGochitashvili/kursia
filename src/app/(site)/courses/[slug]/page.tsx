@@ -258,7 +258,23 @@ export default async function CoursePage({ params }: Props) {
             <div className="lg:relative">
               <Card className="overflow-hidden p-0 lg:sticky lg:top-20">
                 <div className="relative aspect-video bg-surface-sunken">
-                  {course.thumbnailUrl ? (
+                  {/*
+                    The trailer, when the creator uploaded one. It lives under
+                    the public `previews` prefix precisely so a visitor who is
+                    not signed in can watch it — paid lesson video never can,
+                    because /api/media binds every grant to one account.
+                    `preload="metadata"` fetches the header, not the file.
+                  */}
+                  {course.previewVideoUrl ? (
+                    <video
+                      src={course.previewVideoUrl}
+                      poster={course.thumbnailUrl ?? undefined}
+                      controls
+                      playsInline
+                      preload="metadata"
+                      className="h-full w-full bg-ink object-cover"
+                    />
+                  ) : course.thumbnailUrl ? (
                     <Image
                       src={course.thumbnailUrl}
                       alt={course.title}

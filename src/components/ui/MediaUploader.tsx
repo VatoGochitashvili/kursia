@@ -27,7 +27,14 @@ export interface UploadResult {
   url: string | null;
 }
 
-export type UploadKind = "avatar" | "thumbnail" | "video" | "pdf" | "captions" | "resource";
+export type UploadKind =
+  | "avatar"
+  | "thumbnail"
+  | "coursePreview"
+  | "video"
+  | "pdf"
+  | "captions"
+  | "resource";
 
 /** Mirrors UPLOAD_KINDS in src/lib/storage — kept in sync for pre-flight only. */
 const CLIENT_LIMITS: Record<UploadKind, { maxBytes: number; accept: string; extensions: string[] }> = {
@@ -40,6 +47,11 @@ const CLIENT_LIMITS: Record<UploadKind, { maxBytes: number; accept: string; exte
     maxBytes: 8 * 1024 * 1024,
     accept: "image/jpeg,image/png,image/webp,image/avif",
     extensions: ["jpg", "jpeg", "png", "webp", "avif"],
+  },
+  coursePreview: {
+    maxBytes: 300 * 1024 * 1024,
+    accept: "video/mp4,video/webm,video/quicktime,video/x-m4v",
+    extensions: ["mp4", "webm", "mov", "m4v"],
   },
   video: {
     maxBytes: 3000 * 1024 * 1024,
