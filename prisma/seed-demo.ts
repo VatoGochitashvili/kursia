@@ -306,6 +306,11 @@ async function addDemo() {
         status: "PUBLISHED",
         priceMinor,
         discountPriceMinor: discountMinor,
+        pricingModel: course.pricingModel ?? "ONE_TIME",
+        subscriptionPriceMinor:
+          course.subscriptionPrice === undefined
+            ? null
+            : Math.round(course.subscriptionPrice * 100),
         currency: CURRENCY,
         learningOutcomes: JSON.stringify(course.learningOutcomes),
         requirements: JSON.stringify(course.requirements),

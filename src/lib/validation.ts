@@ -152,6 +152,8 @@ export const updateCourseSchema = z
     description: z.string().trim().max(20_000).optional(),
     thumbnailUrl: z.union([z.string().trim().max(1000), z.literal("")]).optional(),
     previewVideoUrl: z.union([z.string().trim().max(1000), z.literal("")]).optional(),
+    pricingModel: z.enum(["ONE_TIME", "SUBSCRIPTION", "BOTH"]).optional(),
+    subscriptionPrice: z.number().min(0).max(100000).nullable().optional(),
     categoryId: z.union([cuid, z.literal("")]).optional(),
     subcategoryId: z.union([cuid, z.literal("")]).optional(),
     language: z.string().trim().min(2).max(8).optional(),
@@ -315,7 +317,12 @@ export const noteSchema = z
 // ── Commerce ───────────────────────────────────────────────────────────────
 
 export const checkoutSchema = z
-  .object({ courseId: cuid, provider: z.string().trim().min(1).max(40).optional() })
+  .object({
+    courseId: cuid,
+    provider: z.string().trim().min(1).max(40).optional(),
+    /** What the buyer picked. startCheckout re-checks it against the course. */
+    kind: z.enum(["ONE_TIME", "SUBSCRIPTION"]).optional(),
+  })
   .strict();
 
 export const refundRequestSchema = z

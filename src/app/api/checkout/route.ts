@@ -15,11 +15,12 @@ export const POST = handler(async (request) => {
   const user = await requireUser();
   await beginMutation("checkout", user.id);
 
-  const { courseId, provider } = await readJson(request, checkoutSchema);
+  const { courseId, provider, kind } = await readJson(request, checkoutSchema);
   const result = await startCheckout({
     userId: user.id,
     courseId,
     providerId: provider,
+    kind,
     locale: await getLocale(),
   });
 

@@ -4,11 +4,10 @@ import { getI18n, localePath, fill } from "@/i18n";
 import { getSettings } from "@/lib/settings";
 import {
   getCategoryTree,
-  getFeaturedCourses,
   getNewCourses,
   getPlatformStats,
-  getPopularCourses,
   getPopularCreators,
+  getRankedCourses,
 } from "@/lib/courses";
 import { buildMetadata, itemListSchema } from "@/lib/seo";
 import { bpsToPercent } from "@/lib/money";
@@ -52,19 +51,18 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function HomePage() {
   const [{ locale, t }, settings] = await Promise.all([getI18n(), getSettings()]);
 
-  const [stats, categories, featured, popular, newest, creators] = await Promise.all([
+  const [stats, categories, ranked, newest, creators] = await Promise.all([
     getPlatformStats(),
     getCategoryTree(),
-    getFeaturedCourses(8, settings.featuredCourseIds),
-    getPopularCourses(8),
-    getNewCourses(8),
+    getRankedCourses(9),
+    getNewCourses(6),
     getPopularCreators(6, settings.featuredCreatorIds),
   ]);
 
   const p = (path: string) => localePath(path, locale);
   const catName = (c: { nameKa: string; nameEn: string }) => (locale === "en" ? c.nameEn : c.nameKa);
   const creatorShare = String(100 - bpsToPercent(settings.commissionBps));
-  const marketplaceEmpty = featured.length === 0 && popular.length === 0;
+  const marketplaceEmpty = ranked.length === 0;
 
   // The category tree is ordered editorially, wellness first. That is the
   // right order for the hero chips, which carry no counts. The tile grid
@@ -79,7 +77,7 @@ export default async function HomePage() {
   return (
     <>
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden border-b border-line bg-surface">
+      <section className="relative overflow-hidden border-b border-line">
         <HeroBackdrop />
 
         <div className="container-page py-12 sm:py-16 lg:py-20">
@@ -272,16 +270,29 @@ export default async function HomePage() {
         </Section>
       )}
 
-      {/* ── Featured ─────────────────────────────────────────────────────── */}
-      {featured.length > 0 && (
+      {/* ── Courses ──────────────────────────────────────────────────────── */}
+      {/* One shelf, ordered by the catalogue itself: anything an admin has
+          featured, then whatever students are actually enrolling in and
+          rating well. This replaced separate "featured" and "popular"
+          shelves, which asked for two hand-curated lists and then showed the
+          same courses twice on one page. */}
+      {ranked.length > 0 && (
         <Section muted>
           <SectionHeading
-            eyebrow={t.common.featured}
-            title={t.home.featuredTitle}
-            subtitle={t.home.featuredSubtitle}
+            title={t.home.rankedTitle}
+            subtitle={t.home.rankedSubtitle}
             action={<SeeAllLink href={p("/courses")} label={t.common.seeAll} />}
           />
-          <CourseGrid courses={featured} locale={locale} t={t} priorityCount={4} />
+          {/* A scroll-snap rail on mobile beats a JS carousel: no bundle, and
+              it respects native momentum scrolling. */}
+          <div className="rail md:hidden">
+            {ranked.map((c) => (
+              <CourseCard key={c.id} course={c} locale={locale} t={t} variant="rail" />
+            ))}
+          </div>
+          <div className="hidden md:block">
+            <CourseGrid courses={ranked} locale={locale} t={t} priorityCount={3} />
+          </div>
         </Section>
       )}
 
@@ -323,28 +334,6 @@ export default async function HomePage() {
           ))}
         </Stagger>
       </Section>
-
-      {/* ── Popular ──────────────────────────────────────────────────────── */}
-      {popular.length > 0 && (
-        <Section muted>
-          <SectionHeading
-            eyebrow={t.common.popular}
-            title={t.home.popularTitle}
-            subtitle={t.home.popularSubtitle}
-            action={<SeeAllLink href={`${p("/courses")}?sort=popular`} label={t.common.seeAll} />}
-          />
-          {/* A scroll-snap rail on mobile beats a JS carousel: no bundle, and
-              it respects native momentum scrolling. */}
-          <div className="rail md:hidden">
-            {popular.map((c) => (
-              <CourseCard key={c.id} course={c} locale={locale} t={t} variant="rail" />
-            ))}
-          </div>
-          <div className="hidden md:block">
-            <CourseGrid courses={popular} locale={locale} t={t} />
-          </div>
-        </Section>
-      )}
 
       {/* ── Creator earnings ─────────────────────────────────────────────── */}
       <EarningsBand
@@ -509,9 +498,9 @@ export default async function HomePage() {
 
       <JsonLd
         data={itemListSchema(
-          featured.map((c) => ({ name: c.title, path: `/courses/${c.slug}` })),
+          ranked.map((c) => ({ name: c.title, path: `/courses/${c.slug}` })),
           locale,
-          t.home.featuredTitle,
+          t.home.rankedTitle,
         )}
       />
     </>
@@ -578,7 +567,9 @@ function HeroBackdrop() {
 
 function Section({ children, muted }: { children: React.ReactNode; muted?: boolean }) {
   return (
-    <section className={muted ? "border-y border-line bg-surface-muted" : ""}>
+    // Muted bands are translucent so the ambient backdrop still reads through
+    // them; fully opaque, they cut the page into stripes of texture and blank.
+    <section className={muted ? "border-y border-line bg-surface-muted/75" : ""}>
       <div className="container-page py-14 sm:py-16">
         <Reveal>{children}</Reveal>
       </div>
@@ -592,7 +583,7 @@ function CourseGrid({
   t,
   priorityCount = 0,
 }: {
-  courses: Awaited<ReturnType<typeof getPopularCourses>>;
+  courses: Awaited<ReturnType<typeof getRankedCourses>>;
   locale: Parameters<typeof CourseCard>[0]["locale"];
   t: Parameters<typeof CourseCard>[0]["t"];
   /** Above-the-fold images worth fetching eagerly. */
@@ -600,7 +591,7 @@ function CourseGrid({
 }) {
   return (
     <Spotlight className="-m-3 rounded-3xl p-3" size={460}>
-      <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" step={60}>
+      <Stagger className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" step={60}>
         {courses.map((c, i) => (
           <CourseCard key={c.id} course={c} locale={locale} t={t} priority={i < priorityCount} />
         ))}

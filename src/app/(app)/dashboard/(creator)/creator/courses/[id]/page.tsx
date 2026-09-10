@@ -31,6 +31,7 @@ export default async function CourseBuilderPage({
         thumbnailUrl: true, categoryId: true, subcategoryId: true, language: true,
         level: true, status: true, priceMinor: true, discountPriceMinor: true,
         currency: true, previewVideoUrl: true, metaTitle: true, metaDescription: true,
+        pricingModel: true, subscriptionPriceMinor: true,
         learningOutcomes: true, requirements: true, targetAudience: true,
         reviewerNote: true,
         faqs: { orderBy: { sortOrder: "asc" }, select: { question: true, answer: true } },
@@ -78,6 +79,11 @@ export default async function CourseBuilderPage({
             ? ""
             : String(toMajor(course.discountPriceMinor, course.currency)),
         currency: course.currency,
+        pricingModel: (course.pricingModel ?? "ONE_TIME") as "ONE_TIME" | "SUBSCRIPTION" | "BOTH",
+        subscriptionPrice:
+          course.subscriptionPriceMinor === null || course.subscriptionPriceMinor === undefined
+            ? ""
+            : String(toMajor(course.subscriptionPriceMinor, course.currency)),
         metaTitle: course.metaTitle ?? "",
         metaDescription: course.metaDescription ?? "",
         learningOutcomes: parseStringArray(course.learningOutcomes),

@@ -24,6 +24,9 @@
   }
 
   html {
+    /* The base coat. <body> is transparent so <AmbientBackdrop> — which is
+       fixed behind the document — can show through it. */
+    @apply bg-surface;
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;
     /*
@@ -48,10 +51,15 @@
     .lift:hover { transform: none !important; }
     .spotlight::before { display: none !important; }
     .marquee-track { animation: none !important; }
+    .drift { animation: none !important; }
   }
 
   body {
-    @apply bg-surface text-ink antialiased;
+    /* Transparent, not white: <AmbientBackdrop> is painted behind the whole
+       document and a solid body would hide it. The backdrop paints its own
+       base colour, and every card and section above it is opaque, so no text
+       loses contrast. */
+    @apply bg-transparent text-ink antialiased;
     font-family: var(--font-sans);
     /* Georgian glyphs sit slightly differently; a touch more line-height
        keeps mixed ka/en paragraphs comfortable. */
@@ -192,6 +200,15 @@
     animation: aurora 22s ease-in-out infinite;
   }
 
+  /* Backdrop glyphs. The rotation each one holds is passed in as
+     --drift-rotate so twelve elements can share one keyframe rule. */
+  .drift {
+    animation-name: drift;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    will-change: transform;
+  }
+
   /* Cards that respond to the pointer. Transform and shadow only, so the
      browser can composite the whole thing off the main thread. */
   .lift {
@@ -325,6 +342,14 @@
 @keyframes float-slow {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-8px); }
+}
+
+/* A long, lazy wander. Deliberately small: the point is that the page feels
+   alive, not that anything appears to be moving. */
+@keyframes drift {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--drift-rotate, 0deg)); }
+  33%      { transform: translate3d(1.4rem, -1.8rem, 0) rotate(calc(var(--drift-rotate, 0deg) + 6deg)); }
+  66%      { transform: translate3d(-1.1rem, 1.2rem, 0) rotate(calc(var(--drift-rotate, 0deg) - 5deg)); }
 }
 
 /* Gradient text that drifts, instead of sitting static. */

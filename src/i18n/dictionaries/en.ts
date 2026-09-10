@@ -52,6 +52,8 @@ export const en: Dictionary = {
 
     categoriesTitle: "Choose a track",
     categoriesSubtitle: "From fitness and nutrition to content and monetisation",
+    rankedTitle: "Courses",
+    rankedSubtitle: "Featured and most popular, ranked to the front",
     featuredTitle: "Featured courses",
     featuredSubtitle: "Hand-picked highlights",
     popularTitle: "Popular right now",
@@ -150,6 +152,19 @@ export const en: Dictionary = {
   },
 
   courses: {
+    choosePlan: "Choose a plan",
+    planOneTime: "One-time purchase",
+    planOneTimeNote: "Pay once and the course is yours for good, updates included.",
+    planMonthly: "Monthly access",
+    planMonthlyNote:
+      "Pay for one month and get full access for that period. Nothing is charged automatically — before it runs out you decide whether to continue.",
+    perMonth: "{price} / month",
+    subscribeNow: "Get monthly access",
+    renewAccess: "Renew access",
+    accessUntil: "Access until {date}",
+    accessEnded: "Access has ended",
+    subscriptionCancelled: "Renewal is off",
+    cancelSubscription: "Turn off renewal",
     browseTitle: "Courses", browseSubtitle: "Find the right course for you",
     resultsCount: "{count} courses found", noResults: "No courses found",
     noResultsHint: "Try a different search term or change the filters",

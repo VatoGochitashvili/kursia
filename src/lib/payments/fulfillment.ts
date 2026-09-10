@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { getSettings, resolveCommissionBps } from "@/lib/settings";
 import { effectivePriceMinor, formatMoney, splitSale } from "@/lib/money";
 import { recordRefund, recordSale } from "@/lib/earnings";
+import { addMonths } from "@/lib/subscriptions";
 import { notify, absoluteUrl } from "@/lib/notifications";
 import { audit, AUDIT_ACTIONS } from "@/lib/audit";
 import { ApiError, conflict, notFoundError } from "@/lib/api";
@@ -45,6 +46,8 @@ export async function startCheckout(input: {
   courseId: string;
   providerId?: string;
   locale: string;
+  /** What the buyer chose. Validated against what the course actually offers. */
+  kind?: "ONE_TIME" | "SUBSCRIPTION";
 }): Promise<CheckoutResult> {
   const [settings, course, user] = await Promise.all([
     getSettings(),
@@ -53,6 +56,7 @@ export async function startCheckout(input: {
       select: {
         id: true, slug: true, title: true, status: true, priceMinor: true,
         discountPriceMinor: true, currency: true, creatorId: true,
+        pricingModel: true, subscriptionPriceMinor: true,
         creator: { select: { userId: true, displayName: true } },
       },
     }),
@@ -71,16 +75,62 @@ export async function startCheckout(input: {
     throw conflict("საკუთარი კურსის შეძენა შეუძლებელია");
   }
 
+  // What the buyer asked for, checked against what this course actually
+  // offers. A request body claiming SUBSCRIPTION on a one-time course must
+  // not create a subscription, and one claiming ONE_TIME on a
+  // subscription-only course must not buy it outright.
+  const wantsSubscription =
+    input.kind === "SUBSCRIPTION" || course.pricingModel === "SUBSCRIPTION";
+
+  if (wantsSubscription && course.pricingModel === "ONE_TIME") {
+    throw conflict("ეს კურსი მხოლოდ ერთჯერადად იყიდება");
+  }
+  if (!wantsSubscription && course.pricingModel === "SUBSCRIPTION") {
+    throw conflict("ეს კურსი მხოლოდ თვიური წვდომითაა ხელმისაწვდომი");
+  }
+  if (wantsSubscription && !course.subscriptionPriceMinor) {
+    throw conflict("თვიური ფასი დაყენებული არ არის");
+  }
+
   const existing = await db.enrollment.findUnique({
     where: { userId_courseId: { userId: input.userId, courseId: course.id } },
-    select: { id: true, revokedAt: true },
+    select: { id: true, revokedAt: true, accessExpiresAt: true },
   });
-  if (existing && !existing.revokedAt) throw conflict("კურსი უკვე შეძენილია");
+  // A live one-time enrolment blocks re-buying. A subscription whose period is
+  // still running does too — but a lapsed one must be renewable, which is the
+  // whole point of the model.
+  const stillHasAccess =
+    existing &&
+    !existing.revokedAt &&
+    (!existing.accessExpiresAt || existing.accessExpiresAt.getTime() > Date.now());
+  if (stillHasAccess && !wantsSubscription) throw conflict("კურსი უკვე შეძენილია");
 
   // Price comes from the database — never from the request body.
-  const amountMinor = effectivePriceMinor(course.priceMinor, course.discountPriceMinor);
+  const amountMinor = wantsSubscription
+    ? course.subscriptionPriceMinor!
+    : effectivePriceMinor(course.priceMinor, course.discountPriceMinor);
   const commissionBps = await resolveCommissionBps(course.creatorId);
   const split = splitSale(amountMinor, commissionBps);
+
+  // One Subscription row per student per course, reused across renewals, so
+  // the history of periods hangs off a single subscription.
+  const subscription = wantsSubscription
+    ? await db.subscription.upsert({
+        where: { userId_courseId: { userId: input.userId, courseId: course.id } },
+        create: {
+          userId: input.userId,
+          courseId: course.id,
+          creatorId: course.creatorId,
+          status: "ACTIVE",
+          priceMinor: amountMinor,
+          currency: course.currency,
+          // Not yet paid for; fulfilment sets the real period.
+          currentPeriodEnd: new Date(),
+        },
+        update: { priceMinor: amountMinor },
+        select: { id: true },
+      })
+    : null;
 
   const purchase = await db.purchase.create({
     data: {
@@ -88,8 +138,10 @@ export async function startCheckout(input: {
       userId: input.userId,
       courseId: course.id,
       creatorId: course.creatorId,
+      kind: wantsSubscription ? "SUBSCRIPTION" : "ONE_TIME",
+      subscriptionId: subscription?.id ?? null,
       currency: course.currency,
-      listPriceMinor: course.priceMinor,
+      listPriceMinor: wantsSubscription ? amountMinor : course.priceMinor,
       amountMinor,
       commissionBps,
       platformFeeMinor: split.platformFeeMinor,
@@ -208,6 +260,7 @@ export async function fulfillPurchase(input: FulfillInput): Promise<{ settled: b
         id: true, userId: true, courseId: true, creatorId: true, status: true,
         currency: true, amountMinor: true, platformFeeMinor: true,
         processingFeeMinor: true, creatorEarningsMinor: true, reference: true,
+        kind: true, subscriptionId: true,
         course: { select: { title: true, slug: true, creator: { select: { userId: true } } } },
       },
     });
@@ -231,7 +284,39 @@ export async function fulfillPurchase(input: FulfillInput): Promise<{ settled: b
       });
     }
 
+    // A subscription payment buys one period. Extending from the later of
+    // "now" and the current period end means renewing early adds a month
+    // rather than throwing away the days already paid for.
+    let accessExpiresAt: Date | null = null;
+    if (purchase.kind === "SUBSCRIPTION" && purchase.subscriptionId) {
+      const subscription = await tx.subscription.findUnique({
+        where: { id: purchase.subscriptionId },
+        select: { currentPeriodEnd: true },
+      });
+      const from =
+        subscription && subscription.currentPeriodEnd.getTime() > Date.now()
+          ? subscription.currentPeriodEnd
+          : new Date();
+      accessExpiresAt = addMonths(from, 1);
+
+      await tx.subscription.update({
+        where: { id: purchase.subscriptionId },
+        data: {
+          status: "ACTIVE",
+          currentPeriodStart: from,
+          currentPeriodEnd: accessExpiresAt!,
+          cancelledAt: null,
+          renewalNoticeSentAt: null,
+        },
+      });
+    }
+
     // Enrolment: create, or un-revoke a previously refunded one.
+    const existingEnrollment = await tx.enrollment.findUnique({
+      where: { userId_courseId: { userId: purchase.userId, courseId: purchase.courseId } },
+      select: { id: true },
+    });
+
     await tx.enrollment.upsert({
       where: { userId_courseId: { userId: purchase.userId, courseId: purchase.courseId } },
       create: {
@@ -239,14 +324,19 @@ export async function fulfillPurchase(input: FulfillInput): Promise<{ settled: b
         courseId: purchase.courseId,
         source: input.source ?? "PURCHASE",
         purchaseId: purchase.id,
+        accessExpiresAt,
       },
-      update: { revokedAt: null, purchaseId: purchase.id },
+      update: { revokedAt: null, purchaseId: purchase.id, accessExpiresAt },
     });
 
-    await tx.course.update({
-      where: { id: purchase.courseId },
-      data: { studentCount: { increment: 1 } },
-    });
+    // A renewal is not a new student. Counting it would inflate the figure
+    // shown on the course card every month, for the same person.
+    if (!existingEnrollment) {
+      await tx.course.update({
+        where: { id: purchase.courseId },
+        data: { studentCount: { increment: 1 } },
+      });
+    }
 
     if (purchase.creatorEarningsMinor > 0) {
       await recordSale(tx, {

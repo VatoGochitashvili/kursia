@@ -137,6 +137,8 @@ export const NOTIFICATION_TYPES = [
   "SECURITY_NEW_LOGIN",
   "CREATOR_VERIFIED",
   "ACCOUNT_SUSPENDED",
+  "SUBSCRIPTION_ENDING",
+  "SUBSCRIPTION_EXPIRED",
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 

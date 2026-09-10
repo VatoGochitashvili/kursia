@@ -68,8 +68,17 @@ export async function requireCourseOwner(courseId: string) {
 export async function hasCourseAccess(
   userId: string | null,
   courseId: string,
-): Promise<{ enrolled: boolean; isOwner: boolean; isAdmin: boolean; canView: boolean }> {
-  if (!userId) return { enrolled: false, isOwner: false, isAdmin: false, canView: false };
+): Promise<{
+  enrolled: boolean;
+  isOwner: boolean;
+  isAdmin: boolean;
+  canView: boolean;
+  /** When a subscription period ends. NULL for anything that never expires. */
+  accessExpiresAt: Date | null;
+}> {
+  if (!userId) {
+    return { enrolled: false, isOwner: false, isAdmin: false, canView: false, accessExpiresAt: null };
+  }
 
   const [user, enrollment, course] = await Promise.all([
     db.user.findUnique({
@@ -78,13 +87,13 @@ export async function hasCourseAccess(
     }),
     db.enrollment.findUnique({
       where: { userId_courseId: { userId, courseId } },
-      select: { id: true, revokedAt: true },
+      select: { id: true, revokedAt: true, accessExpiresAt: true },
     }),
     db.course.findUnique({ where: { id: courseId }, select: { creatorId: true } }),
   ]);
 
   if (!user || user.status !== "ACTIVE") {
-    return { enrolled: false, isOwner: false, isAdmin: false, canView: false };
+    return { enrolled: false, isOwner: false, isAdmin: false, canView: false, accessExpiresAt: null };
   }
 
   const isAdmin = user.role === "ADMIN";
@@ -92,9 +101,26 @@ export async function hasCourseAccess(
     user.creatorProfile?.id && course && course.creatorId === user.creatorProfile.id,
   );
   // A refunded enrolment is revoked and must not grant access.
-  const enrolled = Boolean(enrollment && !enrollment.revokedAt);
+  //
+  // A subscription enrolment also carries an expiry. It is compared here
+  // rather than left to the cron that tidies up lapsed subscriptions,
+  // because that runs every ten minutes and access must stop at the moment
+  // the paid period ends, not up to ten minutes later. One-time purchases,
+  // free courses and admin grants leave accessExpiresAt NULL and are
+  // unaffected.
+  const enrolled = Boolean(
+    enrollment &&
+      !enrollment.revokedAt &&
+      (!enrollment.accessExpiresAt || enrollment.accessExpiresAt.getTime() > Date.now()),
+  );
 
-  return { enrolled, isOwner, isAdmin, canView: enrolled || isOwner || isAdmin };
+  return {
+    enrolled,
+    isOwner,
+    isAdmin,
+    canView: enrolled || isOwner || isAdmin,
+    accessExpiresAt: enrolled ? (enrollment?.accessExpiresAt ?? null) : null,
+  };
 }
 
 /** Enrolment-only gate — creators/admins get access, but this reports truth. */

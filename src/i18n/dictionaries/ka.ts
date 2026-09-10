@@ -113,6 +113,8 @@ export const ka = {
     categoriesTitle: "აირჩიე მიმართულება",
     categoriesSubtitle: "ფიტნესიდან და კვებიდან კონტენტამდე და მონეტიზაციამდე",
 
+    rankedTitle: "კურსები",
+    rankedSubtitle: "რჩეული და ყველაზე პოპულარული — თავიდანვე წინ",
     featuredTitle: "რჩეული კურსები",
     featuredSubtitle: "ხელით შერჩეული საუკეთესო კურსები",
 
@@ -233,6 +235,19 @@ export const ka = {
   },
 
   courses: {
+    choosePlan: "აირჩიე გეგმა",
+    planOneTime: "ერთჯერადი შესყიდვა",
+    planOneTimeNote: "იხდი ერთხელ და კურსი სამუდამოდ შენია, განახლებების ჩათვლით.",
+    planMonthly: "თვიური წვდომა",
+    planMonthlyNote:
+      "იხდი ერთ თვეს და ამ პერიოდში სრული წვდომა გაქვს. ავტომატურად არაფერი ჩამოგეჭრება — ვადის ამოწურვამდე თავად წყვეტ, გააგრძელო თუ არა.",
+    perMonth: "{price} / თვე",
+    subscribeNow: "თვიური წვდომის აღება",
+    renewAccess: "წვდომის განახლება",
+    accessUntil: "წვდომა {date}-მდე",
+    accessEnded: "წვდომის ვადა ამოიწურა",
+    subscriptionCancelled: "განახლება გამორთულია",
+    cancelSubscription: "განახლების გამორთვა",
     browseTitle: "კურსები",
     browseSubtitle: "იპოვე შენთვის სწორი კურსი",
     resultsCount: "ნაპოვნია {count} კურსი",

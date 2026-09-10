@@ -5,6 +5,7 @@ import { getSettings } from "@/lib/settings";
 import { organizationSchema, siteUrl, websiteSchema } from "@/lib/seo";
 import { Suspense } from "react";
 import { RouteProgress } from "@/components/ui/RouteProgress";
+import { AmbientBackdrop } from "@/components/layout/AmbientBackdrop";
 import { ToastProvider } from "@/components/ui/Toast";
 import { JsonLd } from "@/components/ui/primitives";
 import "./globals.css";
@@ -78,7 +79,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       dir={meta.dir}
       className={`${georgian.variable} ${inter.variable}`}
     >
-      <body className="min-h-dvh bg-surface">
+      <body className="min-h-dvh">
+        <AmbientBackdrop />
+
         {/* Keyboard users land here first. */}
         <a
           href="#main"

@@ -34,6 +34,8 @@ const TYPE_ICON: Record<string, IconName> = {
   PAYOUT_REJECTED: "alert",
   SECURITY_PASSWORD_CHANGED: "shield",
   CREATOR_VERIFIED: "check",
+  SUBSCRIPTION_ENDING: "clock",
+  SUBSCRIPTION_EXPIRED: "lock",
   ACCOUNT_SUSPENDED: "alert",
 };
 

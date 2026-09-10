@@ -63,6 +63,8 @@ export interface UpdateCourseInput {
   level?: string;
   price?: number;
   discountPrice?: number | null;
+  pricingModel?: "ONE_TIME" | "SUBSCRIPTION" | "BOTH";
+  subscriptionPrice?: number | null;
   learningOutcomes?: string[];
   requirements?: string[];
   targetAudience?: string[];
@@ -112,6 +114,15 @@ export async function updateCourse(courseId: string, input: UpdateCourseInput) {
         ? {
             discountPriceMinor:
               input.discountPrice === null ? null : toMinor(input.discountPrice, existing.currency),
+          }
+        : {}),
+      ...(input.pricingModel !== undefined ? { pricingModel: input.pricingModel } : {}),
+      ...(input.subscriptionPrice !== undefined
+        ? {
+            subscriptionPriceMinor:
+              input.subscriptionPrice === null
+                ? null
+                : toMinor(input.subscriptionPrice, existing.currency),
           }
         : {}),
       ...(input.learningOutcomes !== undefined

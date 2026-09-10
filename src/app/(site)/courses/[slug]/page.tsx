@@ -320,6 +320,30 @@ export default async function CoursePage({ params }: Props) {
                       isOwnCourse={access.isOwner}
                       initiallyWishlisted={wishlisted > 0}
                       isFree={price === 0}
+                      pricing={{
+                        model: (course.pricingModel ?? "ONE_TIME") as
+                          | "ONE_TIME"
+                          | "SUBSCRIPTION"
+                          | "BOTH",
+                        oneTimeLabel: formatMoney(price, course.currency, {
+                          freeLabel: t.common.free,
+                          hideDecimalsWhenWhole: true,
+                        }),
+                        monthlyLabel: course.subscriptionPriceMinor
+                          ? fill(t.courses.perMonth, {
+                              price: formatMoney(course.subscriptionPriceMinor, course.currency, {
+                                hideDecimalsWhenWhole: true,
+                              }),
+                            })
+                          : null,
+                      }}
+                      accessUntilLabel={
+                        access.accessExpiresAt
+                          ? fill(t.courses.accessUntil, {
+                              date: formatDate(access.accessExpiresAt, locale),
+                            })
+                          : null
+                      }
                       loginHref={`${p("/login")}?next=${encodeURIComponent(p(`/courses/${course.slug}`))}`}
                       learnHref={p(`/learn/${course.slug}`)}
                       labels={{
@@ -330,6 +354,12 @@ export default async function CoursePage({ params }: Props) {
                         owned: t.courses.alreadyOwned,
                         addToWishlist: t.courses.addToWishlist,
                         inWishlist: t.courses.inWishlist,
+                        choosePlan: t.courses.choosePlan,
+                        planOneTime: t.courses.planOneTime,
+                        planOneTimeNote: t.courses.planOneTimeNote,
+                        planMonthly: t.courses.planMonthly,
+                        planMonthlyNote: t.courses.planMonthlyNote,
+                        subscribeNow: t.courses.subscribeNow,
                       }}
                     />
                   </div>

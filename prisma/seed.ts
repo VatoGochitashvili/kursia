@@ -96,7 +96,7 @@ async function wipe() {
     db.commentLike, db.comment, db.review, db.wishlist, db.follow,
     db.enrollment,
     db.balanceEntry, db.payout, db.payoutMethod, db.creatorBalance,
-    db.webhookEvent, db.refund, db.transaction, db.purchase,
+    db.webhookEvent, db.refund, db.transaction, db.purchase, db.subscription,
     db.courseView, db.courseReviewEvent, db.courseFaq, db.course,
     db.notification, db.emailOutbox, db.auditLog, db.report,
     db.session, db.verificationToken, db.category,
@@ -270,6 +270,11 @@ async function main() {
         status: "PUBLISHED",
         priceMinor,
         discountPriceMinor: discountMinor,
+        pricingModel: course.pricingModel ?? "ONE_TIME",
+        subscriptionPriceMinor:
+          course.subscriptionPrice === undefined
+            ? null
+            : Math.round(course.subscriptionPrice * 100),
         currency: CURRENCY,
         learningOutcomes: JSON.stringify(course.learningOutcomes),
         requirements: JSON.stringify(course.requirements),

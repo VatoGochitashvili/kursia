@@ -4,6 +4,7 @@ import { env } from "@/lib/env";
 import { handler, jsonError, jsonOk } from "@/lib/api";
 import { drainOutbox } from "@/lib/email";
 import { clearMaturedEarnings } from "@/lib/earnings";
+import { runSubscriptionMaintenance } from "@/lib/subscriptions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,6 +20,10 @@ export const dynamic = "force-dynamic";
  * Jobs:
  *  • drainOutbox        — deliver queued transactional email
  *  • clearMaturedEarnings — move cleared sales from pending to withdrawable
+ *  • subscriptions      — warn before a monthly period lapses, close out the
+ *                         ones that already have. This does NOT gate access:
+ *                         `hasCourseAccess` compares the expiry itself, so a
+ *                         missed run costs a notification, never content.
  *  • pruneSessions      — delete expired/revoked session rows
  *
  * Each job is independent and idempotent, so a missed or repeated run is safe.
@@ -35,9 +40,10 @@ export const POST = handler(async (request) => {
 
   const startedAt = Date.now();
 
-  const [email, earnings, prunedSessions, prunedTokens] = await Promise.all([
+  const [email, earnings, subscriptions, prunedSessions, prunedTokens] = await Promise.all([
     drainOutbox(50),
     clearMaturedEarnings(),
+    runSubscriptionMaintenance(),
     db.session
       .deleteMany({
         where: {
@@ -59,6 +65,7 @@ export const POST = handler(async (request) => {
     durationMs: Date.now() - startedAt,
     email,
     earnings,
+    subscriptions,
     prunedSessions,
     prunedTokens,
   });

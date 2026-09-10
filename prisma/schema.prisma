@@ -49,6 +49,7 @@ model User {
   quizAttempts   QuizAttempt[]
   submissions    AssignmentSubmission[]
   notifications  Notification[]
+  subscriptions  Subscription[]
   comments       Comment[]
   commentLikes   CommentLike[]
   notes          LessonNote[]
@@ -114,6 +115,7 @@ model CreatorProfile {
   payouts  Payout[]
   payoutMethods PayoutMethod[]
   balanceEntries BalanceEntry[]
+  subscriptions Subscription[]
 
   @@index([isFeatured, featuredRank])
   @@index([isVerified])
@@ -201,6 +203,14 @@ model Course {
   discountPriceMinor Int?
   currency           String  @default("GEL")
 
+  /// How this course may be bought:
+  /// "ONE_TIME"     — pay once, keep it forever (the original behaviour)
+  /// "SUBSCRIPTION" — monthly access only
+  /// "BOTH"         — the buyer chooses at checkout
+  pricingModel           String @default("ONE_TIME")
+  /// Price for one month, when a subscription is offered. Minor units.
+  subscriptionPriceMinor Int?
+
   // JSON string[] — kept as ordered lists, edited as a whole.
   learningOutcomes String?
   requirements     String?
@@ -240,6 +250,7 @@ model Course {
   reviews      Review[]
   wishlist     Wishlist[]
   faqs         CourseFaq[]
+  subscriptions Subscription[]
   views        CourseView[]
   reviewEvents CourseReviewEvent[]
   follows      Follow[]
@@ -365,6 +376,11 @@ model Enrollment {
   startedAt   DateTime?
   completedAt DateTime?
   revokedAt   DateTime?
+  /// NULL means access never expires — a one-time purchase, a free course or
+  /// an admin grant. A subscription sets it to the end of the paid period, so
+  /// entitlement stays a single comparison on a row already being read rather
+  /// than a second query on every access check.
+  accessExpiresAt DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -446,6 +462,11 @@ model Purchase {
   processingFeeMinor Int    @default(0)
   creatorEarningsMinor Int
 
+  /// "ONE_TIME" | "SUBSCRIPTION" — a subscription renewal is its own Purchase,
+  /// so the ledger, refunds and payouts need no special cases.
+  kind           String  @default("ONE_TIME")
+  subscriptionId String?
+
   // "PENDING" | "PAID" | "FAILED" | "CANCELLED" | "REFUNDED" | "PARTIALLY_REFUNDED"
   status       String   @default("PENDING")
   paidAt       DateTime?
@@ -458,6 +479,7 @@ model Purchase {
 
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   course       Course        @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
   transactions Transaction[]
   refunds      Refund[]
   enrollment   Enrollment?
@@ -467,6 +489,7 @@ model Purchase {
   @@index([courseId, status])
   @@index([creatorId, status])
   @@index([status, createdAt])
+  @@index([subscriptionId])
 }
 
 /// One attempt against a payment provider. A Purchase can have several
@@ -850,6 +873,50 @@ model AssignmentSubmission {
 }
 
 // ───────────────────────── Notices and analytics ──────────────────────────
+
+/// A monthly pass to one course.
+///
+/// Renewal is explicit, not automatic. Charging a card every month needs the
+/// card to be tokenised and stored with the provider, which this platform
+/// deliberately does not do — so each period is paid for by its own Purchase,
+/// and a student who does nothing simply loses access when the period ends.
+/// Nobody is ever charged without deciding to be.
+model Subscription {
+  id                 String   @id @default(cuid())
+  userId             String
+  courseId           String
+  creatorId          String
+
+  // "ACTIVE" | "CANCELLED" | "EXPIRED"
+  // CANCELLED still grants access until currentPeriodEnd; it only means the
+  // student has said they do not intend to renew.
+  status             String   @default("ACTIVE")
+
+  // Money snapshot, so a later price change never alters an agreed period.
+  priceMinor         Int
+  currency           String   @default("GEL")
+  // "MONTHLY" — the only interval today, kept as a String for portability.
+  interval           String   @default("MONTHLY")
+
+  currentPeriodStart DateTime @default(now())
+  currentPeriodEnd   DateTime
+  cancelledAt        DateTime?
+  /// Guards the "your access ends soon" notice against being sent twice.
+  renewalNoticeSentAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course         @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  creator   CreatorProfile @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  purchases Purchase[]
+
+  @@unique([userId, courseId])
+  @@index([status, currentPeriodEnd])
+  @@index([userId, status])
+  @@index([creatorId, status])
+}
 
 model Notification {
   id        String   @id @default(cuid())

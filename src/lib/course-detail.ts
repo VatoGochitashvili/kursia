@@ -18,6 +18,7 @@ export async function getCourseBySlug(slug: string) {
       durationSeconds: true, lessonCount: true, moduleCount: true,
       studentCount: true, ratingAvg: true, ratingCount: true,
       metaTitle: true, metaDescription: true,
+      pricingModel: true, subscriptionPriceMinor: true,
       publishedAt: true, updatedAt: true, createdAt: true,
       creator: {
         select: {

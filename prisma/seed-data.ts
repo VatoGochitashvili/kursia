@@ -91,6 +91,12 @@ export const CATEGORIES = [
       { slug: "veb-developmenti", nameKa: "ვებ-დეველოპმენტი", nameEn: "Web development" },
       { slug: "monatsemta-analizi", nameKa: "მონაცემთა ანალიზი", nameEn: "Data analysis" },
     ] },
+  { slug: "treidingi", nameKa: "ტრეიდინგი", nameEn: "Trading", icon: "trendingUp", colorHex: "#0d9488",
+    descriptionKa: "ბირჟა, ტექნიკური ანალიზი და რისკის მართვა", descriptionEn: "Markets, technical analysis and risk management",
+    children: [
+      { slug: "teknikuri-analizi", nameKa: "ტექნიკური ანალიზი", nameEn: "Technical analysis" },
+      { slug: "riskis-martva", nameKa: "რისკის მართვა", nameEn: "Risk management" },
+    ] },
   { slug: "kripto", nameKa: "კრიპტო", nameEn: "Crypto", icon: "coins", colorHex: "#f79009",
     descriptionKa: "ბლოკჩეინი და ციფრული აქტივები", descriptionEn: "Blockchain and digital assets", children: [] },
   { slug: "kariera", nameKa: "კარიერა", nameEn: "Career", icon: "briefcase", colorHex: "#0d9488",
@@ -331,6 +337,10 @@ export interface SeedCourse {
   price: number;
   discountPrice?: number;
   isFeatured?: boolean;
+  /** Defaults to a one-time purchase when omitted. */
+  pricingModel?: "ONE_TIME" | "SUBSCRIPTION" | "BOTH";
+  /** Major units, like `price`. Required when a subscription is offered. */
+  subscriptionPrice?: number;
   thumbSeed: string;
   learningOutcomes: string[];
   requirements: string[];
@@ -872,6 +882,8 @@ export const COURSES: SeedCourse[] = [
     price: 129,
     discountPrice: 89,
     isFeatured: true,
+    pricingModel: "BOTH",
+    subscriptionPrice: 29,
     thumbSeed: "strength",
     learningOutcomes: [
       "შეასრულებ ხუთ ძირითად მოძრაობას სწორი ტექნიკით",
@@ -956,6 +968,8 @@ export const COURSES: SeedCourse[] = [
     subcategorySlug: "saxlis-vardzishi",
     level: "ALL_LEVELS",
     price: 79,
+    pricingModel: "BOTH",
+    subscriptionPrice: 19,
     thumbSeed: "homefit",
     learningOutcomes: [
       "დაასრულებ სტრუქტურირებულ 12-კვირიან პროგრამას",
@@ -1023,6 +1037,8 @@ export const COURSES: SeedCourse[] = [
     price: 119,
     discountPrice: 79,
     isFeatured: true,
+    pricingModel: "BOTH",
+    subscriptionPrice: 25,
     thumbSeed: "nutrition",
     learningOutcomes: [
       "გამოთვლი საკუთარ კალორიულ საჭიროებას და მაკროებს",
@@ -1093,6 +1109,8 @@ export const COURSES: SeedCourse[] = [
     level: "BEGINNER",
     price: 89,
     discountPrice: 59,
+    pricingModel: "BOTH",
+    subscriptionPrice: 19,
     thumbSeed: "yoga",
     learningOutcomes: [
       "შეასრულებ 20 ძირითად პოზას უსაფრთხო ტექნიკით",

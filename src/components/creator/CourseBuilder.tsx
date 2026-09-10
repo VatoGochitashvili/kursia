@@ -33,6 +33,8 @@ export interface BuilderCourse {
   status: string;
   price: string;
   discountPrice: string;
+  pricingModel: "ONE_TIME" | "SUBSCRIPTION" | "BOTH";
+  subscriptionPrice: string;
   currency: string;
   metaTitle: string;
   metaDescription: string;
@@ -119,6 +121,8 @@ export function CourseBuilder({
         level: values.level,
         price: values.price === "" ? 0 : values.price,
         discountPrice: values.discountPrice === "" ? null : values.discountPrice,
+        pricingModel: values.pricingModel,
+        subscriptionPrice: values.subscriptionPrice === "" ? null : values.subscriptionPrice,
         learningOutcomes: values.learningOutcomes,
         requirements: values.requirements,
         targetAudience: values.targetAudience,
@@ -612,11 +616,61 @@ export function CourseBuilder({
             </Field>
           </div>
 
+          {/* How students may buy this course. */}
+          <Field
+            className="mt-5"
+            label={locale === "en" ? "How students pay" : "როგორ იხდიან სტუდენტები"}
+            error={fieldError(error, "pricingModel")}
+          >
+            <Select
+              value={values.pricingModel}
+              onChange={(e) => set("pricingModel", e.target.value as BuilderCourse["pricingModel"])}
+            >
+              <option value="ONE_TIME">
+                {locale === "en" ? "One-time purchase only" : "მხოლოდ ერთჯერადი შესყიდვა"}
+              </option>
+              <option value="SUBSCRIPTION">
+                {locale === "en" ? "Monthly access only" : "მხოლოდ თვიური წვდომა"}
+              </option>
+              <option value="BOTH">
+                {locale === "en" ? "Both — the student chooses" : "ორივე — სტუდენტი ირჩევს"}
+              </option>
+            </Select>
+          </Field>
+
+          {values.pricingModel !== "ONE_TIME" && (
+            <Field
+              className="mt-4 max-w-[15rem]"
+              label={
+                locale === "en"
+                  ? `Monthly price (${values.currency})`
+                  : `თვიური ფასი (${values.currency})`
+              }
+              error={fieldError(error, "subscriptionPrice")}
+            >
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                value={values.subscriptionPrice}
+                onChange={(e) => set("subscriptionPrice", e.target.value)}
+              />
+            </Field>
+          )}
+
           <Alert tone="brand" className="mt-5">
             {locale === "en"
               ? "The platform commission is deducted per sale; your dashboard shows the exact split for every order."
               : "პლატფორმის საკომისიო იჭრება თითოეული გაყიდვისას. დეშბორდზე ხედავთ ზუსტ განაწილებას ყოველ შეკვეთაზე."}
           </Alert>
+
+          {values.pricingModel !== "ONE_TIME" && (
+            <Alert tone="warn" className="mt-3">
+              {locale === "en"
+                ? "Monthly access is not auto-billed. Students pay for one month at a time and choose whether to renew — no card is stored, so nobody is ever charged without deciding to be."
+                : "თვიური წვდომა ავტომატურად არ ჩამოიჭრება. სტუდენტი იხდის თითო თვეს და თავად წყვეტს განახლებას — ბარათი არ ინახება, ამიტომ არავის ჩამოეჭრება თანხა მისი გადაწყვეტილების გარეშე."}
+            </Alert>
+          )}
         </Card>
       )}
 

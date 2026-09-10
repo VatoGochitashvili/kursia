@@ -195,7 +195,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         ) : (
           <>
             <Spotlight className="-m-3 rounded-3xl p-3" size={440}>
-              <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" step={55}>
+              <Stagger className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" step={55}>
               {results.courses.map((course, i) => (
                 <CourseCard
                   key={course.id}

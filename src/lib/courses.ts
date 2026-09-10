@@ -227,6 +227,35 @@ async function getFeaturedCoursesUncached(limit = 8, explicitIds: string[] = [])
   return [...featured, ...filler];
 }
 
+/**
+ * One automatically ranked shelf.
+ *
+ * Replaces the separate "featured" and "popular" shelves. Those asked an
+ * administrator to curate two lists by hand and then showed the same courses
+ * twice on one page; ranking is something the catalogue already knows how to
+ * do from its own numbers.
+ *
+ * The order is: anything an admin has explicitly featured (by their chosen
+ * rank), then whatever students are actually enrolling in and rating well.
+ * A course that is genuinely popular therefore rises on its own, with no
+ * curation at all.
+ */
+const getRankedCoursesUncached = (limit = 9) =>
+  db.course.findMany({
+    where: publicWhere,
+    select: COURSE_CARD_SELECT,
+    orderBy: [
+      { isFeatured: "desc" },
+      // NULLs sort last in Postgres ascending, which is what we want: an
+      // unranked featured course should not outrank a deliberately ranked one.
+      { featuredRank: "asc" },
+      { studentCount: "desc" },
+      { ratingAvg: "desc" },
+      { publishedAt: "desc" },
+    ],
+    take: limit,
+  });
+
 const getPopularCoursesUncached = (limit = 8) =>
   db.course.findMany({
     where: publicWhere,
@@ -359,6 +388,7 @@ const cached = <A extends unknown[], R>(
 
 export const getFeaturedCourses = cached(getFeaturedCoursesUncached, "featured-courses", 300);
 export const getPopularCourses = cached(getPopularCoursesUncached, "popular-courses", 300);
+export const getRankedCourses = cached(getRankedCoursesUncached, "ranked-courses", 300);
 export const getNewCourses = cached(getNewCoursesUncached, "new-courses", 300);
 export const getPopularCreators = cached(getPopularCreatorsUncached, "popular-creators", 600);
 export const getCategoryTree = cached(getCategoryTreeUncached, "category-tree", 900);
