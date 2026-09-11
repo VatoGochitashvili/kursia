@@ -142,11 +142,21 @@ export default async function CoursePage({ params }: Props) {
     0,
   );
 
+  // Every entry here has to be true of THIS course. "Downloadable resources"
+  // used to be listed unconditionally, which promised an attachment on every
+  // course in the catalogue — including the ones that have none.
+  const resourceCount = course.modules.reduce(
+    (s, m) => s + m.lessons.reduce((n, l) => n + l._count.resources, 0),
+    0,
+  );
+
   const includes: { icon: IconName; label: string }[] = [
     ...(videoLessons > 0
       ? [{ icon: "video" as IconName, label: fill(t.courses.includesVideo, { n: videoLessons }) }]
       : []),
-    { icon: "download", label: t.courses.includesResources },
+    ...(resourceCount > 0
+      ? [{ icon: "download" as IconName, label: t.courses.includesResources }]
+      : []),
     ...(course.modules.some((m) => m.lessons.some((l) => l.type === "QUIZ"))
       ? [{ icon: "check" as IconName, label: t.courses.includesQuiz }]
       : []),

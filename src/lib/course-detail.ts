@@ -54,6 +54,7 @@ export async function getCourseBySlug(slug: string) {
             select: {
               id: true, title: true, type: true,
               durationSeconds: true, isFreePreview: true,
+              _count: { select: { resources: true } },
             },
           },
         },
