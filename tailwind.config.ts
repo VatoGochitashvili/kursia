@@ -21,7 +21,14 @@ const config: Config = {
           800: "#9e240e", 900: "#7f210f",
         },
         ink: {
-          DEFAULT: "#0d1117", muted: "#5b6472", subtle: "#8a93a1", inverse: "#ffffff",
+          DEFAULT: "#0d1117", muted: "#5b6472",
+          // Darkened from #8a93a1. Small de-emphasised text was already only
+          // 3.10:1 on plain white, and the page now has a visible backdrop
+          // behind it — over a glyph that fell to 2.39:1, below the 3:1 floor
+          // for any text at all. #717b89 keeps the same blue-grey cast and
+          // reads 4.29:1 on white, 3.30:1 at the worst point of the backdrop.
+          subtle: "#717b89",
+          inverse: "#ffffff",
         },
         surface: {
           DEFAULT: "#ffffff", muted: "#f7f8fa", sunken: "#eef0f4", dark: "#0d1117",
