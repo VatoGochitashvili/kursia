@@ -40,6 +40,7 @@ export default async function CreatorLayout({ children }: { children: React.Reac
         { href: p("/dashboard/creator/reviews"), label: t.creator.reviews, icon: "star" },
         { href: p("/dashboard/creator/analytics"), label: t.creator.analytics, icon: "grid" },
         { href: p("/dashboard/creator/coupons"), label: t.creator.coupons, icon: "tag" },
+        { href: p("/dashboard/creator/announcements"), label: t.creator.announcements, icon: "megaphone" },
       ],
     },
     {

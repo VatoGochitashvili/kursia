@@ -40,3 +40,19 @@ export function stripLocale(pathname: string): { locale: Locale; path: string } 
 
 export const LOCALE_HEADER = "x-kursia-locale";
 export const LOCALE_COOKIE = "kursia_locale";
+
+/**
+ * Interpolate {placeholders} in a dictionary string.
+ *
+ * It lives here rather than in index.ts because it is a pure string function
+ * that client components legitimately need — and index.ts imports
+ * next/headers, which makes anything importing it server-only.
+ */
+export function fill(
+  template: string,
+  values: Record<string, string | number>,
+): string {
+  return template.replace(/\{(\w+)\}/g, (match, key: string) =>
+    key in values ? String(values[key]) : match,
+  );
+}

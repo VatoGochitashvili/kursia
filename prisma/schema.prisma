@@ -118,6 +118,7 @@ model CreatorProfile {
   balanceEntries BalanceEntry[]
   subscriptions Subscription[]
   coupons       Coupon[]
+  announcements Announcement[]
 
   @@index([isFeatured, featuredRank])
   @@index([isVerified])
@@ -254,6 +255,7 @@ model Course {
   faqs         CourseFaq[]
   subscriptions Subscription[]
   coupons      Coupon[]
+  announcements Announcement[]
   views        CourseView[]
   reviewEvents CourseReviewEvent[]
   follows      Follow[]
@@ -987,6 +989,31 @@ model CouponRedemption {
 
   @@unique([couponId, userId])
   @@index([userId])
+}
+
+/// A message a creator sent to their students.
+///
+/// Kept as a row rather than fired and forgotten, for three reasons: the
+/// creator needs to see what they already said, the recipient count is the
+/// only honest answer to "did that go out?", and a record is what makes
+/// abuse reviewable if a creator starts using this as a mailing list.
+model Announcement {
+  id        String   @id @default(cuid())
+  creatorId String
+  /// NULL = everyone enrolled on any of this creator's courses.
+  courseId  String?
+  subject   String
+  body      String
+  /// Notifications always; email only when the creator asked for it.
+  sendEmail Boolean  @default(false)
+  /// How many people it actually reached, recorded after the fan-out.
+  recipientCount Int @default(0)
+  createdAt DateTime @default(now())
+
+  creator CreatorProfile @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  course  Course?        @relation(fields: [courseId], references: [id], onDelete: SetNull)
+
+  @@index([creatorId, createdAt])
 }
 
 model Notification {

@@ -34,6 +34,7 @@ const TYPE_ICON: Record<string, IconName> = {
   PAYOUT_REJECTED: "alert",
   SECURITY_PASSWORD_CHANGED: "shield",
   CREATOR_VERIFIED: "check",
+  ANNOUNCEMENT: "megaphone",
   ASSIGNMENT_SUBMITTED: "edit",
   ASSIGNMENT_REVIEWED: "check",
   SUBSCRIPTION_ENDING: "clock",
