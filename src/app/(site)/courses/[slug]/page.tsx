@@ -347,6 +347,7 @@ export default async function CoursePage({ params }: Props) {
                             })
                           : null,
                       }}
+                      currency={course.currency}
                       accessUntilLabel={
                         access.accessExpiresAt
                           ? fill(t.courses.accessUntil, {
@@ -370,6 +371,12 @@ export default async function CoursePage({ params }: Props) {
                         planMonthly: t.courses.planMonthly,
                         planMonthlyNote: t.courses.planMonthlyNote,
                         subscribeNow: t.courses.subscribeNow,
+                        couponPlaceholder: t.courses.couponPlaceholder,
+                        couponApply: t.courses.couponApply,
+                        couponApplied: t.courses.couponApplied,
+                        couponRemove: t.common.remove,
+                        couponSignIn: t.courses.couponSignIn,
+                        couponTotal: t.courses.couponTotal,
                       }}
                     />
                   </div>

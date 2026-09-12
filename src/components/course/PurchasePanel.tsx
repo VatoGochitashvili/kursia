@@ -6,6 +6,8 @@ import { api, errorMessage } from "@/lib/client/fetcher";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
+import { CouponField, type AppliedCoupon } from "./CouponField";
+import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/cn";
 
 /**
@@ -25,6 +27,7 @@ export function PurchaseActions({
   isFree,
   pricing,
   accessUntilLabel,
+  currency,
   labels,
   loginHref,
   learnHref,
@@ -49,6 +52,13 @@ export function PurchaseActions({
   };
   /** Formatted on the server — see the note on `pricing`. Null = never expires. */
   accessUntilLabel: string | null;
+  /**
+   * The course's currency. Money is formatted here with the project's own
+   * formatter, which is hand-written precisely so that it never reaches for
+   * Intl — ka-GE resolves differently in Node and the browser, and the
+   * mismatch surfaces as a hydration error.
+   */
+  currency: string;
   labels: Record<string, string>;
   loginHref: string;
   learnHref: string;
@@ -63,6 +73,7 @@ export function PurchaseActions({
   const [kind, setKind] = useState<"ONE_TIME" | "SUBSCRIPTION">(
     pricing.model === "SUBSCRIPTION" ? "SUBSCRIPTION" : "ONE_TIME",
   );
+  const [coupon, setCoupon] = useState<AppliedCoupon | null>(null);
 
   async function startCheckout() {
     if (!isAuthenticated) {
@@ -75,6 +86,7 @@ export function PurchaseActions({
       const result = await api.post<{ redirectUrl: string; free: boolean }>("/api/checkout", {
         courseId,
         kind,
+        couponCode: coupon?.code,
       });
       // A free course is enrolled server-side and lands straight in the player.
       router.push(result.redirectUrl);
@@ -159,6 +171,37 @@ export function PurchaseActions({
       {!isFree && pricing.model === "SUBSCRIPTION" && (
         <p className="rounded-xl bg-brand-50 px-3.5 py-2.5 text-[12px] leading-relaxed text-brand-700">
           {labels.planMonthlyNote}
+        </p>
+      )}
+
+      {/* A code only applies to buying the course outright. Discounting one
+          month of a subscription would be a different product decision, and
+          silently applying it to the first month only is the kind of surprise
+          that generates refund requests. */}
+      {!isFree && kind === "ONE_TIME" && (
+        <CouponField
+          courseId={courseId}
+          isAuthenticated={isAuthenticated}
+          applied={coupon}
+          onApply={setCoupon}
+          onClear={() => setCoupon(null)}
+          currency={currency}
+          labels={{
+            placeholder: labels.couponPlaceholder,
+            apply: labels.couponApply,
+            applied: labels.couponApplied,
+            remove: labels.couponRemove,
+            signInFirst: labels.couponSignIn,
+          }}
+        />
+      )}
+
+      {coupon && (
+        <p className="flex items-baseline justify-between gap-2 text-[14px]">
+          <span className="text-ink-muted">{labels.couponTotal}</span>
+          <span className="text-lg font-bold text-ink">
+            {formatMoney(coupon.finalMinor, currency, { hideDecimalsWhenWhole: true })}
+          </span>
         </p>
       )}
 
