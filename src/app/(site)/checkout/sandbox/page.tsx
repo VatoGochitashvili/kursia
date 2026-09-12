@@ -63,7 +63,7 @@ export default async function SandboxCheckoutPage({
 
         <dl className="mb-6 space-y-2.5 rounded-xl bg-surface-muted p-4 text-sm">
           <Row label={t.checkout.reference} value={transaction.purchase.reference} mono />
-          <Row label={t.nav.courses} value={transaction.course.title} />
+          <Row label={t.nav.courses} value={transaction.course?.title ?? "Membership"} />
           <Row
             label={t.checkout.total}
             value={formatMoney(transaction.amountMinor, transaction.currency)}

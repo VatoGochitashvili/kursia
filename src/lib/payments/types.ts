@@ -30,7 +30,13 @@ export interface PaymentIntentInput {
   currency: string;
   description: string;
   buyer: { id: string; email: string; name: string };
-  course: { id: string; title: string; slug: string };
+  /**
+   * What is being bought. `id` is a course id for a course, or the creator
+   * profile id for a month of community membership — providers use it only as
+   * an opaque line-item reference, and `kind` says which it is for the ones
+   * that itemise.
+   */
+  item: { kind: "COURSE" | "COMMUNITY"; id: string; title: string; slug: string };
   locale: string;
   returnUrl: string;
   cancelUrl: string;

@@ -172,7 +172,7 @@ export default async function CreatorDashboardPage() {
                           {purchase.user.profile?.fullName ?? "—"}
                         </p>
                         <p className="truncate text-[11px] text-ink-subtle">
-                          {purchase.course.title}
+                          {purchase.course?.title ?? t.membership.monthlyMembership}
                         </p>
                       </div>
                       <div className="shrink-0 text-end">

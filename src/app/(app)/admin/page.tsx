@@ -164,7 +164,7 @@ export default async function AdminOverviewPage() {
                     size={30}
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] text-ink">{purchase.course.title}</p>
+                    <p className="truncate text-[13px] text-ink">{purchase.course?.title ?? t.membership.monthlyMembership}</p>
                     <p className="truncate text-[11px] text-ink-subtle">
                       {purchase.user.profile?.fullName ?? "—"}
                       {purchase.paidAt && (

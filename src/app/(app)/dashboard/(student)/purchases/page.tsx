@@ -11,6 +11,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Badge, Card, EmptyState } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
 import { getSettings } from "@/lib/settings";
+import { communityLabel } from "@/lib/membership";
 
 export const metadata: Metadata = { title: "Purchases", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -37,11 +38,26 @@ export default async function PurchasesPage() {
     select: {
       id: true, reference: true, status: true, amountMinor: true, currency: true,
       createdAt: true, paidAt: true, refundedAmountMinor: true,
+      creatorId: true,
       course: { select: { slug: true, title: true } },
       transactions: { orderBy: { createdAt: "desc" }, take: 1, select: { provider: true } },
       refunds: { select: { id: true, status: true }, orderBy: { createdAt: "desc" }, take: 1 },
     },
   });
+
+  // Membership purchases have no course to name. Purchase stores creatorId as
+  // a plain column rather than a relation, so the communities behind them are
+  // fetched in one go here instead of per row.
+  const membershipCreatorIds = [
+    ...new Set(purchases.filter((x) => !x.course).map((x) => x.creatorId)),
+  ];
+  const creators = membershipCreatorIds.length
+    ? await db.creatorProfile.findMany({
+        where: { id: { in: membershipCreatorIds } },
+        select: { id: true, slug: true, displayName: true, communityName: true },
+      })
+    : [];
+  const creatorById = new Map(creators.map((c) => [c.id, c]));
 
   const p = (path: string) => localePath(path, locale);
   const refundWindowMs = settings.refundWindowDays * 24 * 60 * 60 * 1000;
@@ -68,16 +84,30 @@ export default async function PurchasesPage() {
               Date.now() - purchase.paidAt.getTime() < refundWindowMs;
             const pendingRefund = purchase.refunds[0]?.status === "REQUESTED";
 
+            // One row, two kinds of thing bought.
+            const creator = purchase.course ? null : creatorById.get(purchase.creatorId);
+            const title = purchase.course?.title ?? communityLabel(creator, locale);
+            const href = purchase.course
+              ? `/courses/${purchase.course.slug}`
+              : creator
+                ? `/community/${creator.slug}`
+                : "/dashboard/purchases";
+            const openHref = purchase.course
+              ? `/learn/${purchase.course.slug}`
+              : creator
+                ? `/community/${creator.slug}`
+                : null;
+
             return (
               <li key={purchase.id}>
                 <Card className="p-4 sm:p-5">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="min-w-0">
                       <Link
-                        href={p(`/courses/${purchase.course.slug}`)}
+                        href={p(href)}
                         className="text-[15px] font-bold text-ink hover:text-brand-600"
                       >
-                        {purchase.course.title}
+                        {title}
                       </Link>
                       <dl className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[12px] text-ink-muted">
                         <div className="flex gap-1.5">
@@ -115,10 +145,10 @@ export default async function PurchasesPage() {
                   </div>
 
                   <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-4">
-                    {purchase.status === "PAID" && (
-                      <ButtonLink href={p(`/learn/${purchase.course.slug}`)} size="sm">
-                        <Icon name="play" size={14} filled />
-                        {t.courses.continueLearning}
+                    {purchase.status === "PAID" && openHref && (
+                      <ButtonLink href={p(openHref)} size="sm">
+                        <Icon name={purchase.course ? "play" : "users"} size={14} filled />
+                        {purchase.course ? t.courses.continueLearning : t.community.title}
                       </ButtonLink>
                     )}
                     {purchase.status === "PENDING" && (

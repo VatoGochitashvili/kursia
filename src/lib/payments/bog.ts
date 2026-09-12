@@ -81,8 +81,8 @@ export class BogPaymentProvider implements PaymentProvider {
         total_amount: (input.amountMinor / 100).toFixed(2),
         basket: [
           {
-            product_id: input.course.id,
-            description: input.course.title,
+            product_id: input.item.id,
+            description: input.item.title,
             quantity: 1,
             unit_price: (input.amountMinor / 100).toFixed(2),
           },

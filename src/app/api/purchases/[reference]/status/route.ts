@@ -24,7 +24,7 @@ export const GET = handler(
 
     return jsonOk({
       status: purchase.status,
-      courseSlug: purchase.course.slug,
+      courseSlug: purchase.course?.slug ?? null,
       hasAccess: Boolean(purchase.enrollment && !purchase.enrollment.revokedAt),
     });
   },

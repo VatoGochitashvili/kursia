@@ -775,6 +775,98 @@ async function main() {
 
   console.log(`  ✓ ${postCount} community posts, ${pointRows} point events`);
 
+  // ── Communities ──────────────────────────────────────────────────────────
+  // One paid and one free, because they behave differently at the join step
+  // and both need to be visible on a fresh database.
+  //
+  // Membership is granted as subscription rows directly rather than by running
+  // a checkout: the seed has no payment provider, and the access rules read
+  // the subscription period, which is exactly what these rows carry.
+  const COMMUNITIES = [
+    {
+      email: CREATORS[0]!.email,
+      name: "ციფრული მარკეტინგის კლუბი",
+      tagline: "ყოველკვირეული ცოცხალი სესიები, უკუკავშირი და ერთად მუშაობა",
+      description:
+        "დახურული სივრცე მათთვის, ვინც რეალურ კამპანიებზე მუშაობს. ყოველ კვირას ვხვდებით ცოცხლად, ვარჩევთ თქვენს ფუნელებს და ვცვლით იმას, რაც არ მუშაობს.",
+      priceMinor: 2500,
+    },
+    {
+      email: CREATORS[1]!.email,
+      name: "ჯანსაღი რიტმი",
+      tagline: "ვარჯიში, კვება და ანგარიშვალდებულება — ერთად",
+      description:
+        "ყოველდღიური მხარდაჭერა, კვირის გეგმები და ცოცხალი ვარჯიშები. უფასოა — შემოდი და ნახე, გამოგადგება თუ არა.",
+      priceMinor: 0,
+    },
+  ];
+
+  let memberships = 0;
+
+  for (const community of COMMUNITIES) {
+    const cid = creatorIdByEmail.get(community.email);
+    if (!cid) continue;
+
+    await db.creatorProfile.update({
+      where: { id: cid },
+      data: {
+        communityEnabled: true,
+        communityName: community.name,
+        communityTagline: community.tagline,
+        communityDescription: community.description,
+        communityPriceMinor: community.priceMinor,
+        communityCurrency: CURRENCY,
+      },
+    });
+
+    // Members drawn from people who already bought something from this
+    // creator, so the community is populated by plausible regulars rather
+    // than by strangers.
+    const candidates = await db.enrollment.findMany({
+      where: { course: { creatorId: cid }, revokedAt: null },
+      select: { userId: true },
+      distinct: ["userId"],
+      take: 6,
+    });
+
+    for (const [index, candidate] of candidates.entries()) {
+      const startedAt = daysAgo(randInt(3, 80));
+      // One lapsed member in each space, so the expired state is reachable
+      // without waiting a month for one to appear.
+      const lapsed = index === candidates.length - 1;
+      const periodStart = lapsed ? daysAgo(40) : startedAt;
+      const periodEnd = lapsed
+        ? daysAgo(10)
+        : new Date(Date.now() + randInt(2, 27) * 864e5);
+
+      await db.subscription.create({
+        data: {
+          userId: candidate.userId,
+          courseId: null,
+          creatorId: cid,
+          kind: "COMMUNITY",
+          scopeKey: `community:${cid}`,
+          status: lapsed ? "EXPIRED" : "ACTIVE",
+          priceMinor: community.priceMinor,
+          currency: CURRENCY,
+          currentPeriodStart: periodStart,
+          currentPeriodEnd: periodEnd,
+          createdAt: startedAt,
+        },
+      });
+      if (!lapsed) memberships += 1;
+    }
+
+    await db.creatorProfile.update({
+      where: { id: cid },
+      data: {
+        communityMemberCount: candidates.filter((_, i) => i !== candidates.length - 1).length,
+      },
+    });
+  }
+
+  console.log(`  ✓ ${COMMUNITIES.length} communities, ${memberships} live memberships`);
+
   // One pending course so the admin approval queue is not empty on first run.
   const pendingCreatorId = creatorIdByEmail.get("davit.gogoladze@example.ge")!;
   const pending = await db.course.create({

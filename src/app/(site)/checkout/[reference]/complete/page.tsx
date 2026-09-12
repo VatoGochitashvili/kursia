@@ -29,12 +29,17 @@ export default async function CheckoutCompletePage({
   const { locale, t } = await getI18n();
   const { reference } = await params;
   const user = await requireUser();
-  const purchase = await getPurchaseForViewer(reference, user.id);
+  const purchase = await getPurchaseForViewer(reference, user.id, locale);
 
   const p = (path: string) => localePath(path, locale);
   const paid = purchase.status === "PAID";
   const failed = purchase.status === "FAILED" || purchase.status === "CANCELLED";
-  const hasAccess = Boolean(purchase.enrollment && !purchase.enrollment.revokedAt);
+  // A membership grants no enrolment row — the subscription is the access —
+  // so "can they open it?" is simply "was it paid for?" in that case.
+  const hasAccess =
+    purchase.subject.kind === "COMMUNITY"
+      ? paid
+      : Boolean(purchase.enrollment && !purchase.enrollment.revokedAt);
 
   return (
     <div className="container-page flex min-h-[70dvh] items-center justify-center py-14">
@@ -65,7 +70,10 @@ export default async function CheckoutCompletePage({
         </p>
 
         <dl className="mt-6 space-y-2.5 rounded-xl bg-surface-muted p-4 text-left text-sm">
-          <Row label={t.nav.courses} value={purchase.course.title} />
+          <Row
+            label={purchase.subject.kind === "COURSE" ? t.nav.courses : t.community.title}
+            value={purchase.subject.title}
+          />
           <Row label={t.checkout.reference} value={purchase.reference} mono />
           <Row
             label={t.checkout.total}
@@ -81,12 +89,18 @@ export default async function CheckoutCompletePage({
 
         <div className="mt-7 space-y-2.5">
           {paid && hasAccess ? (
-            <ButtonLink href={p(`/learn/${purchase.course.slug}`)} size="lg" fullWidth>
-              <Icon name="play" size={17} filled />
-              {t.checkout.startLearning}
+            <ButtonLink href={p(purchase.subject.openHref)} size="lg" fullWidth>
+              <Icon
+                name={purchase.subject.kind === "COURSE" ? "play" : "users"}
+                size={17}
+                filled
+              />
+              {purchase.subject.kind === "COURSE"
+                ? t.checkout.startLearning
+                : t.community.title}
             </ButtonLink>
           ) : failed ? (
-            <ButtonLink href={p(`/courses/${purchase.course.slug}`)} size="lg" fullWidth>
+            <ButtonLink href={p(purchase.subject.retryHref)} size="lg" fullWidth>
               {t.checkout.tryAgain}
             </ButtonLink>
           ) : null}

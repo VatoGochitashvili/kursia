@@ -106,7 +106,7 @@ export default async function CreatorSalesPage({
                         <span className="truncate">{purchase.user.profile?.fullName ?? "—"}</span>
                       </span>
                     </Td>
-                    <Td className="max-w-[16rem] truncate">{purchase.course.title}</Td>
+                    <Td className="max-w-[16rem] truncate">{purchase.course?.title ?? t.membership.monthlyMembership}</Td>
                     <Td align="end" className="tabular-nums">
                       {formatMoney(purchase.amountMinor, purchase.currency)}
                     </Td>
@@ -132,7 +132,7 @@ export default async function CreatorSalesPage({
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="truncate text-[13px] font-semibold text-ink">
-                      {purchase.course.title}
+                      {purchase.course?.title ?? t.membership.monthlyMembership}
                     </p>
                     <p className="truncate text-[12px] text-ink-muted">
                       {purchase.user.profile?.fullName ?? "—"}

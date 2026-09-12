@@ -111,6 +111,24 @@ model CreatorProfile {
   legalName             String?
   payoutCurrency        String    @default("GEL")
   approvedAt            DateTime?
+
+  // ── The community as a product ───────────────────────────────────────────
+  /// Off until the creator opens it. A community that is not enabled is not
+  /// joinable and does not appear anywhere as something to pay for.
+  communityEnabled Boolean @default(false)
+  /// The group's own name and pitch. Skool groups are branded separately from
+  /// the person running them — "Georgian Traders", not "Giorgi Khutsishvili".
+  communityName        String?
+  communityTagline     String?
+  communityDescription String?
+  communityCoverUrl    String?
+  /// Monthly price in minor units. Zero means a free community anyone signed
+  /// in can join — Skool has those too, and they are how most groups start.
+  communityPriceMinor Int    @default(0)
+  communityCurrency   String @default("GEL")
+  /// Members at the last count. Denormalised for the directory card; the
+  /// truth is the set of live subscriptions.
+  communityMemberCount Int @default(0)
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
@@ -217,6 +235,12 @@ model Course {
   /// "ONE_TIME"     — pay once, keep it forever (the original behaviour)
   /// "SUBSCRIPTION" — monthly access only
   /// "BOTH"         — the buyer chooses at checkout
+  /// Whether a paying community member gets this course as part of their
+  /// membership. True by default: in the Skool model the classroom is what
+  /// the monthly fee buys. A creator can exclude a premium course so it stays
+  /// a separate purchase.
+  includedInMembership Boolean @default(true)
+
   pricingModel           String @default("ONE_TIME")
   /// Price for one month, when a subscription is offered. Minor units.
   subscriptionPriceMinor Int?
@@ -464,7 +488,10 @@ model Purchase {
   id        String @id @default(cuid())
   reference String @unique // human-facing order number
   userId    String
-  courseId  String
+  /// Null when the purchase is a month of community membership rather than a
+  /// course. Everything downstream — ledger, refunds, payouts — works off the
+  /// money fields, which are the same either way.
+  courseId  String?
   creatorId String
 
   // Money snapshot at purchase time — never re-read from the course.
@@ -476,8 +503,8 @@ model Purchase {
   processingFeeMinor   Int    @default(0)
   creatorEarningsMinor Int
 
-  /// "ONE_TIME" | "SUBSCRIPTION" — a subscription renewal is its own Purchase,
-  /// so the ledger, refunds and payouts need no special cases.
+  /// "ONE_TIME" | "SUBSCRIPTION" | "COMMUNITY" — a subscription renewal is its
+  /// own Purchase, so the ledger, refunds and payouts need no special cases.
   kind           String  @default("ONE_TIME")
   /// What a coupon took off, in minor units. Zero when none was used.
   discountMinor  Int     @default(0)
@@ -498,7 +525,7 @@ model Purchase {
   updatedAt DateTime @updatedAt
 
   user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course           Course            @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  course           Course?           @relation(fields: [courseId], references: [id], onDelete: Restrict)
   subscription     Subscription?     @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
   couponRedemption CouponRedemption?
   transactions     Transaction[]
@@ -520,7 +547,8 @@ model Transaction {
   id              String   @id @default(cuid())
   purchaseId      String
   userId          String
-  courseId        String
+  /// Null for a community membership payment. See Purchase.courseId.
+  courseId        String?
   provider        String // "bog" | "tbc" | "manual" | "sandbox"
   providerTxnId   String?
   providerOrderId String?  @unique
@@ -538,7 +566,7 @@ model Transaction {
 
   purchase Purchase       @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
   user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course   Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  course   Course?        @relation(fields: [courseId], references: [id], onDelete: Cascade)
   events   WebhookEvent[]
 
   @@index([purchaseId])
@@ -906,8 +934,22 @@ model AssignmentSubmission {
 model Subscription {
   id        String @id @default(cuid())
   userId    String
-  courseId  String
+  /// Null for a community subscription — that one buys the whole space, not
+  /// one course inside it.
+  courseId  String?
   creatorId String
+
+  /// "COURSE" | "COMMUNITY"
+  kind String @default("COURSE")
+
+  /// What this subscription is for: `course:<id>` or `community:<creatorId>`.
+  ///
+  /// A plain unique on (userId, courseId) cannot express this: courseId is
+  /// null for community rows, and SQL treats NULLs as distinct, so one person
+  /// could end up with several parallel subscriptions to the same community.
+  /// One explicit key avoids relying on NULL semantics that differ between
+  /// engines.
+  scopeKey String
 
   // "ACTIVE" | "CANCELLED" | "EXPIRED"
   // CANCELLED still grants access until currentPeriodEnd; it only means the
@@ -930,11 +972,11 @@ model Subscription {
   updatedAt DateTime @updatedAt
 
   user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course    Course         @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  course    Course?        @relation(fields: [courseId], references: [id], onDelete: Restrict)
   creator   CreatorProfile @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   purchases Purchase[]
 
-  @@unique([userId, courseId])
+  @@unique([userId, scopeKey])
   @@index([status, currentPeriodEnd])
   @@index([userId, status])
   @@index([creatorId, status])

@@ -27,7 +27,7 @@ export default async function TransferInstructionsPage({
   const [{ locale, t }, settings] = await Promise.all([getI18n(), getSettings()]);
   const { reference } = await params;
   const user = await requireUser();
-  const purchase = await getPurchaseForViewer(reference, user.id);
+  const purchase = await getPurchaseForViewer(reference, user.id, locale);
   const p = (path: string) => localePath(path, locale);
 
   const brand = locale === "en" ? settings.platformName : settings.platformNameKa;

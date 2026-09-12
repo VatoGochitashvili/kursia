@@ -1,8 +1,9 @@
 import { db } from "@/lib/db";
 import { notify } from "@/lib/notifications";
+import { communityLabel } from "@/lib/membership";
 
 /**
- * Monthly access to a course.
+ * Monthly access — to a course, or to a whole community.
  *
  * Renewal is explicit. Charging a card every month requires storing a
  * tokenised card with the provider, which this platform deliberately does not
@@ -92,17 +93,25 @@ export async function runSubscriptionMaintenance(): Promise<{
       userId: true,
       currentPeriodEnd: true,
       course: { select: { title: true, slug: true } },
+      creator: { select: { slug: true, displayName: true, communityName: true } },
     },
     take: 200,
   });
 
   for (const subscription of ending) {
+    // Same warning, two destinations: renewing a course means going back to
+    // the course page, renewing a membership means the community it opens.
+    const label = subscription.course?.title ?? communityLabel(subscription.creator);
+    const href = subscription.course
+      ? `/courses/${subscription.course.slug}`
+      : `/community/${subscription.creator.slug}`;
+
     await notify({
       userId: subscription.userId,
-      type: "SUBSCRIPTION_ENDING",
+      type: subscription.course ? "SUBSCRIPTION_ENDING" : "MEMBERSHIP_ENDING",
       title: "წვდომა მალე იწურება",
-      body: `„${subscription.course.title}" — განაახლე, რომ არ შეწყდეს.`,
-      linkUrl: `/courses/${subscription.course.slug}`,
+      body: `„${label}" — განაახლე, რომ არ შეწყდეს.`,
+      linkUrl: href,
     }).catch(() => undefined);
 
     await db.subscription.update({
@@ -114,7 +123,7 @@ export async function runSubscriptionMaintenance(): Promise<{
   // ── Already lapsed ──────────────────────────────────────────────────────
   const lapsed = await db.subscription.findMany({
     where: { status: { in: ["ACTIVE", "CANCELLED"] }, currentPeriodEnd: { lte: now } },
-    select: { id: true, userId: true, courseId: true },
+    select: { id: true, userId: true, courseId: true, creatorId: true },
     take: 500,
   });
 
@@ -123,6 +132,17 @@ export async function runSubscriptionMaintenance(): Promise<{
       where: { id: subscription.id },
       data: { status: "EXPIRED" },
     });
+
+    // A lapsed membership is one fewer member on the directory card. Guarded
+    // above zero so a double run cannot drive the count negative.
+    if (!subscription.courseId) {
+      await db.creatorProfile
+        .updateMany({
+          where: { id: subscription.creatorId, communityMemberCount: { gt: 0 } },
+          data: { communityMemberCount: { decrement: 1 } },
+        })
+        .catch(() => undefined);
+    }
     // The enrolment row stays: it holds the student's progress, and buying
     // another month should return them to where they stopped rather than to
     // the first lesson. Only the expiry matters for access, and it has

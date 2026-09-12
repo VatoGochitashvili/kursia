@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { getSessionUser, type SessionUser } from "./session";
 import type { UserRole } from "@/lib/enums";
+import { communityScope } from "@/lib/membership";
 
 /**
  * Authorization helpers. Every one of these runs on the server and reads from
@@ -75,10 +76,14 @@ export async function hasCourseAccess(
   canView: boolean;
   /** When a subscription period ends. NULL for anything that never expires. */
   accessExpiresAt: Date | null;
+  /** True when the access came from a community membership, not a purchase. */
+  viaMembership: boolean;
 }> {
-  if (!userId) {
-    return { enrolled: false, isOwner: false, isAdmin: false, canView: false, accessExpiresAt: null };
-  }
+  const denied = {
+    enrolled: false, isOwner: false, isAdmin: false,
+    canView: false, accessExpiresAt: null, viaMembership: false,
+  };
+  if (!userId) return denied;
 
   const [user, enrollment, course] = await Promise.all([
     db.user.findUnique({
@@ -89,12 +94,13 @@ export async function hasCourseAccess(
       where: { userId_courseId: { userId, courseId } },
       select: { id: true, revokedAt: true, accessExpiresAt: true },
     }),
-    db.course.findUnique({ where: { id: courseId }, select: { creatorId: true } }),
+    db.course.findUnique({
+      where: { id: courseId },
+      select: { creatorId: true, includedInMembership: true },
+    }),
   ]);
 
-  if (!user || user.status !== "ACTIVE") {
-    return { enrolled: false, isOwner: false, isAdmin: false, canView: false, accessExpiresAt: null };
-  }
+  if (!user || user.status !== "ACTIVE") return denied;
 
   const isAdmin = user.role === "ADMIN";
   const isOwner = Boolean(
@@ -114,12 +120,43 @@ export async function hasCourseAccess(
       (!enrollment.accessExpiresAt || enrollment.accessExpiresAt.getTime() > Date.now()),
   );
 
+  // The other way in: a live membership of the creator's community, for a
+  // course the creator put inside it.
+  //
+  // Deliberately derived rather than written as enrolment rows at join time.
+  // Rows would mean a creator adding a course next month has to backfill
+  // every existing member, excluding one has to revoke them again, and any
+  // gap between those two jobs is somebody seeing something they should not.
+  // Asking the question at read time cannot drift.
+  let membershipExpiresAt: Date | null = null;
+  if (!enrolled && !isOwner && !isAdmin && course?.includedInMembership) {
+    const membership = await db.subscription.findUnique({
+      where: { userId_scopeKey: { userId, scopeKey: communityScope(course.creatorId) } },
+      select: { status: true, currentPeriodEnd: true },
+    });
+    // Same instant-expiry rule as an enrolment: the period end is compared
+    // here, not left to the cron that tidies up lapsed subscriptions.
+    if (
+      membership &&
+      membership.status !== "EXPIRED" &&
+      membership.currentPeriodEnd.getTime() > Date.now()
+    ) {
+      membershipExpiresAt = membership.currentPeriodEnd;
+    }
+  }
+
+  const viaMembership = membershipExpiresAt !== null;
+  const hasAccess = enrolled || viaMembership;
+
   return {
-    enrolled,
+    enrolled: hasAccess,
     isOwner,
     isAdmin,
-    canView: enrolled || isOwner || isAdmin,
-    accessExpiresAt: enrolled ? (enrollment?.accessExpiresAt ?? null) : null,
+    canView: hasAccess || isOwner || isAdmin,
+    accessExpiresAt: enrolled
+      ? (enrollment?.accessExpiresAt ?? null)
+      : membershipExpiresAt,
+    viaMembership,
   };
 }
 

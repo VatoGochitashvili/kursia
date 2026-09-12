@@ -3,13 +3,15 @@ import type { Metadata } from "next";
 import { db } from "@/lib/db";
 import { getI18n, localePath } from "@/i18n";
 import { getSessionUser } from "@/lib/auth/session";
-import { getMembership } from "@/lib/community";
+import { loadCommunityPage } from "@/lib/community-page";
 import { buildMetadata } from "@/lib/seo";
 import { Avatar, Breadcrumbs, Card } from "@/components/ui/primitives";
 import { ButtonLink } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { CommunityFeed } from "@/components/community/CommunityFeed";
 import { CommunityTabs } from "@/components/community/CommunityTabs";
+import { CommunityGate } from "@/components/community/CommunityGate";
+import { JoinCommunityCard } from "@/components/community/JoinCommunityCard";
 
 export const dynamic = "force-dynamic";
 
@@ -56,14 +58,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  */
 export default async function CommunityPage({ params }: Props) {
   const { slug } = await params;
-  const [creator, { locale, t }, viewer] = await Promise.all([
-    loadCreator(slug),
-    getI18n(),
-    getSessionUser(),
-  ]);
-  if (!creator) notFound();
-
-  const membership = await getMembership(viewer?.id ?? null, creator.id);
+  const [{ locale, t }, viewer] = await Promise.all([getI18n(), getSessionUser()]);
+  const { creator, membership, community, cancelled } = await loadCommunityPage(
+    slug,
+    viewer?.id ?? null,
+    locale,
+  );
   const p = (path: string) => localePath(path, locale);
 
   return (
@@ -79,7 +79,7 @@ export default async function CommunityPage({ params }: Props) {
 
       <div className="mb-6 flex flex-wrap items-center gap-4">
         <Avatar
-          src={creator.user.profile?.avatarUrl ?? null}
+          src={creator.avatarUrl}
           name={creator.displayName}
           size={56}
         />
@@ -92,6 +92,22 @@ export default async function CommunityPage({ params }: Props) {
       <div className="mx-auto max-w-2xl">
         <CommunityTabs slug={creator.slug} active="feed" locale={locale} t={t} />
 
+        {membership.isSubscriber && (
+          <div className="mb-5">
+            <JoinCommunityCard
+              community={community}
+              isAuthenticated
+              isOwner={false}
+              isSubscriber
+              memberUntil={membership.memberUntil?.toISOString() ?? null}
+              cancelled={cancelled}
+              loginHref={p("/login")}
+              locale={locale}
+              t={t}
+            />
+          </div>
+        )}
+
         {membership.isMember ? (
           <CommunityFeed
             creatorId={creator.id}
@@ -100,19 +116,16 @@ export default async function CommunityPage({ params }: Props) {
             t={t}
           />
         ) : (
-          <Card className="p-8 text-center">
-            <span className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
-              <Icon name="lock" size={24} />
-            </span>
-            <h2 className="mt-5 text-xl">{t.community.lockedTitle}</h2>
-            <p className="mx-auto mt-2 max-w-md text-[15px] leading-relaxed text-ink-muted">
-              {t.community.lockedBody}
-            </p>
-            <ButtonLink className="mt-6" href={p(`/creator/${creator.slug}`)} size="lg">
-              {t.community.lockedCta}
-              <Icon name="arrowRight" size={17} />
-            </ButtonLink>
-          </Card>
+          <CommunityGate
+            community={community}
+            creatorSlug={creator.slug}
+            isAuthenticated={Boolean(viewer)}
+            isOwner={membership.isOwner}
+            loginHref={p(`/login?next=/community/${creator.slug}`)}
+            coursesHref={p(`/creator/${creator.slug}`)}
+            locale={locale}
+            t={t}
+          />
         )}
       </div>
     </div>

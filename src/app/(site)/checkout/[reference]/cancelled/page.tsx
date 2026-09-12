@@ -17,7 +17,7 @@ export default async function CheckoutCancelledPage({
   const { locale, t } = await getI18n();
   const { reference } = await params;
   const user = await requireUser();
-  const purchase = await getPurchaseForViewer(reference, user.id);
+  const purchase = await getPurchaseForViewer(reference, user.id, locale);
   const p = (path: string) => localePath(path, locale);
 
   return (
@@ -30,7 +30,7 @@ export default async function CheckoutCancelledPage({
         <p className="mt-2 text-[15px] text-ink-muted">{t.checkout.failedBody}</p>
 
         <div className="mt-7 space-y-2.5">
-          <ButtonLink href={p(`/courses/${purchase.course.slug}`)} size="lg" fullWidth>
+          <ButtonLink href={p(purchase.subject.retryHref)} size="lg" fullWidth>
             {t.checkout.tryAgain}
           </ButtonLink>
           <ButtonLink href={p("/courses")} variant="outline" size="lg" fullWidth>

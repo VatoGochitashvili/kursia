@@ -4,6 +4,7 @@ import { getSettings, resolveCommissionBps } from "@/lib/settings";
 import { effectivePriceMinor, formatMoney, splitSale } from "@/lib/money";
 import { recordRefund, recordSale } from "@/lib/earnings";
 import { addMonths } from "@/lib/subscriptions";
+import { communityLabel, communityScope, courseScope, isRecurring } from "@/lib/membership";
 import { COUPON_MESSAGES, evaluateCoupon, recordRedemption } from "@/lib/coupons";
 import { notify, absoluteUrl } from "@/lib/notifications";
 import { audit, AUDIT_ACTIONS } from "@/lib/audit";
@@ -141,11 +142,15 @@ export async function startCheckout(input: {
   // the history of periods hangs off a single subscription.
   const subscription = wantsSubscription
     ? await db.subscription.upsert({
-        where: { userId_courseId: { userId: input.userId, courseId: course.id } },
+        where: {
+          userId_scopeKey: { userId: input.userId, scopeKey: courseScope(course.id) },
+        },
         create: {
           userId: input.userId,
           courseId: course.id,
           creatorId: course.creatorId,
+          kind: "COURSE",
+          scopeKey: courseScope(course.id),
           status: "ACTIVE",
           priceMinor: amountMinor,
           currency: course.currency,
@@ -219,7 +224,7 @@ export async function startCheckout(input: {
       currency: course.currency,
       description: course.title,
       buyer: { id: user.id, email: user.email, name: user.profile?.fullName ?? user.email },
-      course: { id: course.id, title: course.title, slug: course.slug },
+      item: { kind: "COURSE", id: course.id, title: course.title, slug: course.slug },
       locale: input.locale,
       returnUrl: absoluteUrl(`/checkout/${purchase.reference}/complete`),
       cancelUrl: absoluteUrl(`/checkout/${purchase.reference}/cancelled`),
@@ -262,6 +267,204 @@ export async function startCheckout(input: {
       "გადახდის სისტემასთან დაკავშირება ვერ მოხერხდა. სცადეთ სხვა მეთოდი.",
     );
   }
+}
+
+/**
+ * Buy a month of a creator's community.
+ *
+ * The parallel of `startCheckout`, for the thing the platform is actually
+ * built around: the membership, not the course. It produces the same Purchase
+ * and Transaction rows a course sale does, so the ledger, payouts, refunds
+ * and receipts need no second implementation — the only difference is that
+ * `courseId` is null and access comes from the subscription period rather
+ * than an enrolment row.
+ *
+ * Renewal is explicit here too. No card is stored, so a member who does
+ * nothing simply lapses; buying another month early extends from the end of
+ * the current period rather than throwing away the days already paid for.
+ */
+export async function startCommunityCheckout(input: {
+  userId: string;
+  creatorId: string;
+  providerId?: string;
+  locale: string;
+}): Promise<CheckoutResult> {
+  const [creator, user] = await Promise.all([
+    db.creatorProfile.findUnique({
+      where: { id: input.creatorId },
+      select: {
+        id: true, userId: true, slug: true, displayName: true,
+        communityEnabled: true, communityName: true,
+        communityPriceMinor: true, communityCurrency: true,
+      },
+    }),
+    db.user.findUnique({
+      where: { id: input.userId },
+      select: { id: true, email: true, status: true, profile: { select: { fullName: true } } },
+    }),
+  ]);
+
+  if (!creator) throw notFoundError("საზოგადოება ვერ მოიძებნა");
+  if (!user || user.status !== "ACTIVE") {
+    throw new ApiError(403, "FORBIDDEN", "ანგარიში არააქტიურია");
+  }
+  if (!creator.communityEnabled) {
+    throw conflict("ეს საზოგადოება ჯერ არ არის გახსნილი");
+  }
+  if (creator.userId === input.userId) {
+    throw conflict("ეს შენი სივრცეა");
+  }
+
+  const label = communityLabel(creator);
+  const scopeKey = communityScope(creator.id);
+
+  // Price comes from the database, never from the request body.
+  const amountMinor = Math.max(0, creator.communityPriceMinor);
+  const currency = creator.communityCurrency;
+  const commissionBps = await resolveCommissionBps(creator.id);
+  const split = splitSale(amountMinor, commissionBps);
+
+  // One subscription row per member per community, reused across renewals, so
+  // the history of periods hangs off a single row.
+  const subscription = await db.subscription.upsert({
+    where: { userId_scopeKey: { userId: input.userId, scopeKey } },
+    create: {
+      userId: input.userId,
+      courseId: null,
+      creatorId: creator.id,
+      kind: "COMMUNITY",
+      scopeKey,
+      status: "ACTIVE",
+      priceMinor: amountMinor,
+      currency,
+      // Not yet paid for; fulfilment writes the real period.
+      currentPeriodEnd: new Date(),
+    },
+    update: { priceMinor: amountMinor },
+    select: { id: true },
+  });
+
+  const purchase = await db.purchase.create({
+    data: {
+      reference: reference(),
+      userId: input.userId,
+      courseId: null,
+      creatorId: creator.id,
+      kind: "COMMUNITY",
+      subscriptionId: subscription.id,
+      currency,
+      discountMinor: 0,
+      listPriceMinor: amountMinor,
+      amountMinor,
+      commissionBps,
+      platformFeeMinor: split.platformFeeMinor,
+      processingFeeMinor: split.processingFeeMinor,
+      creatorEarningsMinor: split.creatorEarningsMinor,
+      status: "PENDING",
+    },
+  });
+
+  // A free community needs no provider round-trip, but still settles through
+  // the same function so the subscription period, member count and
+  // notifications come from one code path.
+  if (amountMinor === 0) {
+    await fulfillPurchase({ purchaseId: purchase.id, source: "FREE" });
+    return {
+      purchaseId: purchase.id,
+      reference: purchase.reference,
+      transactionId: "",
+      redirectUrl: `/community/${creator.slug}`,
+      provider: "free",
+      amountMinor: 0,
+      currency,
+      free: true,
+    };
+  }
+
+  const providerId = await resolveProviderId(input.providerId);
+  const provider = getProvider(providerId);
+
+  const transaction = await db.transaction.create({
+    data: {
+      purchaseId: purchase.id,
+      userId: input.userId,
+      courseId: null,
+      provider: providerId,
+      status: "CREATED",
+      amountMinor,
+      currency,
+      idempotencyKey: `${purchase.id}:${providerId}`,
+    },
+  });
+
+  try {
+    const intent = await provider.createPayment({
+      transactionId: transaction.id,
+      purchaseReference: purchase.reference,
+      amountMinor,
+      currency,
+      description: label,
+      buyer: { id: user.id, email: user.email, name: user.profile?.fullName ?? user.email },
+      item: { kind: "COMMUNITY", id: creator.id, title: label, slug: creator.slug },
+      locale: input.locale,
+      returnUrl: absoluteUrl(`/checkout/${purchase.reference}/complete`),
+      cancelUrl: absoluteUrl(`/checkout/${purchase.reference}/cancelled`),
+      callbackUrl: absoluteUrl(`/api/webhooks/payments/${providerId}`),
+      idempotencyKey: transaction.id,
+    });
+
+    await db.transaction.update({
+      where: { id: transaction.id },
+      data: {
+        status: "PENDING",
+        providerOrderId: intent.providerOrderId,
+        rawResponse: JSON.stringify(intent.raw ?? {}).slice(0, 10_000),
+      },
+    });
+
+    return {
+      purchaseId: purchase.id,
+      reference: purchase.reference,
+      transactionId: transaction.id,
+      redirectUrl: intent.redirectUrl,
+      provider: providerId,
+      amountMinor,
+      currency,
+      free: false,
+    };
+  } catch (error) {
+    await db.transaction.update({
+      where: { id: transaction.id },
+      data: {
+        status: "FAILED",
+        failureCode: "PROVIDER_ERROR",
+        failureMessage: (error as Error).message.slice(0, 500),
+      },
+    });
+    await db.purchase.update({ where: { id: purchase.id }, data: { status: "FAILED" } });
+    throw new ApiError(
+      502,
+      "PROVIDER_ERROR",
+      "გადახდის სისტემასთან დაკავშირება ვერ მოხერხდა. სცადეთ სხვა მეთოდი.",
+    );
+  }
+}
+
+/** The interactive client Prisma hands to a `$transaction` callback. */
+type Tx = Parameters<Parameters<typeof db.$transaction>[0]>[0];
+
+/**
+ * The community's name, for a ledger line written inside a transaction.
+ *
+ * Takes the transaction client so the read joins the same transaction as the
+ * write it labels.
+ */
+async function communityTitle(tx: Tx, creatorId: string): Promise<string> {
+  const creator = await tx.creatorProfile.findUnique({
+    where: { id: creatorId },
+    select: { displayName: true, communityName: true },
+  });
+  return communityLabel(creator);
 }
 
 // ── Settlement ─────────────────────────────────────────────────────────────
@@ -315,11 +518,18 @@ export async function fulfillPurchase(input: FulfillInput): Promise<{ settled: b
     // "now" and the current period end means renewing early adds a month
     // rather than throwing away the days already paid for.
     let accessExpiresAt: Date | null = null;
-    if (purchase.kind === "SUBSCRIPTION" && purchase.subscriptionId) {
+    let isFirstCommunityPeriod = false;
+    if (isRecurring(purchase.kind) && purchase.subscriptionId) {
       const subscription = await tx.subscription.findUnique({
         where: { id: purchase.subscriptionId },
-        select: { currentPeriodEnd: true },
+        select: { currentPeriodEnd: true, currentPeriodStart: true, status: true },
       });
+      // A brand-new row still carries the placeholder period written at
+      // checkout, so "never had a paid period" is the test for a first join
+      // rather than a separate flag.
+      isFirstCommunityPeriod =
+        !purchase.courseId &&
+        (!subscription || subscription.currentPeriodEnd.getTime() <= subscription.currentPeriodStart.getTime());
       const from =
         subscription && subscription.currentPeriodEnd.getTime() > Date.now()
           ? subscription.currentPeriodEnd
@@ -339,29 +549,45 @@ export async function fulfillPurchase(input: FulfillInput): Promise<{ settled: b
     }
 
     // Enrolment: create, or un-revoke a previously refunded one.
-    const existingEnrollment = await tx.enrollment.findUnique({
-      where: { userId_courseId: { userId: purchase.userId, courseId: purchase.courseId } },
-      select: { id: true },
-    });
+    //
+    // A community membership has no enrolment to create — it buys the space,
+    // and access to the courses inside it is derived from the live
+    // subscription by `hasCourseAccess`. Writing enrolment rows for every
+    // course in the community instead would mean a creator adding a course
+    // next month has to backfill everyone, and removing one has to revoke.
+    if (purchase.courseId) {
+      const courseId = purchase.courseId;
+      const existingEnrollment = await tx.enrollment.findUnique({
+        where: { userId_courseId: { userId: purchase.userId, courseId } },
+        select: { id: true },
+      });
 
-    await tx.enrollment.upsert({
-      where: { userId_courseId: { userId: purchase.userId, courseId: purchase.courseId } },
-      create: {
-        userId: purchase.userId,
-        courseId: purchase.courseId,
-        source: input.source ?? "PURCHASE",
-        purchaseId: purchase.id,
-        accessExpiresAt,
-      },
-      update: { revokedAt: null, purchaseId: purchase.id, accessExpiresAt },
-    });
+      await tx.enrollment.upsert({
+        where: { userId_courseId: { userId: purchase.userId, courseId } },
+        create: {
+          userId: purchase.userId,
+          courseId,
+          source: input.source ?? "PURCHASE",
+          purchaseId: purchase.id,
+          accessExpiresAt,
+        },
+        update: { revokedAt: null, purchaseId: purchase.id, accessExpiresAt },
+      });
 
-    // A renewal is not a new student. Counting it would inflate the figure
-    // shown on the course card every month, for the same person.
-    if (!existingEnrollment) {
-      await tx.course.update({
-        where: { id: purchase.courseId },
-        data: { studentCount: { increment: 1 } },
+      // A renewal is not a new student. Counting it would inflate the figure
+      // shown on the course card every month, for the same person.
+      if (!existingEnrollment) {
+        await tx.course.update({
+          where: { id: courseId },
+          data: { studentCount: { increment: 1 } },
+        });
+      }
+    } else if (isFirstCommunityPeriod) {
+      // Same idea one level up: the member count moves when somebody joins,
+      // not every time they pay for another month.
+      await tx.creatorProfile.update({
+        where: { id: purchase.creatorId },
+        data: { communityMemberCount: { increment: 1 } },
       });
     }
 
@@ -392,7 +618,7 @@ export async function fulfillPurchase(input: FulfillInput): Promise<{ settled: b
         processingFeeMinor: purchase.processingFeeMinor,
         creatorEarningsMinor: purchase.creatorEarningsMinor,
         clearingDays: settings.payoutClearingDays,
-        courseTitle: purchase.course.title,
+        courseTitle: purchase.course?.title ?? (await communityTitle(tx, purchase.creatorId)),
       });
     }
 
@@ -405,12 +631,35 @@ export async function fulfillPurchase(input: FulfillInput): Promise<{ settled: b
 
   // Side effects happen after the transaction commits, so a slow email or a
   // notification failure can never roll back a paid enrolment.
+  // One receipt, two shapes. A course purchase points at the course; a
+  // membership points at the community it just opened. Everything below the
+  // label — money, reference, ledger — is identical, which is the whole
+  // reason a membership is a Purchase and not its own parallel machinery.
+  // Purchase carries creatorId as a plain column, not a relation, so the
+  // community's own details are fetched here rather than joined above.
+  const creator = p.course
+    ? null
+    : await db.creatorProfile.findUnique({
+        where: { id: p.creatorId },
+        select: { userId: true, slug: true, displayName: true, communityName: true },
+      });
+
+  const label = p.course?.title ?? communityLabel(creator);
+  const destination = p.course
+    ? `/learn/${p.course.slug}`
+    : `/community/${creator?.slug ?? ""}`;
+  const sellerUserId = p.course?.creator.userId ?? creator?.userId;
+
+  // Nothing to send to nobody: a community purchase whose creator has since
+  // been deleted still settles, it just has no seller to notify.
+  if (!sellerUserId) return { settled: true };
+
   await audit({
     actorId: input.actorId ?? p.userId,
     action: AUDIT_ACTIONS.PURCHASE_PAID,
     targetType: "Purchase",
     targetId: p.id,
-    summary: `${p.reference} — ${p.course.title}`,
+    summary: `${p.reference} — ${label}`,
     metadata: { amountMinor: p.amountMinor, currency: p.currency },
   });
 
@@ -418,33 +667,33 @@ export async function fulfillPurchase(input: FulfillInput): Promise<{ settled: b
 
   await notify({
     userId: p.userId,
-    type: "COURSE_PURCHASED",
-    title: "კურსი წარმატებით შეიძინეთ",
-    body: p.course.title,
-    linkUrl: `/learn/${p.course.slug}`,
+    type: p.course ? "COURSE_PURCHASED" : "MEMBERSHIP_STARTED",
+    title: p.course ? "კურსი წარმატებით შეიძინეთ" : "საზოგადოებაში შემოგვიერთდი",
+    body: label,
+    linkUrl: destination,
     data: { courseId: p.courseId, purchaseId: p.id },
     email: {
       template: "purchaseReceipt",
       payload: {
-        courseTitle: p.course.title,
+        courseTitle: label,
         amount,
         reference: p.reference,
-        url: absoluteUrl(`/learn/${p.course.slug}`),
+        url: absoluteUrl(destination),
       },
     },
   });
 
   await notify({
-    userId: p.course.creator.userId,
-    type: "COURSE_SOLD",
-    title: "ახალი გაყიდვა",
-    body: `${p.course.title} — ${amount}`,
+    userId: sellerUserId,
+    type: p.course ? "COURSE_SOLD" : "MEMBERSHIP_SOLD",
+    title: p.course ? "ახალი გაყიდვა" : "ახალი წევრი",
+    body: `${label} — ${amount}`,
     linkUrl: "/dashboard/creator/sales",
     data: { courseId: p.courseId, purchaseId: p.id },
     email: {
       template: "courseSold",
       payload: {
-        courseTitle: p.course.title,
+        courseTitle: label,
         amount,
         earnings: formatMoney(p.creatorEarningsMinor, p.currency),
         url: absoluteUrl("/dashboard/creator"),
@@ -465,7 +714,10 @@ export async function failPurchase(input: {
 }): Promise<void> {
   const purchase = await db.purchase.findUnique({
     where: { id: input.purchaseId },
-    select: { id: true, status: true, userId: true, course: { select: { title: true } } },
+    select: {
+      id: true, status: true, userId: true, creatorId: true,
+      course: { select: { title: true } },
+    },
   });
   if (!purchase || purchase.status === "PAID") return; // never downgrade a paid order
 
@@ -493,7 +745,7 @@ export async function failPurchase(input: {
       userId: purchase.userId,
       type: "PAYMENT_FAILED",
       title: "გადახდა ვერ შესრულდა",
-      body: purchase.course.title,
+      body: purchase.course?.title ?? (await communityTitle(db, purchase.creatorId)),
       linkUrl: "/dashboard/purchases",
     });
   }
@@ -517,6 +769,7 @@ export async function processRefund(input: {
         select: {
           id: true, userId: true, courseId: true, creatorId: true, amountMinor: true,
           creatorEarningsMinor: true, refundedAmountMinor: true, reference: true,
+          subscriptionId: true,
           course: { select: { title: true, slug: true } },
         },
       },
@@ -550,14 +803,28 @@ export async function processRefund(input: {
     });
 
     if (refund.revokeAccess) {
-      await tx.enrollment.updateMany({
-        where: { userId: p.userId, courseId: p.courseId },
-        data: { revokedAt: new Date() },
-      });
-      await tx.course.update({
-        where: { id: p.courseId },
-        data: { studentCount: { decrement: 1 } },
-      });
+      if (p.courseId) {
+        await tx.enrollment.updateMany({
+          where: { userId: p.userId, courseId: p.courseId },
+          data: { revokedAt: new Date() },
+        });
+        await tx.course.update({
+          where: { id: p.courseId },
+          data: { studentCount: { decrement: 1 } },
+        });
+      } else if (p.subscriptionId) {
+        // Refunding a membership ends it now rather than revoking enrolments
+        // that were never written. The period is closed off, which is what
+        // every access check reads.
+        await tx.subscription.updateMany({
+          where: { id: p.subscriptionId },
+          data: { status: "EXPIRED", currentPeriodEnd: new Date() },
+        });
+        await tx.creatorProfile.updateMany({
+          where: { id: p.creatorId, communityMemberCount: { gt: 0 } },
+          data: { communityMemberCount: { decrement: 1 } },
+        });
+      }
     }
 
     if (creatorShare > 0) {
@@ -567,7 +834,7 @@ export async function processRefund(input: {
         currency: refund.currency,
         refundAmountMinor: refund.amountMinor,
         creatorShareMinor: creatorShare,
-        courseTitle: p.course.title,
+        courseTitle: p.course?.title ?? (await communityTitle(tx, p.creatorId)),
       });
     }
   });
@@ -585,7 +852,7 @@ export async function processRefund(input: {
     userId: p.userId,
     type: "REFUND_PROCESSED",
     title: "თანხა დაბრუნდა",
-    body: `${p.course.title} — ${formatMoney(refund.amountMinor, refund.currency)}`,
+    body: `${p.course?.title ?? (await communityTitle(db, p.creatorId))} — ${formatMoney(refund.amountMinor, refund.currency)}`,
     linkUrl: "/dashboard/purchases",
   });
 }

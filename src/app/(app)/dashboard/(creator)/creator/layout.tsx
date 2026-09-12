@@ -37,6 +37,11 @@ export default async function CreatorLayout({ children }: { children: React.Reac
           badge: draftCount,
         },
         { href: p("/dashboard/creator/students"), label: t.creator.students, icon: "users" },
+        {
+          href: p("/dashboard/creator/community"),
+          label: t.membership.settingsTitle,
+          icon: "message",
+        },
         { href: p("/dashboard/creator/reviews"), label: t.creator.reviews, icon: "star" },
         { href: p("/dashboard/creator/analytics"), label: t.creator.analytics, icon: "grid" },
         { href: p("/dashboard/creator/coupons"), label: t.creator.coupons, icon: "tag" },
