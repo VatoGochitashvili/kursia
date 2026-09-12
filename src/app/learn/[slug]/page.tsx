@@ -8,6 +8,7 @@ import { loadLearnView } from "@/lib/learn";
 import { paragraphsToHtml } from "@/lib/sanitize";
 import { LearnShell, LockedLesson } from "@/components/learn/LearnShell";
 import { QuizRunner } from "@/components/learn/QuizRunner";
+import { AssignmentPanel } from "@/components/learn/AssignmentPanel";
 import { CommentsPanel, NotesPanel, type CommentItem } from "@/components/learn/LessonPanels";
 import { LessonResources, PdfLesson } from "@/components/learn/LessonContent";
 import { Alert, Card } from "@/components/ui/primitives";
@@ -270,14 +271,13 @@ export default async function LearnPage({ params, searchParams }: Props) {
         />
       ) : lesson && (lesson.type === "PDF" || lesson.type === "FILE") && lesson.assetKey ? (
         <PdfLesson lessonId={lesson.id} labels={{ open: t.common.open, download: t.common.download }} />
-      ) : lesson?.type === "ASSIGNMENT" && lesson.assignment ? (
-        <Card className="p-5">
-          <h2 className="text-lg">{lesson.assignment.title}</h2>
-          <div
-            className="prose-course mt-3 max-w-prose"
-            dangerouslySetInnerHTML={{ __html: paragraphsToHtml(lesson.assignment.instructions) }}
-          />
-        </Card>
+      ) : lesson?.type === "ASSIGNMENT" ? (
+        <AssignmentPanel
+          lessonId={lesson.id}
+          courseId={view.course.id}
+          locale={locale}
+          t={t}
+        />
       ) : lesson?.type === "VIDEO" && !lesson.assetKey ? (
         <Alert tone="warn">
           {locale === "en"

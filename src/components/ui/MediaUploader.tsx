@@ -34,7 +34,8 @@ export type UploadKind =
   | "video"
   | "pdf"
   | "captions"
-  | "resource";
+  | "resource"
+  | "submission";
 
 /** Mirrors UPLOAD_KINDS in src/lib/storage — kept in sync for pre-flight only. */
 const CLIENT_LIMITS: Record<UploadKind, { maxBytes: number; accept: string; extensions: string[] }> = {
@@ -60,6 +61,11 @@ const CLIENT_LIMITS: Record<UploadKind, { maxBytes: number; accept: string; exte
   },
   pdf: { maxBytes: 100 * 1024 * 1024, accept: "application/pdf", extensions: ["pdf"] },
   captions: { maxBytes: 2 * 1024 * 1024, accept: ".vtt,.srt", extensions: ["vtt", "srt"] },
+  submission: {
+    maxBytes: 100 * 1024 * 1024,
+    accept: ".pdf,.zip,.doc,.docx,.png,.jpg,.jpeg,.txt",
+    extensions: ["pdf", "zip", "doc", "docx", "png", "jpg", "jpeg", "txt"],
+  },
   resource: {
     maxBytes: 200 * 1024 * 1024,
     accept: ".pdf,.zip,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.png,.jpg,.jpeg",

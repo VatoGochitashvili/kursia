@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Alert, Card, Checkbox, Field, Input, Select, Textarea } from "@/components/ui/primitives";
 import { MediaUploader } from "@/components/ui/MediaUploader";
 import { LessonAttachments } from "./LessonAttachments";
+import { AssignmentEditor } from "./AssignmentEditor";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { formatDuration } from "@/lib/format";
 import type { Dictionary } from "@/i18n";
@@ -594,6 +595,10 @@ function LessonEditor({
               </div>
             )}
           </div>
+        )}
+
+        {lesson.type === "ASSIGNMENT" && (
+          <AssignmentEditor lessonId={lesson.id} t={t} />
         )}
 
         {/* Attachments hang off every lesson type — a quiz or a text lesson
