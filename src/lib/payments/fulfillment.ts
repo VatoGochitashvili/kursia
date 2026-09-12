@@ -4,6 +4,7 @@ import { getSettings, resolveCommissionBps } from "@/lib/settings";
 import { effectivePriceMinor, formatMoney, splitSale } from "@/lib/money";
 import { recordRefund, recordSale } from "@/lib/earnings";
 import { addMonths } from "@/lib/subscriptions";
+import { COUPON_MESSAGES, evaluateCoupon, recordRedemption } from "@/lib/coupons";
 import { notify, absoluteUrl } from "@/lib/notifications";
 import { audit, AUDIT_ACTIONS } from "@/lib/audit";
 import { ApiError, conflict, notFoundError } from "@/lib/api";
@@ -48,6 +49,8 @@ export async function startCheckout(input: {
   locale: string;
   /** What the buyer chose. Validated against what the course actually offers. */
   kind?: "ONE_TIME" | "SUBSCRIPTION";
+  /** Optional discount code. Re-validated here; never trusted from the client. */
+  couponCode?: string;
 }): Promise<CheckoutResult> {
   const [settings, course, user] = await Promise.all([
     getSettings(),
@@ -106,9 +109,31 @@ export async function startCheckout(input: {
   if (stillHasAccess && !wantsSubscription) throw conflict("კურსი უკვე შეძენილია");
 
   // Price comes from the database — never from the request body.
-  const amountMinor = wantsSubscription
+  const listMinor = wantsSubscription
     ? course.subscriptionPriceMinor!
     : effectivePriceMinor(course.priceMinor, course.discountPriceMinor);
+
+  // A coupon is re-evaluated server-side against the price we just computed.
+  // The client may have been shown a discount; it does not get to assert one.
+  const coupon = input.couponCode
+    ? await evaluateCoupon({
+        code: input.couponCode,
+        userId: input.userId,
+        courseId: course.id,
+        creatorId: course.creatorId,
+        priceMinor: listMinor,
+      })
+    : null;
+
+  // An invalid code fails the checkout rather than silently charging full
+  // price — someone who typed a code expects either the discount or an error,
+  // never a quiet full-price charge.
+  if (coupon && !coupon.ok) {
+    throw conflict(COUPON_MESSAGES[coupon.problem!].ka);
+  }
+
+  const discountMinor = coupon?.discountMinor ?? 0;
+  const amountMinor = listMinor - discountMinor;
   const commissionBps = await resolveCommissionBps(course.creatorId);
   const split = splitSale(amountMinor, commissionBps);
 
@@ -141,7 +166,9 @@ export async function startCheckout(input: {
       kind: wantsSubscription ? "SUBSCRIPTION" : "ONE_TIME",
       subscriptionId: subscription?.id ?? null,
       currency: course.currency,
-      listPriceMinor: wantsSubscription ? amountMinor : course.priceMinor,
+      discountMinor,
+      couponId: coupon?.coupon?.id ?? null,
+      listPriceMinor: wantsSubscription ? listMinor : course.priceMinor,
       amountMinor,
       commissionBps,
       platformFeeMinor: split.platformFeeMinor,
@@ -260,7 +287,7 @@ export async function fulfillPurchase(input: FulfillInput): Promise<{ settled: b
         id: true, userId: true, courseId: true, creatorId: true, status: true,
         currency: true, amountMinor: true, platformFeeMinor: true,
         processingFeeMinor: true, creatorEarningsMinor: true, reference: true,
-        kind: true, subscriptionId: true,
+        kind: true, subscriptionId: true, couponId: true, discountMinor: true,
         course: { select: { title: true, slug: true, creator: { select: { userId: true } } } },
       },
     });
@@ -336,6 +363,23 @@ export async function fulfillPurchase(input: FulfillInput): Promise<{ settled: b
         where: { id: purchase.courseId },
         data: { studentCount: { increment: 1 } },
       });
+    }
+
+    // A coupon is spent at settlement. An abandoned checkout must not consume
+    // one, which is why this is here and not in startCheckout.
+    //
+    // The count is checked at checkout and incremented here, so two different
+    // buyers racing for the last redemption of a limited code can both get it.
+    // That is a deliberate trade: reserving at checkout would mean abandoned
+    // carts silently holding codes hostage. The unique (couponId, userId) pair
+    // still makes a code strictly single-use per person.
+    if (purchase.couponId) {
+      await recordRedemption(tx, {
+        couponId: purchase.couponId,
+        userId: purchase.userId,
+        purchaseId: purchase.id,
+        amountMinor: purchase.discountMinor,
+      }).catch(() => undefined);
     }
 
     if (purchase.creatorEarningsMinor > 0) {

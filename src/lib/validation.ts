@@ -322,6 +322,8 @@ export const checkoutSchema = z
     provider: z.string().trim().min(1).max(40).optional(),
     /** What the buyer picked. startCheckout re-checks it against the course. */
     kind: z.enum(["ONE_TIME", "SUBSCRIPTION"]).optional(),
+    /** Re-validated server-side; the client never asserts a discount. */
+    couponCode: z.string().trim().min(1).max(40).optional(),
   })
   .strict();
 

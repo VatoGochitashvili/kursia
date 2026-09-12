@@ -50,6 +50,7 @@ model User {
   submissions    AssignmentSubmission[]
   notifications  Notification[]
   subscriptions  Subscription[]
+  couponRedemptions CouponRedemption[]
   comments       Comment[]
   commentLikes   CommentLike[]
   notes          LessonNote[]
@@ -116,6 +117,7 @@ model CreatorProfile {
   payoutMethods PayoutMethod[]
   balanceEntries BalanceEntry[]
   subscriptions Subscription[]
+  coupons       Coupon[]
 
   @@index([isFeatured, featuredRank])
   @@index([isVerified])
@@ -251,6 +253,7 @@ model Course {
   wishlist     Wishlist[]
   faqs         CourseFaq[]
   subscriptions Subscription[]
+  coupons      Coupon[]
   views        CourseView[]
   reviewEvents CourseReviewEvent[]
   follows      Follow[]
@@ -465,6 +468,12 @@ model Purchase {
   /// "ONE_TIME" | "SUBSCRIPTION" — a subscription renewal is its own Purchase,
   /// so the ledger, refunds and payouts need no special cases.
   kind           String  @default("ONE_TIME")
+  /// What a coupon took off, in minor units. Zero when none was used.
+  discountMinor  Int     @default(0)
+  /// Which coupon, so fulfilment can record the redemption. A checkout that
+  /// is never paid for must not consume a code, so the redemption row is
+  /// written when the money settles, not when the checkout starts.
+  couponId       String?
   subscriptionId String?
 
   // "PENDING" | "PAID" | "FAILED" | "CANCELLED" | "REFUNDED" | "PARTIALLY_REFUNDED"
@@ -480,6 +489,7 @@ model Purchase {
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   course       Course        @relation(fields: [courseId], references: [id], onDelete: Restrict)
   subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  couponRedemption CouponRedemption?
   transactions Transaction[]
   refunds      Refund[]
   enrollment   Enrollment?
@@ -490,6 +500,7 @@ model Purchase {
   @@index([creatorId, status])
   @@index([status, createdAt])
   @@index([subscriptionId])
+  @@index([couponId])
 }
 
 /// One attempt against a payment provider. A Purchase can have several
@@ -916,6 +927,66 @@ model Subscription {
   @@index([status, currentPeriodEnd])
   @@index([userId, status])
   @@index([creatorId, status])
+}
+
+/// A discount code a creator can hand out.
+///
+/// Scoped to one creator always, and optionally to one of their courses —
+/// a NULL courseId means "any course I sell", which is what a launch or a
+/// seasonal promotion actually wants. A code can never discount somebody
+/// else's course, because the creator is resolved from the row rather than
+/// from the request.
+model Coupon {
+  id         String   @id @default(cuid())
+  /// Stored upper-cased, so lookups are exact and users may type anything.
+  code       String   @unique
+  creatorId  String
+  /// NULL = every course this creator sells.
+  courseId   String?
+
+  // "PERCENT" | "FIXED"
+  discountType String @default("PERCENT")
+  /// Percent (1-100) or minor units, depending on discountType.
+  discountValue Int
+
+  /// NULL = unlimited. Compared against redeemedCount.
+  maxRedemptions Int?
+  redeemedCount  Int  @default(0)
+
+  startsAt  DateTime?
+  expiresAt DateTime?
+  isActive  Boolean   @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  creator     CreatorProfile      @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  course      Course?             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  redemptions CouponRedemption[]
+
+  @@index([creatorId, isActive])
+  @@index([courseId])
+}
+
+/// One use of a coupon, by one person.
+///
+/// Exists so a single-use code is genuinely single-use per account, and so a
+/// creator can see who redeemed what. The unique pair is what stops the same
+/// person applying the same code to two purchases.
+model CouponRedemption {
+  id         String   @id @default(cuid())
+  couponId   String
+  userId     String
+  purchaseId String?  @unique
+  amountMinor Int
+  createdAt  DateTime @default(now())
+
+  coupon   Coupon    @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purchase Purchase? @relation(fields: [purchaseId], references: [id], onDelete: SetNull)
+
+  @@unique([couponId, userId])
+  @@index([userId])
 }
 
 model Notification {
