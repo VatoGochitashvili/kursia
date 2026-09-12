@@ -6,7 +6,7 @@ import type { Dictionary } from "./ka";
  */
 export const en: Dictionary = {
   common: {
-    brandFallback: "Kursia",
+    brandFallback: "Tsre",
     loading: "Loading…", save: "Save", saving: "Saving…", saved: "Saved",
     cancel: "Cancel", delete: "Delete", edit: "Edit", create: "Create",
     back: "Back", next: "Next", previous: "Previous", search: "Search",

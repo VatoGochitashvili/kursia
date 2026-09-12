@@ -42,7 +42,7 @@ export const SETTING_DEFAULTS: PlatformSettings = {
   platformName: env.PLATFORM_NAME,
   platformNameKa: env.PLATFORM_NAME_KA,
   taglineKa: env.PLATFORM_TAGLINE_KA,
-  taglineEn: "Knowledge. Community. Income.",
+  taglineEn: "Your circle. Your people.",
   logoUrl: "",
   supportEmail: env.PLATFORM_SUPPORT_EMAIL,
   currency: env.DEFAULT_CURRENCY,

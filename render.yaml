@@ -150,9 +150,9 @@ services:
 
       # ── Branding ────────────────────────────────────────────────────────
       - key: PLATFORM_NAME
-        value: Kursia
+        value: Tsre
       - key: PLATFORM_NAME_KA
-        value: კურსია
+        value: წრე
       - key: PLATFORM_SUPPORT_EMAIL
         sync: false
 

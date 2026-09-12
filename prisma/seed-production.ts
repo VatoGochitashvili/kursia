@@ -52,8 +52,18 @@ async function adminHasEdited(actions: string[]) {
 const SETTINGS_ACTIONS = ["settings.updated"];
 const CATEGORY_ACTIONS = ["category.created", "category.updated", "category.deleted"];
 
-/** Presentation copy an admin is unlikely to have hand-tuned before launch. */
+/**
+ * Presentation copy an admin is unlikely to have hand-tuned before launch.
+ *
+ * The platform name belongs here: it lives in the database, so a rebrand in
+ * the code would otherwise never reach a deployment that already has a row —
+ * the site would keep its old name for ever and no amount of redeploying
+ * would change it. The `curated` guard above still applies, so an admin who
+ * has saved the settings form keeps whatever they chose.
+ */
 const REFRESHABLE_SETTINGS = new Set<keyof typeof SETTING_DEFAULTS>([
+  "platformName",
+  "platformNameKa",
   "taglineKa",
   "taglineEn",
   "seoDefaultTitleKa",

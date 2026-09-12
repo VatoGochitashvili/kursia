@@ -1,14 +1,17 @@
-import { Icon, type IconName } from "@/components/ui/Icon";
-
 /**
  * The page's living background.
  *
- * A flat white page reads as unfinished, but a decorated one very easily
- * reads as cluttered — so this stays quiet: outlined glyphs of the things
- * this marketplace actually sells, under ten percent opacity, drifting
- * slowly enough that the movement is felt rather than watched.
+ * Rings and dots, because the brand is წრე — a circle. It used to be outlined
+ * glyphs of the things the catalogue sold; the product is now the circle
+ * people join rather than the thing they buy, so the background says that
+ * instead.
  *
- * Even at the top of that range every glyph is far below the point where it
+ * A flat white page reads as unfinished, but a decorated one very easily
+ * reads as cluttered — so this stays quiet: thin rings under ten percent
+ * opacity, drifting slowly enough that the movement is felt rather than
+ * watched.
+ *
+ * Even at the top of that range every ring is far below the point where it
  * could affect the contrast of text above it — the darkest is roughly a 4%
  * grey on white, against body copy at 7:1 and headings at 19:1.
  *
@@ -19,7 +22,7 @@ import { Icon, type IconName } from "@/components/ui/Icon";
  *    compositor owns — this must not compete with the page on a 0.1-CPU
  *    instance.
  *  • Every position, size, delay and duration is written down rather than
- *    generated. Math.random() here would place glyphs differently on the
+ *    generated. Math.random() here would place shapes differently on the
  *    server and in the browser, and React would report a hydration mismatch
  *    on every single page load.
  *  • It is `fixed` and behind everything, so it never affects layout, never
@@ -30,37 +33,50 @@ import { Icon, type IconName } from "@/components/ui/Icon";
  * this, which is why the ceiling above is a ceiling and not a starting point.
  */
 
-interface Glyph {
-  icon: IconName;
+interface Ring {
   /** Percentages of the viewport. */
   left: number;
   top: number;
+  /** Pixels, outer diameter. */
   size: number;
-  rotate: number;
+  /** Ring thickness in pixels. A dot is a ring thicker than its own radius. */
+  thickness: number;
   /** Seconds. Spread so the field never pulses in unison. */
   duration: number;
   delay: number;
   opacity: number;
+  /** A second ring inside the first — a circle within a circle. */
+  inner?: boolean;
 }
 
 /**
- * Chosen to describe the catalogue, not "education" in the abstract: the
- * study motifs the brief asked for sit alongside the wellness and creator
- * subjects that the marketplace is actually built around.
+ * Sizes vary widely on purpose: a field of same-size circles reads as a
+ * pattern or a texture swatch, and the point here is depth, not wallpaper.
  */
-const GLYPHS: Glyph[] = [
-  { icon: "book", left: 4, top: 12, size: 74, rotate: -14, duration: 26, delay: 0, opacity: 0.09 },
-  { icon: "edit", left: 88, top: 8, size: 60, rotate: 22, duration: 31, delay: -6, opacity: 0.08 },
-  { icon: "dumbbell", left: 14, top: 62, size: 82, rotate: 9, duration: 34, delay: -12, opacity: 0.075 },
-  { icon: "leaf", left: 78, top: 44, size: 66, rotate: -18, duration: 29, delay: -3, opacity: 0.09 },
-  { icon: "camera", left: 46, top: 82, size: 58, rotate: 12, duration: 37, delay: -18, opacity: 0.075 },
-  { icon: "music", left: 92, top: 74, size: 62, rotate: -8, duration: 28, delay: -9, opacity: 0.08 },
-  { icon: "lotus", left: 26, top: 30, size: 54, rotate: 6, duration: 33, delay: -21, opacity: 0.075 },
-  { icon: "palette", left: 62, top: 18, size: 56, rotate: -20, duration: 30, delay: -15, opacity: 0.075 },
-  { icon: "mic", left: 8, top: 88, size: 52, rotate: 16, duration: 35, delay: -7, opacity: 0.08 },
-  { icon: "trendingUp", left: 70, top: 92, size: 64, rotate: -6, duration: 27, delay: -24, opacity: 0.075 },
-  { icon: "sparkles", left: 36, top: 6, size: 48, rotate: 18, duration: 32, delay: -11, opacity: 0.09 },
-  { icon: "video", left: 56, top: 54, size: 50, rotate: -12, duration: 36, delay: -17, opacity: 0.065 },
+const RINGS: Ring[] = [
+  { left: 4, top: 12, size: 96, thickness: 1.5, duration: 26, delay: 0, opacity: 0.075, inner: true },
+  { left: 88, top: 8, size: 64, thickness: 1.5, duration: 31, delay: -6, opacity: 0.08 },
+  { left: 14, top: 62, size: 120, thickness: 1.5, duration: 34, delay: -12, opacity: 0.06, inner: true },
+  { left: 78, top: 44, size: 74, thickness: 1.5, duration: 29, delay: -3, opacity: 0.08 },
+  { left: 46, top: 82, size: 58, thickness: 1.5, duration: 37, delay: -18, opacity: 0.075 },
+  { left: 92, top: 74, size: 88, thickness: 1.5, duration: 28, delay: -9, opacity: 0.065, inner: true },
+  { left: 26, top: 30, size: 42, thickness: 1.5, duration: 33, delay: -21, opacity: 0.085 },
+  { left: 62, top: 18, size: 52, thickness: 1.5, duration: 30, delay: -15, opacity: 0.075 },
+  { left: 8, top: 88, size: 68, thickness: 1.5, duration: 35, delay: -7, opacity: 0.07 },
+  { left: 70, top: 92, size: 104, thickness: 1.5, duration: 27, delay: -24, opacity: 0.06 },
+  { left: 36, top: 6, size: 36, thickness: 1.5, duration: 32, delay: -11, opacity: 0.09 },
+  { left: 56, top: 54, size: 46, thickness: 1.5, duration: 36, delay: -17, opacity: 0.07 },
+
+  // Solid dots — thickness >= radius fills the circle, so one shape covers
+  // both without a second code path.
+  { left: 20, top: 46, size: 9, thickness: 5, duration: 24, delay: -4, opacity: 0.13 },
+  { left: 68, top: 34, size: 7, thickness: 4, duration: 30, delay: -13, opacity: 0.12 },
+  { left: 40, top: 70, size: 10, thickness: 5, duration: 28, delay: -20, opacity: 0.11 },
+  { left: 84, top: 60, size: 7, thickness: 4, duration: 33, delay: -2, opacity: 0.12 },
+  { left: 12, top: 24, size: 8, thickness: 4, duration: 26, delay: -16, opacity: 0.12 },
+  { left: 52, top: 30, size: 6, thickness: 3, duration: 35, delay: -22, opacity: 0.13 },
+  { left: 30, top: 92, size: 9, thickness: 5, duration: 29, delay: -8, opacity: 0.11 },
+  { left: 94, top: 40, size: 6, thickness: 3, duration: 31, delay: -19, opacity: 0.12 },
 ];
 
 export function AmbientBackdrop() {
@@ -81,33 +97,43 @@ export function AmbientBackdrop() {
         }}
       />
 
-      {/* Ruled paper. Faded out towards the bottom of the viewport so it
-          never competes with a footer or a dense list. */}
+      {/* A dot grid, replacing the ruled lines the old identity used. Faded
+          out towards the bottom so it never competes with a footer or a dense
+          list. */}
       <div
         className="absolute inset-0 opacity-[0.75]"
         style={{
-          backgroundImage:
-            "linear-gradient(to bottom, rgb(13 17 23 / 0.045) 1px, transparent 1px)",
-          backgroundSize: "100% 2.25rem",
+          backgroundImage: "radial-gradient(rgb(13 17 23 / 0.07) 1px, transparent 1px)",
+          backgroundSize: "2.25rem 2.25rem",
           maskImage: "linear-gradient(to bottom, #000, #000 70%, transparent)",
           WebkitMaskImage: "linear-gradient(to bottom, #000, #000 70%, transparent)",
         }}
       />
 
-      {GLYPHS.map((glyph, i) => (
+      {RINGS.map((ring, i) => (
         <span
           key={i}
-          className="drift absolute text-ink"
+          className="drift absolute rounded-full border-current text-ink"
           style={{
-            left: `${glyph.left}%`,
-            top: `${glyph.top}%`,
-            opacity: glyph.opacity,
-            animationDuration: `${glyph.duration}s`,
-            animationDelay: `${glyph.delay}s`,
-            ["--drift-rotate" as string]: `${glyph.rotate}deg`,
+            left: `${ring.left}%`,
+            top: `${ring.top}%`,
+            width: ring.size,
+            height: ring.size,
+            borderWidth: ring.thickness,
+            opacity: ring.opacity,
+            animationDuration: `${ring.duration}s`,
+            animationDelay: `${ring.delay}s`,
+            // Circles have no orientation, so the drift keyframe's rotation
+            // would be invisible work. Held at zero.
+            ["--drift-rotate" as string]: "0deg",
           }}
         >
-          <Icon name={glyph.icon} size={glyph.size} strokeWidth={1.4} />
+          {ring.inner && (
+            <span
+              className="absolute rounded-full border border-current"
+              style={{ inset: `${Math.round(ring.size * 0.22)}px` }}
+            />
+          )}
         </span>
       ))}
     </div>

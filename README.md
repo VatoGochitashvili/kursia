@@ -1,4 +1,4 @@
-# Kursia — Georgian online course marketplace
+# წრე (Tsre) — Georgian community platform for creators and coaches
 
 A production-shaped marketplace where creators publish and sell online courses
 and students buy, learn and get certified. Georgian is the primary language;

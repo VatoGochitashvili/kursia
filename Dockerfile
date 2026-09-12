@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# Kursia — production image.
+# წრე (Tsre) — production image.
 #
 # Runs on any Node host: Railway, Render, Fly.io, a VPS, Google Cloud Run.
 # Multi-stage so the final image carries no build toolchain and no source.
