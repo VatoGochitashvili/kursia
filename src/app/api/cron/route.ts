@@ -5,6 +5,7 @@ import { handler, jsonError, jsonOk } from "@/lib/api";
 import { drainOutbox } from "@/lib/email";
 import { clearMaturedEarnings } from "@/lib/earnings";
 import { runSubscriptionMaintenance } from "@/lib/subscriptions";
+import { runEventReminders } from "@/lib/events";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,12 +25,15 @@ export const dynamic = "force-dynamic";
  *                         ones that already have. This does NOT gate access:
  *                         `hasCourseAccess` compares the expiry itself, so a
  *                         missed run costs a notification, never content.
+ *  • eventReminders     — nudge the people who said they would attend a
+ *                         live session about an hour beforehand
  *  • pruneSessions      — delete expired/revoked session rows
  *
  * Each job is independent and idempotent, so a missed or repeated run is safe.
  */
 export const POST = handler(async (request) => {
-  const provided = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
+  const provided =
+    request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
   const expected = env.AUTH_SECRET;
 
   const a = Buffer.from(provided);
@@ -40,10 +44,18 @@ export const POST = handler(async (request) => {
 
   const startedAt = Date.now();
 
-  const [email, earnings, subscriptions, prunedSessions, prunedTokens] = await Promise.all([
+  const [
+    email,
+    earnings,
+    subscriptions,
+    eventReminders,
+    prunedSessions,
+    prunedTokens,
+  ] = await Promise.all([
     drainOutbox(50),
     clearMaturedEarnings(),
     runSubscriptionMaintenance(),
+    runEventReminders(),
     db.session
       .deleteMany({
         where: {
@@ -56,7 +68,9 @@ export const POST = handler(async (request) => {
       })
       .then((r) => r.count),
     db.verificationToken
-      .deleteMany({ where: { expiresAt: { lt: new Date(Date.now() - 86_400_000) } } })
+      .deleteMany({
+        where: { expiresAt: { lt: new Date(Date.now() - 86_400_000) } },
+      })
       .then((r) => r.count),
   ]);
 
@@ -66,6 +80,7 @@ export const POST = handler(async (request) => {
     email,
     earnings,
     subscriptions,
+    eventReminders,
     prunedSessions,
     prunedTokens,
   });

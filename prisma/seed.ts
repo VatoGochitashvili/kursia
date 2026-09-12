@@ -97,6 +97,7 @@ async function wipe() {
     db.enrollment,
     db.balanceEntry, db.payout, db.payoutMethod, db.creatorBalance,
     db.webhookEvent, db.refund, db.transaction, db.purchase, db.subscription,
+    db.eventAttendee, db.event,
     db.courseView, db.courseReviewEvent, db.courseFaq, db.course,
     db.notification, db.emailOutbox, db.auditLog, db.report,
     db.session, db.verificationToken, db.category,
@@ -567,6 +568,74 @@ async function main() {
       await db.wishlist.create({ data: { userId, courseId: c.id } }).catch(() => undefined);
     }
   }
+
+  // ── A calendar for the first creator ─────────────────────────────────────
+  // One session running right now, one later this week, one already over, so
+  // every state on the events page has something to render on a fresh seed.
+  const eventCreatorId = creatorIdByEmail.get(CREATORS[0]!.email)!;
+  const eventCourse = await db.course.findFirst({
+    where: { creatorId: eventCreatorId },
+    select: { id: true },
+    orderBy: { createdAt: "asc" },
+  });
+
+  const minutesFromNow = (m: number) => new Date(Date.now() + m * 60_000);
+
+  const sessions = [
+    {
+      title: "ცოცხალი Q&A — თქვენი კითხვები",
+      description: "ვპასუხობ კვირის კითხვებს და ერთად ვარჩევთ თქვენს ფუნელებს.",
+      joinUrl: "https://meet.google.com/kursia-live-qa",
+      startsAt: minutesFromNow(-15),
+      endsAt: minutesFromNow(45),
+      courseId: eventCourse?.id ?? null,
+    },
+    {
+      title: "ვორქშოფი: სარეკლამო კამპანიის აწყობა ნულიდან",
+      description:
+        "პირდაპირ ეთერში ვაწყობთ კამპანიას — ბიუჯეტი, აუდიტორია, კრეატივი და გაზომვა.",
+      joinUrl: "https://meet.google.com/kursia-workshop",
+      startsAt: minutesFromNow(3 * 24 * 60),
+      endsAt: minutesFromNow(3 * 24 * 60 + 90),
+      courseId: eventCourse?.id ?? null,
+    },
+    {
+      title: "შესავალი შეხვედრა — როგორ გავიაროთ კურსი",
+      description: "ჩანაწერი ხელმისაწვდომია ჯგუფში.",
+      joinUrl: null,
+      startsAt: minutesFromNow(-9 * 24 * 60),
+      endsAt: minutesFromNow(-9 * 24 * 60 + 60),
+      courseId: eventCourse?.id ?? null,
+    },
+  ];
+
+  // Attendees come from people actually enrolled with this creator, so the
+  // counts on the page correspond to real members rather than invented ones.
+  const eventMembers = await db.enrollment.findMany({
+    where: { course: { creatorId: eventCreatorId }, revokedAt: null },
+    select: { userId: true },
+    distinct: ["userId"],
+    take: 12,
+  });
+
+  for (const [index, session] of sessions.entries()) {
+    const going = eventMembers.slice(0, randInt(2, Math.max(2, eventMembers.length)));
+    await db.event.create({
+      data: {
+        ...session,
+        creatorId: eventCreatorId,
+        timezone: "Asia/Tbilisi",
+        attendees: {
+          create: going.map((m) => ({
+            userId: m.userId,
+            // A past session's reminders already went out.
+            remindedAt: index === 2 ? session.startsAt : null,
+          })),
+        },
+      },
+    });
+  }
+  console.log(`  ✓ ${sessions.length} community events`);
 
   // One pending course so the admin approval queue is not empty on first run.
   const pendingCreatorId = creatorIdByEmail.get("davit.gogoladze@example.ge")!;

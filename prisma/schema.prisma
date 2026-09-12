@@ -53,6 +53,7 @@ model User {
   couponRedemptions CouponRedemption[]
   posts          Post[]
   postLikes      PostLike[]
+  eventAttendance EventAttendee[]
   comments       Comment[]
   commentLikes   CommentLike[]
   notes          LessonNote[]
@@ -122,6 +123,7 @@ model CreatorProfile {
   coupons       Coupon[]
   announcements Announcement[]
   posts         Post[]
+  events        Event[]
 
   @@index([isFeatured, featuredRank])
   @@index([isVerified])
@@ -260,6 +262,7 @@ model Course {
   coupons      Coupon[]
   announcements Announcement[]
   posts        Post[]
+  events       Event[]
   views        CourseView[]
   reviewEvents CourseReviewEvent[]
   follows      Follow[]
@@ -1082,6 +1085,65 @@ model PostLike {
 
   @@unique([userId, postId])
   @@index([postId])
+}
+
+/// A scheduled live session in a creator's community.
+///
+/// Times are stored as UTC instants. Rendering them in the viewer's zone is a
+/// client concern — the one thing that must not happen is storing a local
+/// wall-clock time, because "19:00" means two different moments for a creator
+/// in Tbilisi and a student who travelled.
+model Event {
+  id        String   @id @default(cuid())
+  creatorId String
+  /// Optional: tie the session to one course's cohort.
+  courseId  String?
+
+  title       String
+  description String?
+  /// Where it happens. A meeting link, usually — revealed only to members.
+  joinUrl     String?
+
+  startsAt DateTime
+  endsAt   DateTime
+  /// Free text, e.g. "Asia/Tbilisi". Shown alongside the time so a viewer in
+  /// another zone can sanity-check what they are converting from.
+  timezone String  @default("Asia/Tbilisi")
+
+  /// Cancelled events stay visible, struck through, rather than vanishing —
+  /// someone who planned around one deserves to see that it is off.
+  isCancelled Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  creator   CreatorProfile @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  course    Course?        @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  attendees EventAttendee[]
+
+  @@index([creatorId, startsAt])
+  @@index([startsAt])
+  @@index([courseId])
+}
+
+/// Someone who said they are coming.
+///
+/// Not a ticket — attendance is not capped and nothing is charged. It exists
+/// so the creator knows whether to expect four people or forty, and so a
+/// reminder has somebody to go to.
+model EventAttendee {
+  id        String   @id @default(cuid())
+  eventId   String
+  userId    String
+  /// Guards the reminder against being sent twice.
+  remindedAt DateTime?
+  createdAt DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([userId])
 }
 
 model Notification {
