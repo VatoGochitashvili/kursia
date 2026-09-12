@@ -238,6 +238,12 @@ export const en: Dictionary = {
   },
 
   creator: {
+    attachments: "Attachments",
+    attachmentsHint: "A worksheet, a plan, a template — students download it alongside the lesson.",
+    attachmentTypes: "PDF, ZIP, DOCX, XLSX, image — 200MB max",
+    attachmentName: "File name",
+    attachmentAdded: "File added",
+    attachmentRemoved: "File removed",
     deleteCourse: "Delete course",
     courseDeleted: "Course deleted",
     courseArchived: "Course archived",

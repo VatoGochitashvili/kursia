@@ -23,6 +23,18 @@ export const maxDuration = 300;
  *  • Non-public assets get no public URL at all; they are reachable only via a
  *    signed, user-bound grant through /api/media.
  */
+/** A filename reduced to something safe to render as a label. */
+function displayTitle(filename: string): string {
+  const cleaned = filename
+    // Strip any directory part a browser might include.
+    .replace(/^.*[\\/]/, "")
+    // Control characters and the bidi overrides used to disguise extensions.
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u001f\u007f\u202a-\u202e\u2066-\u2069]/g, "")
+    .trim();
+  return cleaned.slice(0, 160) || "file";
+}
+
 export const POST = handler(async (request) => {
   const user = await requireUser();
   await assertSameOrigin();
@@ -60,7 +72,9 @@ export const POST = handler(async (request) => {
   const stored = await storage().put(key, bytes, file.type || "application/octet-stream");
 
   // Attach the asset to the lesson it belongs to, when one was named.
-  if (lessonId && (kind === "video" || kind === "pdf" || kind === "captions")) {
+  let resourceId: string | null = null;
+
+  if (lessonId && (kind === "video" || kind === "pdf" || kind === "captions" || kind === "resource")) {
     const lesson = await db.lesson.findUnique({
       where: { id: lessonId },
       select: { id: true, courseId: true },
@@ -70,17 +84,44 @@ export const POST = handler(async (request) => {
     }
     await requireCourseOwner(lesson.courseId);
 
-    await db.lesson.update({
-      where: { id: lessonId },
-      data:
-        kind === "captions"
-          ? { captionsKey: stored.key }
-          : {
-              assetKey: stored.key,
-              assetSizeBytes: stored.size,
-              assetMimeType: stored.mimeType,
-            },
-    });
+    if (kind === "resource") {
+      // A lesson has one video but any number of attachments, so each gets its
+      // own row rather than a column on the lesson.
+      const last = await db.lessonResource.findFirst({
+        where: { lessonId },
+        orderBy: { sortOrder: "desc" },
+        select: { sortOrder: true },
+      });
+
+      const created = await db.lessonResource.create({
+        data: {
+          lessonId,
+          // The filename is a display label only — never a path. The stored
+          // key is a server-generated UUID, so a hostile name cannot escape
+          // the bucket; it just has to be short and free of control
+          // characters before it reaches a page.
+          title: displayTitle(file.name),
+          assetKey: stored.key,
+          sizeBytes: stored.size,
+          mimeType: stored.mimeType,
+          sortOrder: (last?.sortOrder ?? -1) + 1,
+        },
+        select: { id: true },
+      });
+      resourceId = created.id;
+    } else {
+      await db.lesson.update({
+        where: { id: lessonId },
+        data:
+          kind === "captions"
+            ? { captionsKey: stored.key }
+            : {
+                assetKey: stored.key,
+                assetSizeBytes: stored.size,
+                assetMimeType: stored.mimeType,
+              },
+      });
+    }
   }
 
   return jsonCreated({
@@ -89,5 +130,6 @@ export const POST = handler(async (request) => {
     mimeType: stored.mimeType,
     // Only public kinds (avatars, thumbnails) get a directly usable URL.
     url: stored.publicUrl,
+    resourceId,
   });
 });

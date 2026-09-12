@@ -5,12 +5,10 @@ import { api, errorMessage } from "@/lib/client/fetcher";
 import { Button } from "@/components/ui/Button";
 import { Alert, Card, Checkbox, Field, Input, Select, Textarea } from "@/components/ui/primitives";
 import { MediaUploader } from "@/components/ui/MediaUploader";
+import { LessonAttachments } from "./LessonAttachments";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { formatDuration } from "@/lib/format";
 import type { Dictionary } from "@/i18n";
-
-/** The `upload` section of the dictionary, passed down whole. */
-type UploadDictionary = Dictionary["upload"];
 import { cn } from "@/lib/cn";
 import type { Locale } from "@/lib/enums";
 
@@ -60,13 +58,13 @@ export function CurriculumEditor({
   initialModules,
   locale,
   labels,
-  uploadLabels,
+  t,
 }: {
   courseId: string;
   initialModules: EditorModule[];
   locale: Locale;
   labels: Record<string, string>;
-  uploadLabels: UploadDictionary;
+  t: Dictionary;
 }) {
   const [modules, setModules] = useState(initialModules);
   const [error, setError] = useState<unknown>(null);
@@ -372,7 +370,7 @@ export function CurriculumEditor({
                     lesson={lesson}
                     locale={locale}
                     labels={labels}
-                    uploadLabels={uploadLabels}
+                    t={t}
                     onChange={(patch) => updateLesson(lesson.id, patch)}
                     onClose={() => setEditingLesson(null)}
                   />
@@ -459,7 +457,7 @@ function LessonEditor({
   lesson,
   locale,
   labels,
-  uploadLabels,
+  t,
   onChange,
   onClose,
 }: {
@@ -467,7 +465,7 @@ function LessonEditor({
   lesson: EditorLesson;
   locale: Locale;
   labels: Record<string, string>;
-  uploadLabels: UploadDictionary;
+  t: Dictionary;
   onChange: (patch: Partial<EditorLesson>) => void;
   onClose: () => void;
 }) {
@@ -557,15 +555,15 @@ function LessonEditor({
               value={null}
               onUploaded={(result) => onChange({ assetKey: result.key })}
               labels={{
-                drop: lesson.type === "VIDEO" ? uploadLabels.dropVideo : uploadLabels.dropFile,
-                browse: uploadLabels.browse,
-                uploading: uploadLabels.uploading,
-                replace: uploadLabels.replace,
-                remove: uploadLabels.remove,
-                cancel: uploadLabels.cancel,
-                tooLarge: uploadLabels.tooLarge,
-                wrongType: uploadLabels.wrongType,
-                hint: lesson.type === "VIDEO" ? uploadLabels.videoHint : uploadLabels.pdfHint,
+                drop: lesson.type === "VIDEO" ? t.upload.dropVideo : t.upload.dropFile,
+                browse: t.upload.browse,
+                uploading: t.upload.uploading,
+                replace: t.upload.replace,
+                remove: t.upload.remove,
+                cancel: t.upload.cancel,
+                tooLarge: t.upload.tooLarge,
+                wrongType: t.upload.wrongType,
+                hint: lesson.type === "VIDEO" ? t.upload.videoHint : t.upload.pdfHint,
               }}
               icon={lesson.type === "VIDEO" ? "video" : "file"}
             />
@@ -581,14 +579,14 @@ function LessonEditor({
                   value={null}
                   onUploaded={() => undefined}
                   labels={{
-                    drop: uploadLabels.dropFile,
-                    browse: uploadLabels.browse,
-                    uploading: uploadLabels.uploading,
-                    replace: uploadLabels.replace,
-                    remove: uploadLabels.remove,
-                    cancel: uploadLabels.cancel,
-                    tooLarge: uploadLabels.tooLarge,
-                    wrongType: uploadLabels.wrongType,
+                    drop: t.upload.dropFile,
+                    browse: t.upload.browse,
+                    uploading: t.upload.uploading,
+                    replace: t.upload.replace,
+                    remove: t.upload.remove,
+                    cancel: t.upload.cancel,
+                    tooLarge: t.upload.tooLarge,
+                    wrongType: t.upload.wrongType,
                   }}
                   icon="file"
                   compact
@@ -597,6 +595,10 @@ function LessonEditor({
             )}
           </div>
         )}
+
+        {/* Attachments hang off every lesson type — a quiz or a text lesson
+            can carry a worksheet just as reasonably as a video can. */}
+        <LessonAttachments courseId={courseId} lessonId={lesson.id} t={t} />
 
         {lesson.type === "QUIZ" && (
           <div className="sm:col-span-2">

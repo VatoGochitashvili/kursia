@@ -12,7 +12,10 @@ type Ctx = { params: Promise<{ id: string }> };
 async function authorizeLesson(lessonId: string) {
   const lesson = await db.lesson.findUnique({
     where: { id: lessonId },
-    select: { id: true, courseId: true, moduleId: true, assetKey: true, captionsKey: true },
+    select: {
+      id: true, courseId: true, moduleId: true, assetKey: true, captionsKey: true,
+      resources: { select: { assetKey: true } },
+    },
   });
   if (!lesson) throw notFoundError("გაკვეთილი ვერ მოიძებნა");
   const { user } = await requireCourseOwner(lesson.courseId);
@@ -68,8 +71,16 @@ export const DELETE = handler(async (_request, context: Ctx) => {
   await db.lesson.delete({ where: { id } });
 
   // Reclaim the storage the lesson owned; failures here must not fail the
-  // delete, so they are swallowed after the row is gone.
-  for (const key of [lesson.assetKey, lesson.captionsKey]) {
+  // delete, so they are swallowed after the row is gone. Attachment rows go
+  // with the lesson by cascade, but the objects they point at do not — those
+  // have to be listed before the delete and removed explicitly, or every
+  // deleted lesson strands its downloads in the bucket forever.
+  const orphanedKeys = [
+    lesson.assetKey,
+    lesson.captionsKey,
+    ...lesson.resources.map((r) => r.assetKey),
+  ];
+  for (const key of orphanedKeys) {
     if (key) await storage().delete(key).catch(() => undefined);
   }
 

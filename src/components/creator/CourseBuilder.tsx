@@ -539,7 +539,7 @@ export function CourseBuilder({
           courseId={course.id}
           initialModules={modules}
           locale={locale}
-          uploadLabels={t.upload}
+          t={t}
           labels={{
             modules: t.common.modules,
             lessons: t.common.lessons,

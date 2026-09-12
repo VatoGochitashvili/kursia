@@ -377,6 +377,12 @@ export const ka = {
   },
 
   creator: {
+    attachments: "დამატებითი ფაილები",
+    attachmentsHint: "სამუშაო ფურცელი, გეგმა, შაბლონი — სტუდენტი ჩამოტვირთავს გაკვეთილთან ერთად.",
+    attachmentTypes: "PDF, ZIP, DOCX, XLSX, სურათი — მაქსიმუმ 200MB",
+    attachmentName: "ფაილის სახელი",
+    attachmentAdded: "ფაილი დაემატა",
+    attachmentRemoved: "ფაილი წაიშალა",
     deleteCourse: "კურსის წაშლა",
     courseDeleted: "კურსი წაიშალა",
     courseArchived: "კურსი დაარქივდა",
