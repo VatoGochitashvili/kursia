@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { ApiError, assertSameOrigin, badRequest, guardRate, handler, jsonCreated } from "@/lib/api";
-import { requireUser, requireCourseOwner } from "@/lib/auth/rbac";
+import { requireUser, requireCourseOwner, hasCourseAccess } from "@/lib/auth/rbac";
 import {
   buildStorageKey, storage, validateUpload, UPLOAD_KINDS, type UploadKindName,
 } from "@/lib/storage";
@@ -52,8 +52,15 @@ export const POST = handler(async (request) => {
   if (!(kindRaw in UPLOAD_KINDS)) throw badRequest("უცნობი ფაილის ტიპი");
   const kind = kindRaw as UploadKindName;
 
-  // Course-scoped assets require ownership of that course.
-  if (courseId) {
+  // Course-scoped assets require ownership of that course — with one
+  // exception. An assignment submission is the student's own work, so it is
+  // gated on being enrolled rather than on owning the course. Requiring
+  // ownership here meant no student could ever hand anything in.
+  if (kind === "submission") {
+    if (!courseId) throw badRequest("courseId სავალდებულოა ამ ტიპისთვის");
+    const access = await hasCourseAccess(user.id, courseId);
+    if (!access.canView) throw new ApiError(403, "FORBIDDEN", "კურსზე წვდომა არ გაქვთ");
+  } else if (courseId) {
     await requireCourseOwner(courseId);
   } else if (kind !== "avatar") {
     throw badRequest("courseId სავალდებულოა ამ ტიპისთვის");
