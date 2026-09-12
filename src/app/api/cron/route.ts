@@ -5,7 +5,7 @@ import { handler, jsonError, jsonOk } from "@/lib/api";
 import { drainOutbox } from "@/lib/email";
 import { clearMaturedEarnings } from "@/lib/earnings";
 import { runSubscriptionMaintenance } from "@/lib/subscriptions";
-import { runEventReminders } from "@/lib/events";
+import { runEventReminders, settleFinishedEvents } from "@/lib/events";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,6 +27,7 @@ export const dynamic = "force-dynamic";
  *                         missed run costs a notification, never content.
  *  • eventReminders     — nudge the people who said they would attend a
  *                         live session about an hour beforehand
+ *  • eventPoints        — credit attendance once a session has finished
  *  • pruneSessions      — delete expired/revoked session rows
  *
  * Each job is independent and idempotent, so a missed or repeated run is safe.
@@ -49,6 +50,7 @@ export const POST = handler(async (request) => {
     earnings,
     subscriptions,
     eventReminders,
+    eventPoints,
     prunedSessions,
     prunedTokens,
   ] = await Promise.all([
@@ -56,6 +58,7 @@ export const POST = handler(async (request) => {
     clearMaturedEarnings(),
     runSubscriptionMaintenance(),
     runEventReminders(),
+    settleFinishedEvents(),
     db.session
       .deleteMany({
         where: {
@@ -81,6 +84,7 @@ export const POST = handler(async (request) => {
     earnings,
     subscriptions,
     eventReminders,
+    eventPoints,
     prunedSessions,
     prunedTokens,
   });

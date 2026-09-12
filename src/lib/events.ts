@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { notify } from "@/lib/notifications";
+import { award } from "@/lib/points";
 
 /** How far ahead of a session we nudge the people who said they'd come. */
 const REMINDER_WINDOW_MS = 60 * 60_000;
@@ -78,4 +79,53 @@ export async function runEventReminders() {
   }
 
   return { due: due.length, sent };
+}
+
+/** How far back to sweep for sessions whose attendance has not been credited. */
+const SETTLE_LOOKBACK_MS = 7 * 86_400_000;
+
+/**
+ * Credit attendance for sessions that have finished.
+ *
+ * Points are awarded after the fact, not when somebody RSVPs. An RSVP is an
+ * intention; showing up on the day is the thing worth rewarding, and paying
+ * for the intention would let anyone farm a community by clicking "I'll be
+ * there" on a calendar they never open again.
+ *
+ * `award` is keyed on the event, so re-sweeping the same week costs nothing
+ * and no marker column is needed.
+ */
+export async function settleFinishedEvents() {
+  const now = new Date();
+
+  const finished = await db.event.findMany({
+    where: {
+      isCancelled: false,
+      endsAt: { lt: now, gte: new Date(now.getTime() - SETTLE_LOOKBACK_MS) },
+    },
+    select: {
+      id: true,
+      creatorId: true,
+      attendees: { select: { userId: true }, take: 2000 },
+    },
+    take: 200,
+  });
+
+  let credited = 0;
+  for (const event of finished) {
+    for (const attendee of event.attendees) {
+      const paid = await award({
+        creatorId: event.creatorId,
+        userId: attendee.userId,
+        kind: "EVENT_ATTENDED",
+        sourceType: "event",
+        sourceId: event.id,
+      });
+      // Counts rows written, not attendees looked at — a sweep that credits
+      // nobody should say so rather than report the same number every run.
+      if (paid) credited += 1;
+    }
+  }
+
+  return { events: finished.length, credited };
 }

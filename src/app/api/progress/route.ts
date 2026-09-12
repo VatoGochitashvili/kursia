@@ -3,6 +3,7 @@ import { ApiError, beginMutation, handler, jsonOk, readJson, notFoundError } fro
 import { progressSchema } from "@/lib/validation";
 import { requireUser, hasCourseAccess } from "@/lib/auth/rbac";
 import { saveLessonProgress } from "@/lib/progress";
+import { award, revoke } from "@/lib/points";
 
 export const runtime = "nodejs";
 
@@ -20,7 +21,12 @@ export const POST = handler(async (request) => {
 
   const lesson = await db.lesson.findUnique({
     where: { id: body.lessonId },
-    select: { id: true, courseId: true, isPublished: true },
+    select: {
+      id: true,
+      courseId: true,
+      isPublished: true,
+      course: { select: { creatorId: true } },
+    },
   });
   if (!lesson || !lesson.isPublished) throw notFoundError("გაკვეთილი ვერ მოიძებნა");
 
@@ -40,6 +46,21 @@ export const POST = handler(async (request) => {
     watchedSeconds: body.watchedSeconds,
     isCompleted: body.isCompleted,
   });
+
+  // Finishing a lesson earns points in that creator's community. Keyed by the
+  // lesson, so re-marking it complete pays once; un-completing takes it back,
+  // which also means a toggle cannot be farmed.
+  const ledger = {
+    creatorId: lesson.course.creatorId,
+    userId: user.id,
+    sourceType: "lesson",
+    sourceId: lesson.id,
+  };
+  if (body.isCompleted === true) {
+    await award({ ...ledger, kind: "LESSON_COMPLETED" });
+  } else if (body.isCompleted === false) {
+    await revoke(ledger);
+  }
 
   return jsonOk({ tracked: true, ...snapshot });
 });

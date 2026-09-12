@@ -97,6 +97,8 @@ async function wipe() {
     db.enrollment,
     db.balanceEntry, db.payout, db.payoutMethod, db.creatorBalance,
     db.webhookEvent, db.refund, db.transaction, db.purchase, db.subscription,
+    db.pointEvent,
+    db.postLike, db.post,
     db.eventAttendee, db.event,
     db.courseView, db.courseReviewEvent, db.courseFaq, db.course,
     db.notification, db.emailOutbox, db.auditLog, db.report,
@@ -636,6 +638,142 @@ async function main() {
     });
   }
   console.log(`  ✓ ${sessions.length} community events`);
+
+  // ── Community feed + the points ledger behind the leaderboard ────────────
+  // Posts first, then points derived from what actually happened — the posts
+  // above, the lessons students finished, the sessions they attended. A
+  // leaderboard seeded with invented totals would rank people for nothing.
+  const POST_SEEDS = [
+    {
+      title: "როგორ ვიწყებ კვირას",
+      body: "ორშაბათობით ვწერ სამ მიზანს და კვირის ბოლოს ვამოწმებ. მარტივია, მაგრამ მუშაობს. ვინმეს სხვა სისტემა აქვს?",
+    },
+    {
+      title: "პირველი შედეგი 🎉",
+      body: "მესამე მოდულის შემდეგ კამპანია გავუშვი და პირველი გაყიდვა მივიღე. მადლობა ავტორს დეტალური ახსნისთვის.",
+    },
+    {
+      title: null,
+      body: "კითხვა: რა ბიუჯეტით ჯობია დაწყება, თუ ჯერ არ ვიცი რომელი კრეატივი მუშაობს?",
+    },
+    {
+      title: "რესურსი, რომელიც დამეხმარა",
+      body: "მეოთხე გაკვეთილში ნახსენები შაბლონი გადავაკეთე ჩემს ნიშაზე. ბევრად უკეთ წავიდა.",
+    },
+  ];
+  const REPLY_SEEDS = [
+    "ზუსტად ასე ვაკეთებ მეც. მთავარია არ გადაიტანო შემდეგ დღეს.",
+    "გილოცავ! რამდენი ხანი დაგჭირდა პირველ შედეგამდე?",
+    "პატარა ბიუჯეტით დაიწყე და ჯერ ერთი ცვლადი შეცვალე. ასე ნათლად ჩანს რა მუშაობს.",
+    "შეგიძლია შაბლონი გაგვიზიარო?",
+  ];
+
+  let postCount = 0;
+  let pointRows = 0;
+
+  for (const creatorEmail of CREATORS.slice(0, 4).map((c) => c.email)) {
+    const cid = creatorIdByEmail.get(creatorEmail);
+    if (!cid) continue;
+
+    const community = await db.enrollment.findMany({
+      where: { course: { creatorId: cid }, revokedAt: null },
+      select: { userId: true },
+      distinct: ["userId"],
+      take: 10,
+    });
+    if (community.length < 2) continue;
+
+    for (const [i, seed] of POST_SEEDS.entries()) {
+      const authorId = community[i % community.length]!.userId;
+      const createdAt = daysAgo(randInt(1, 20));
+
+      const post = await db.post.create({
+        data: { creatorId: cid, authorId, title: seed.title, body: seed.body, createdAt },
+        select: { id: true },
+      });
+      postCount += 1;
+      await db.pointEvent.create({
+        data: { creatorId: cid, userId: authorId, kind: "POST", points: 3,
+                sourceType: "post", sourceId: post.id, createdAt },
+      });
+      pointRows += 1;
+
+      // A reply from somebody else in the space.
+      const replierId = community[(i + 1) % community.length]!.userId;
+      const replyAt = new Date(createdAt.getTime() + randInt(1, 40) * 3_600_000);
+      const reply = await db.post.create({
+        data: { creatorId: cid, authorId: replierId, parentId: post.id,
+                body: REPLY_SEEDS[i % REPLY_SEEDS.length]!, createdAt: replyAt },
+        select: { id: true },
+      });
+      postCount += 1;
+      await db.post.update({ where: { id: post.id }, data: { replyCount: 1 } });
+      await db.pointEvent.create({
+        data: { creatorId: cid, userId: replierId, kind: "REPLY", points: 1,
+                sourceType: "post", sourceId: reply.id, createdAt: replyAt },
+      });
+      pointRows += 1;
+
+      // Likes from everyone except the author — self-likes earn nothing, so
+      // the seed must not create them either.
+      const likers = community.filter((m) => m.userId !== authorId).slice(0, randInt(1, 4));
+      for (const liker of likers) {
+        const likedAt = new Date(createdAt.getTime() + randInt(1, 60) * 3_600_000);
+        await db.postLike.create({ data: { postId: post.id, userId: liker.userId, createdAt: likedAt } });
+        await db.pointEvent.create({
+          data: { creatorId: cid, userId: authorId, kind: "LIKE_RECEIVED", points: 2,
+                  sourceType: "like", sourceId: `${post.id}:${liker.userId}`, createdAt: likedAt },
+        });
+        pointRows += 1;
+      }
+      await db.post.update({ where: { id: post.id }, data: { likeCount: likers.length } });
+    }
+  }
+
+  // Lessons students actually finished, dated when they finished them, so the
+  // weekly and monthly boards differ from the all-time one.
+  const completed = await db.lessonProgress.findMany({
+    where: { isCompleted: true },
+    select: {
+      userId: true, lessonId: true, completedAt: true,
+      course: { select: { creatorId: true } },
+    },
+  });
+  for (const row of completed) {
+    await db.pointEvent
+      .create({
+        data: {
+          creatorId: row.course.creatorId, userId: row.userId,
+          kind: "LESSON_COMPLETED", points: 2,
+          sourceType: "lesson", sourceId: row.lessonId,
+          createdAt: row.completedAt ?? daysAgo(randInt(1, 60)),
+        },
+      })
+      .then(() => { pointRows += 1; })
+      .catch(() => undefined);
+  }
+
+  // Sessions that have already finished — the same thing the cron credits.
+  const settled = await db.event.findMany({
+    where: { endsAt: { lt: new Date() }, isCancelled: false },
+    select: { id: true, creatorId: true, endsAt: true, attendees: { select: { userId: true } } },
+  });
+  for (const event of settled) {
+    for (const attendee of event.attendees) {
+      await db.pointEvent
+        .create({
+          data: {
+            creatorId: event.creatorId, userId: attendee.userId,
+            kind: "EVENT_ATTENDED", points: 5,
+            sourceType: "event", sourceId: event.id, createdAt: event.endsAt,
+          },
+        })
+        .then(() => { pointRows += 1; })
+        .catch(() => undefined);
+    }
+  }
+
+  console.log(`  ✓ ${postCount} community posts, ${pointRows} point events`);
 
   // One pending course so the admin approval queue is not empty on first run.
   const pendingCreatorId = creatorIdByEmail.get("davit.gogoladze@example.ge")!;

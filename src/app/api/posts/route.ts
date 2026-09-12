@@ -7,6 +7,7 @@ import { requireUser } from "@/lib/auth/rbac";
 import { getSessionUser } from "@/lib/auth/session";
 import { getMembership, loadFeed } from "@/lib/community";
 import { notify } from "@/lib/notifications";
+import { award } from "@/lib/points";
 import { cuid } from "@/lib/validation";
 
 export const runtime = "nodejs";
@@ -136,6 +137,16 @@ export const POST = handler(async (request) => {
       body: body.body,
     },
     select: { id: true, createdAt: true },
+  });
+
+  // Credit the author. A reply is worth less than a post because it is worth
+  // less to the next person who reads the space.
+  await award({
+    creatorId: body.creatorId,
+    userId: user.id,
+    kind: parent ? "REPLY" : "POST",
+    sourceType: "post",
+    sourceId: post.id,
   });
 
   if (parent) {
