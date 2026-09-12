@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { beginMutation, handler, jsonOk, notFoundError, readJson } from "@/lib/api";
-import { requireCourseOwner } from "@/lib/auth/rbac";
+import { requireCourseOwner, requireUser } from "@/lib/auth/rbac";
 import { storage } from "@/lib/storage";
 import { cuid } from "@/lib/validation";
 
@@ -22,6 +22,12 @@ type Ctx = { params: Promise<{ id: string }> };
  * per-user grants rather than keys.
  */
 async function authorizeLesson(lessonId: string) {
+  // Authenticate before touching the database. Looking the lesson up first
+  // lets an anonymous caller tell "this id exists" from "it does not" by the
+  // status code alone, which is a free existence oracle over every lesson on
+  // the platform.
+  await requireUser();
+
   const lesson = await db.lesson.findUnique({
     where: { id: lessonId },
     select: { id: true, courseId: true },

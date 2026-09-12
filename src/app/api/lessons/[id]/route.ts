@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { beginMutation, handler, jsonOk, notFoundError, readJson } from "@/lib/api";
 import { updateLessonSchema } from "@/lib/validation";
-import { requireCourseOwner } from "@/lib/auth/rbac";
+import { requireCourseOwner, requireUser } from "@/lib/auth/rbac";
 import { refreshCourseAggregates } from "@/lib/progress";
 import { storage } from "@/lib/storage";
 
@@ -10,6 +10,12 @@ export const runtime = "nodejs";
 type Ctx = { params: Promise<{ id: string }> };
 
 async function authorizeLesson(lessonId: string) {
+  // Authenticate before touching the database. Looking the lesson up first
+  // lets an anonymous caller tell "this id exists" from "it does not" by the
+  // status code alone, which is a free existence oracle over every lesson on
+  // the platform.
+  await requireUser();
+
   const lesson = await db.lesson.findUnique({
     where: { id: lessonId },
     select: {
