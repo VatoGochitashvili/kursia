@@ -10,6 +10,7 @@ import { formatCount, formatDate, formatRating } from "@/lib/format";
 import { breadcrumbSchema, buildMetadata, itemListSchema, personSchema } from "@/lib/seo";
 import { toPlainText } from "@/lib/sanitize";
 import { getSessionUser } from "@/lib/auth/session";
+import { ButtonLink } from "@/components/ui/Button";
 import { CourseCard } from "@/components/course/CourseCard";
 import { FollowButton } from "@/components/course/FollowButton";
 import {
@@ -170,7 +171,11 @@ export default async function CreatorPage({ params }: Props) {
               {/* Not shown on your own profile — following yourself is not a
                   thing, and the server refuses it anyway. */}
               {viewer?.id !== creator.user.id && (
-                <div className="mt-4">
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <ButtonLink href={p(`/community/${creator.slug}`)} variant="outline">
+                    <Icon name="message" size={16} />
+                    {t.community.title}
+                  </ButtonLink>
                   <FollowButton
                     creatorId={creator.id}
                     isAuthenticated={Boolean(viewer)}
