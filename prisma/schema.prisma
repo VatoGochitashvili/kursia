@@ -51,6 +51,8 @@ model User {
   notifications  Notification[]
   subscriptions  Subscription[]
   couponRedemptions CouponRedemption[]
+  posts          Post[]
+  postLikes      PostLike[]
   comments       Comment[]
   commentLikes   CommentLike[]
   notes          LessonNote[]
@@ -119,6 +121,7 @@ model CreatorProfile {
   subscriptions Subscription[]
   coupons       Coupon[]
   announcements Announcement[]
+  posts         Post[]
 
   @@index([isFeatured, featuredRank])
   @@index([isVerified])
@@ -256,6 +259,7 @@ model Course {
   subscriptions Subscription[]
   coupons      Coupon[]
   announcements Announcement[]
+  posts        Post[]
   views        CourseView[]
   reviewEvents CourseReviewEvent[]
   follows      Follow[]
@@ -1014,6 +1018,70 @@ model Announcement {
   course  Course?        @relation(fields: [courseId], references: [id], onDelete: SetNull)
 
   @@index([creatorId, createdAt])
+}
+
+// ──────────────────────────── Community ───────────────────────────────────
+
+/// A post in a creator's community, or a reply to one.
+///
+/// Replies are Posts with a parentId, the same way Comment threads itself.
+/// One table rather than two keeps moderation, likes and deletion uniform —
+/// hiding a post and hiding a reply must not be two different code paths.
+///
+/// This is deliberately NOT the Comment model. Comment is course-scoped with
+/// a required courseId and every Q&A query relies on that; a community feed
+/// belongs to the creator, and loosening courseId to fit would weaken an
+/// invariant that currently holds everywhere.
+model Post {
+  id        String  @id @default(cuid())
+  /// Whose community this belongs to. The membership boundary.
+  creatorId String
+  /// Who wrote it. Usually a student; the creator posts here too.
+  authorId  String
+  /// NULL for a top-level post; set for a reply.
+  parentId  String?
+  /// Optional: pin the post to one course's discussion.
+  courseId  String?
+
+  /// Top-level posts may carry one. Replies never do.
+  title  String?
+  body   String
+  // "VISIBLE" | "HIDDEN" | "REMOVED"
+  status String  @default("VISIBLE")
+  /// Creator-only. Pinned posts sort above everything else.
+  isPinned Boolean @default(false)
+
+  // Denormalised so a feed page costs one query, not one per post.
+  likeCount  Int @default(0)
+  replyCount Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  creator CreatorProfile @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  author  User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent  Post?          @relation("PostThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Post[]         @relation("PostThread")
+  course  Course?        @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  likes   PostLike[]
+
+  @@index([creatorId, isPinned, createdAt])
+  @@index([parentId, createdAt])
+  @@index([authorId])
+  @@index([courseId])
+}
+
+model PostLike {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@index([postId])
 }
 
 model Notification {
