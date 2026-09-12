@@ -9,9 +9,11 @@ import {
   getPopularCreators,
   getRankedCourses,
 } from "@/lib/courses";
+import { listCommunities } from "@/lib/communities";
 import { buildMetadata, itemListSchema } from "@/lib/seo";
 import { bpsToPercent } from "@/lib/money";
 import { CourseCard } from "@/components/course/CourseCard";
+import { CommunityCard } from "@/components/community/CommunityCard";
 import { CreatorCard } from "@/components/course/CreatorCard";
 import { SearchBar } from "@/components/layout/SearchBar";
 import { ButtonLink } from "@/components/ui/Button";
@@ -51,12 +53,13 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function HomePage() {
   const [{ locale, t }, settings] = await Promise.all([getI18n(), getSettings()]);
 
-  const [stats, categories, ranked, newest, creators] = await Promise.all([
+  const [stats, categories, ranked, newest, creators, communities] = await Promise.all([
     getPlatformStats(),
     getCategoryTree(),
     getRankedCourses(9),
     getNewCourses(6),
     getPopularCreators(6, settings.featuredCreatorIds),
+    listCommunities({ locale, take: 6 }),
   ]);
 
   const p = (path: string) => localePath(path, locale);
@@ -266,6 +269,30 @@ export default async function HomePage() {
                 {t.common.showMore}
               </ButtonLink>
             </div>
+          </div>
+        </Section>
+      )}
+
+      {/* ── Communities ──────────────────────────────────────────────────── */}
+      {/* The lead shelf. A membership is what this platform sells; a course is
+          something you find once you are inside one, which is why the course
+          shelf now sits below this rather than above it. */}
+      {communities.length > 0 && (
+        <Section>
+          <SectionHeading
+            title={t.communities.title}
+            subtitle={t.communities.subtitle}
+            action={<SeeAllLink href={p("/communities")} label={t.common.seeAll} />}
+          />
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {communities.map((community) => (
+              <CommunityCard
+                key={community.creatorId}
+                community={community}
+                href={p(`/community/${community.slug}`)}
+                t={t}
+              />
+            ))}
           </div>
         </Section>
       )}

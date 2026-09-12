@@ -785,6 +785,7 @@ async function main() {
   const COMMUNITIES = [
     {
       email: CREATORS[0]!.email,
+      categorySlug: "marketingi",
       name: "ციფრული მარკეტინგის კლუბი",
       tagline: "ყოველკვირეული ცოცხალი სესიები, უკუკავშირი და ერთად მუშაობა",
       description:
@@ -793,11 +794,39 @@ async function main() {
     },
     {
       email: CREATORS[1]!.email,
+      categorySlug: "janmrteloba",
       name: "ჯანსაღი რიტმი",
       tagline: "ვარჯიში, კვება და ანგარიშვალდებულება — ერთად",
       description:
         "ყოველდღიური მხარდაჭერა, კვირის გეგმები და ცოცხალი ვარჯიშები. უფასოა — შემოდი და ნახე, გამოგადგება თუ არა.",
       priceMinor: 0,
+    },
+    {
+      email: CREATORS[2]!.email,
+      categorySlug: "treidingi",
+      name: "ტრეიდერების ოთახი",
+      tagline: "დილის ანალიზი, გარიგებების განხილვა და რისკის მართვა",
+      description:
+        "ყოველ დილით ვიხილავთ ბაზარს, ვაზიარებთ სეტაპებს და კვირის ბოლოს ვაანალიზებთ რა იმუშავა და რა არა.",
+      priceMinor: 4900,
+    },
+    {
+      email: CREATORS[3]!.email,
+      categorySlug: "kontenti",
+      name: "კრეატორების სახელოსნო",
+      tagline: "სცენარი, მონტაჟი და ზრდა — ერთ სივრცეში",
+      description:
+        "ვაზიარებთ რა მუშაობს ალგორითმში ახლა, ვამოწმებთ ერთმანეთის ვიდეოებს და ვაწყობთ კონტენტ-გეგმას.",
+      priceMinor: 1900,
+    },
+    {
+      email: CREATORS[4]!.email,
+      categorySlug: "pirovnuli-ganvitareba",
+      name: "ჩვევების კლუბი",
+      tagline: "პატარა ნაბიჯები, ყოველდღე, ერთად",
+      description:
+        "ყოველდღიური ჩექ-ინი, კვირის მიზნები და მხარდაჭერა მაშინ, როცა მოტივაცია გითავდება.",
+      priceMinor: 900,
     },
   ];
 
@@ -811,6 +840,7 @@ async function main() {
       where: { id: cid },
       data: {
         communityEnabled: true,
+        communityCategoryId: categoryIds.get(community.categorySlug) ?? null,
         communityName: community.name,
         communityTagline: community.tagline,
         communityDescription: community.description,

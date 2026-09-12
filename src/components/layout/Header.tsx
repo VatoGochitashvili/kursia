@@ -65,7 +65,15 @@ export async function Header() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-0.5 lg:flex" aria-label={t.nav.courses}>
+        <nav className="hidden items-center gap-0.5 lg:flex" aria-label={t.communities.title}>
+          {/* Communities first: the membership is the product, and a course is
+              something you find once you are inside one. */}
+          <Link
+            href={localePath("/communities", locale)}
+            className="inline-flex h-10 items-center rounded-lg px-3 text-sm font-semibold text-ink transition-colors hover:bg-surface-sunken"
+          >
+            {t.communities.title}
+          </Link>
           <Link
             href={localePath("/courses", locale)}
             className="inline-flex h-10 items-center rounded-lg px-3 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink"
@@ -81,7 +89,10 @@ export async function Header() {
         </nav>
 
         <div className="mx-auto hidden w-full max-w-md md:block">
-          <SearchBar placeholder={t.home.heroSearchPlaceholder} action={localePath("/courses", locale)} />
+          <SearchBar
+            placeholder={t.communities.searchPlaceholder}
+            action={localePath("/communities", locale)}
+          />
         </div>
 
         <div className="ms-auto flex items-center gap-1 md:ms-0">
@@ -102,6 +113,7 @@ export async function Header() {
             }}
             labels={{
               categories: t.nav.categories,
+              communities: t.communities.title,
               coursesShort: t.nav.courses,
               courses: t.nav.courses,
               notifications: t.nav.notifications,

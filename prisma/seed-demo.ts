@@ -564,6 +564,126 @@ async function addDemo() {
   }
 
   console.log(`  ✓ ${purchases} enrolments, ${reviews} reviews`);
+
+  // ── Communities ──────────────────────────────────────────────────────────
+  // The directory is the front door of the site, and an empty one makes a
+  // working platform look broken. These open a few demo communities so there
+  // is something to browse before the first real creator arrives.
+  //
+  // Idempotent like everything else here: a community that is already open is
+  // left exactly as its owner configured it, so a redeploy never overwrites a
+  // price somebody set by hand.
+  const DEMO_COMMUNITIES = [
+    {
+      index: 0,
+      categorySlug: "marketingi",
+      name: "ციფრული მარკეტინგის კლუბი",
+      tagline: "ყოველკვირეული ცოცხალი სესიები, უკუკავშირი და ერთად მუშაობა",
+      description:
+        "დახურული სივრცე მათთვის, ვინც რეალურ კამპანიებზე მუშაობს. ყოველ კვირას ვხვდებით ცოცხლად და ვარჩევთ თქვენს ფუნელებს.",
+      priceMinor: 2500,
+    },
+    {
+      index: 1,
+      categorySlug: "janmrteloba",
+      name: "ჯანსაღი რიტმი",
+      tagline: "ვარჯიში, კვება და ანგარიშვალდებულება — ერთად",
+      description: "ყოველდღიური მხარდაჭერა, კვირის გეგმები და ცოცხალი ვარჯიშები.",
+      priceMinor: 0,
+    },
+    {
+      index: 2,
+      categorySlug: "treidingi",
+      name: "ტრეიდერების ოთახი",
+      tagline: "დილის ანალიზი, გარიგებების განხილვა და რისკის მართვა",
+      description:
+        "ყოველ დილით ვიხილავთ ბაზარს, ვაზიარებთ სეტაპებს და კვირის ბოლოს ვაანალიზებთ რა იმუშავა.",
+      priceMinor: 4900,
+    },
+    {
+      index: 3,
+      categorySlug: "kontenti",
+      name: "კრეატორების სახელოსნო",
+      tagline: "სცენარი, მონტაჟი და ზრდა — ერთ სივრცეში",
+      description: "ვამოწმებთ ერთმანეთის ვიდეოებს და ვაწყობთ კონტენტ-გეგმას.",
+      priceMinor: 1900,
+    },
+  ];
+
+  let communitiesOpened = 0;
+  let membershipsAdded = 0;
+
+  for (const spec of DEMO_COMMUNITIES) {
+    const creatorEmail = CREATORS[spec.index]?.email;
+    const cid = creatorEmail ? creatorIdByEmail.get(creatorEmail) : undefined;
+    if (!cid) continue;
+
+    const existing = await db.creatorProfile.findUnique({
+      where: { id: cid },
+      select: { communityEnabled: true, approvedAt: true },
+    });
+    // Already open — leave whatever the owner set alone.
+    if (!existing || existing.communityEnabled) continue;
+
+    await db.creatorProfile.update({
+      where: { id: cid },
+      data: {
+        communityEnabled: true,
+        communityCategoryId: categoryBySlug.get(spec.categorySlug) ?? null,
+        communityName: spec.name,
+        communityTagline: spec.tagline,
+        communityDescription: spec.description,
+        communityPriceMinor: spec.priceMinor,
+        communityCurrency: CURRENCY,
+        // The directory only advertises approved creators, so a demo community
+        // that is never approved would be invisible — which is the one thing
+        // this block exists to prevent.
+        approvedAt: existing.approvedAt ?? daysAgo(randInt(30, 200)),
+      },
+    });
+    communitiesOpened += 1;
+
+    // Members drawn from this creator's own students, so the counts on the
+    // directory card correspond to real rows rather than a made-up number.
+    const candidates = await db.enrollment.findMany({
+      where: { course: { creatorId: cid }, revokedAt: null, user: { email: { endsWith: DEMO_DOMAIN } } },
+      select: { userId: true },
+      distinct: ["userId"],
+      take: 6,
+    });
+
+    for (const candidate of candidates) {
+      const scopeKey = `community:${cid}`;
+      const already = await db.subscription.findUnique({
+        where: { userId_scopeKey: { userId: candidate.userId, scopeKey } },
+        select: { id: true },
+      });
+      if (already) continue;
+
+      await db.subscription.create({
+        data: {
+          userId: candidate.userId,
+          courseId: null,
+          creatorId: cid,
+          kind: "COMMUNITY",
+          scopeKey,
+          status: "ACTIVE",
+          priceMinor: spec.priceMinor,
+          currency: CURRENCY,
+          currentPeriodStart: daysAgo(randInt(3, 25)),
+          currentPeriodEnd: new Date(Date.now() + randInt(3, 27) * 864e5),
+        },
+      });
+      membershipsAdded += 1;
+    }
+
+    await db.creatorProfile.update({
+      where: { id: cid },
+      data: { communityMemberCount: candidates.length },
+    });
+  }
+
+  console.log(`  ✓ ${communitiesOpened} communities opened, ${membershipsAdded} memberships`);
 }
 
 // ── Entry point ─────────────────────────────────────────────────────────────

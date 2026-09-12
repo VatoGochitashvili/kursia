@@ -253,6 +253,7 @@ export function HeaderClient({ user, categories, labels, localeSwitch }: Props) 
                 </div>
               )}
 
+              <MenuLink href="/communities" icon="users" label={labels.communities} mobile />
               <MenuLink href="/courses" icon="book" label={labels.courses} mobile />
               {user && <MenuLink href={dashboardHref} icon="grid" label={labels.dashboard} mobile />}
               {user && <MenuLink href="/dashboard/notifications" icon="bell" label={labels.notifications} mobile />}

@@ -115,7 +115,7 @@ model CreatorProfile {
   // ── The community as a product ───────────────────────────────────────────
   /// Off until the creator opens it. A community that is not enabled is not
   /// joinable and does not appear anywhere as something to pay for.
-  communityEnabled Boolean @default(false)
+  communityEnabled     Boolean  @default(false)
   /// The group's own name and pitch. Skool groups are branded separately from
   /// the person running them — "Georgian Traders", not "Giorgi Khutsishvili".
   communityName        String?
@@ -124,29 +124,36 @@ model CreatorProfile {
   communityCoverUrl    String?
   /// Monthly price in minor units. Zero means a free community anyone signed
   /// in can join — Skool has those too, and they are how most groups start.
-  communityPriceMinor Int    @default(0)
-  communityCurrency   String @default("GEL")
+  communityPriceMinor  Int      @default(0)
+  communityCurrency    String   @default("GEL")
   /// Members at the last count. Denormalised for the directory card; the
   /// truth is the set of live subscriptions.
-  communityMemberCount Int @default(0)
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  communityMemberCount Int      @default(0)
+  /// What the community is about, so the directory can be browsed by topic.
+  /// Shares the Category tree with courses rather than inventing a second
+  /// taxonomy — "fitness" means the same thing whichever it labels.
+  communityCategoryId  String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  courses        Course[]
-  balance        CreatorBalance?
-  payouts        Payout[]
-  payoutMethods  PayoutMethod[]
-  balanceEntries BalanceEntry[]
-  subscriptions  Subscription[]
-  coupons        Coupon[]
-  announcements  Announcement[]
-  posts          Post[]
-  events         Event[]
-  pointEvents    PointEvent[]
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  communityCategory Category?       @relation("communityCategory", fields: [communityCategoryId], references: [id], onDelete: SetNull)
+  courses           Course[]
+  balance           CreatorBalance?
+  payouts           Payout[]
+  payoutMethods     PayoutMethod[]
+  balanceEntries    BalanceEntry[]
+  subscriptions     Subscription[]
+  coupons           Coupon[]
+  announcements     Announcement[]
+  posts             Post[]
+  events            Event[]
+  pointEvents       PointEvent[]
 
   @@index([isFeatured, featuredRank])
   @@index([isVerified])
+  @@index([communityEnabled, communityMemberCount])
+  @@index([communityCategoryId])
 }
 
 /// Server-side session records so sessions can be revoked (logout-everywhere,
@@ -199,10 +206,11 @@ model Category {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  parent     Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
-  children   Category[] @relation("CategoryTree")
-  courses    Course[]   @relation("courseCategory")
-  subCourses Course[]   @relation("courseSubcategory")
+  parent      Category?        @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children    Category[]       @relation("CategoryTree")
+  courses     Course[]         @relation("courseCategory")
+  subCourses  Course[]         @relation("courseSubcategory")
+  communities CreatorProfile[] @relation("communityCategory")
 
   @@index([parentId, sortOrder])
   @@index([isActive])
@@ -485,8 +493,8 @@ model Wishlist {
 /// A student's order for one course. Access is granted only when
 /// status === "PAID", and only from server-side webhook verification.
 model Purchase {
-  id        String @id @default(cuid())
-  reference String @unique // human-facing order number
+  id        String  @id @default(cuid())
+  reference String  @unique // human-facing order number
   userId    String
   /// Null when the purchase is a month of community membership rather than a
   /// course. Everything downstream — ledger, refunds, payouts — works off the
@@ -932,7 +940,7 @@ model AssignmentSubmission {
 /// and a student who does nothing simply loses access when the period ends.
 /// Nobody is ever charged without deciding to be.
 model Subscription {
-  id        String @id @default(cuid())
+  id        String  @id @default(cuid())
   userId    String
   /// Null for a community subscription — that one buys the whole space, not
   /// one course inside it.

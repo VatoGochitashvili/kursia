@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, errorMessage } from "@/lib/client/fetcher";
 import { Button } from "@/components/ui/Button";
-import { Alert, Card, Checkbox, Field, Input, Textarea } from "@/components/ui/primitives";
+import { Alert, Card, Checkbox, Field, Input, Select, Textarea } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
 import { useToast } from "@/components/ui/Toast";
 import { formatMoney } from "@/lib/money";
@@ -36,6 +36,7 @@ interface CourseRow {
  */
 export function CommunitySettings({
   initial,
+  categories,
   courses,
   communityHref,
   locale,
@@ -49,7 +50,9 @@ export function CommunitySettings({
     priceMinor: number;
     currency: string;
     memberCount: number;
+    categoryId: string;
   };
+  categories: { id: string; name: string }[];
   courses: CourseRow[];
   communityHref: string;
   locale: Locale;
@@ -64,6 +67,7 @@ export function CommunitySettings({
     description: initial.description,
     // Whole units in the box; tetri on the wire.
     price: initial.priceMinor === 0 ? "" : String(Math.round(initial.priceMinor / 100)),
+    categoryId: initial.categoryId,
   });
   const [included, setIncluded] = useState<Set<string>>(
     () => new Set(courses.filter((c) => c.includedInMembership).map((c) => c.id)),
@@ -85,6 +89,7 @@ export function CommunitySettings({
         tagline: form.tagline.trim() || null,
         description: form.description.trim() || null,
         priceMinor,
+        categoryId: form.categoryId || null,
         includedCourseIds: [...included],
       });
       toast.show(t.membership.saved, "success");
@@ -159,6 +164,20 @@ export function CommunitySettings({
             placeholder={t.membership.taglinePlaceholder}
             onChange={(e) => setForm({ ...form, tagline: e.target.value })}
           />
+        </Field>
+
+        <Field label={t.membership.categoryLabel} hint={t.membership.categoryHint}>
+          <Select
+            value={form.categoryId}
+            onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
+          >
+            <option value="">{t.membership.categoryNone}</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </Select>
         </Field>
 
         <Field label={t.membership.descriptionLabel}>

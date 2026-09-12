@@ -19,17 +19,23 @@ export function CommunityTabs({
   t,
 }: {
   slug: string;
-  active: "feed" | "events" | "leaderboard";
+  active: "feed" | "classroom" | "events" | "leaderboard";
   locale: Locale;
   t: Dictionary;
 }) {
   const tabs: {
-    key: "feed" | "events" | "leaderboard";
+    key: "feed" | "classroom" | "events" | "leaderboard";
     href: string;
     label: string;
     icon: IconName;
   }[] = [
     { key: "feed", href: `/community/${slug}`, label: t.community.title, icon: "message" },
+    {
+      key: "classroom",
+      href: `/community/${slug}/classroom`,
+      label: t.communities.classroom,
+      icon: "video",
+    },
     { key: "events", href: `/community/${slug}/events`, label: t.events.title, icon: "calendar" },
     {
       key: "leaderboard",

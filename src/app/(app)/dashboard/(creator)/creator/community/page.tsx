@@ -33,9 +33,16 @@ export default async function CreatorCommunityPage() {
       communityPriceMinor: true,
       communityCurrency: true,
       communityMemberCount: true,
+      communityCategoryId: true,
     },
   });
   if (!creator) redirect(p("/dashboard/profile"));
+
+  const categories = await db.category.findMany({
+    where: { isActive: true, parentId: null },
+    orderBy: { sortOrder: "asc" },
+    select: { id: true, nameKa: true, nameEn: true },
+  });
 
   const courses = await db.course.findMany({
     where: { creatorId: user.creatorId, status: { not: "ARCHIVED" } },
@@ -62,7 +69,12 @@ export default async function CreatorCommunityPage() {
           priceMinor: creator.communityPriceMinor,
           currency: creator.communityCurrency,
           memberCount: creator.communityMemberCount,
+          categoryId: creator.communityCategoryId ?? "",
         }}
+        categories={categories.map((c) => ({
+          id: c.id,
+          name: locale === "en" ? c.nameEn : c.nameKa,
+        }))}
         courses={courses}
         communityHref={p(`/community/${creator.slug}`)}
         locale={locale}
