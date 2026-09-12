@@ -377,6 +377,9 @@ export const ka = {
   },
 
   creator: {
+    follow: "გამოწერა",
+    following: "გამოწერილია",
+    followers: "გამომწერი",
     attachments: "დამატებითი ფაილები",
     attachmentsHint: "სამუშაო ფურცელი, გეგმა, შაბლონი — სტუდენტი ჩამოტვირთავს გაკვეთილთან ერთად.",
     attachmentTypes: "PDF, ZIP, DOCX, XLSX, სურათი — მაქსიმუმ 200MB",

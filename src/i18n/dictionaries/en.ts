@@ -238,6 +238,9 @@ export const en: Dictionary = {
   },
 
   creator: {
+    follow: "Follow",
+    following: "Following",
+    followers: "followers",
     attachments: "Attachments",
     attachmentsHint: "A worksheet, a plan, a template — students download it alongside the lesson.",
     attachmentTypes: "PDF, ZIP, DOCX, XLSX, image — 200MB max",

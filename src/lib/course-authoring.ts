@@ -352,7 +352,7 @@ async function notifyTransition(input: {
       );
       return;
     }
-    case "PUBLISHED":
+    case "PUBLISHED": {
       await notify({
         userId: input.creatorUserId,
         type: "COURSE_PUBLISHED",
@@ -367,7 +367,37 @@ async function notifyTransition(input: {
           },
         },
       });
+
+      // Everyone following this creator hears about it. This is the entire
+      // point of the follow relationship, and the reason the
+      // NEW_COURSE_FROM_CREATOR type existed for so long without ever firing.
+      //
+      // Notifications only — no email. A creator publishing a back catalogue
+      // could otherwise send a follower one message per course in a burst,
+      // and the fastest way to lose a follower is to arrive in their inbox
+      // five times in a minute.
+      const followers = await db.follow.findMany({
+        where: { followedUserId: input.creatorUserId },
+        select: { followerId: true },
+        // A bound rather than a page: this runs inside a publish, and a
+        // creator with a very large following should not make publishing slow.
+        // The rest still see the course in the catalogue.
+        take: 500,
+      });
+
+      await Promise.all(
+        followers.map((follow) =>
+          notify({
+            userId: follow.followerId,
+            type: "NEW_COURSE_FROM_CREATOR",
+            title: "ახალი კურსი ავტორისგან, რომელსაც მიჰყვები",
+            body: input.course.title,
+            linkUrl: `/courses/${input.course.slug}`,
+          }).catch(() => undefined),
+        ),
+      );
       return;
+    }
     case "APPROVED":
       await notify({
         userId: input.creatorUserId,

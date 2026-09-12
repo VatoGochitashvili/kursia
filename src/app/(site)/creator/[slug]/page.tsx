@@ -9,7 +9,9 @@ import { parseStringArray } from "@/lib/json";
 import { formatCount, formatDate, formatRating } from "@/lib/format";
 import { breadcrumbSchema, buildMetadata, itemListSchema, personSchema } from "@/lib/seo";
 import { toPlainText } from "@/lib/sanitize";
+import { getSessionUser } from "@/lib/auth/session";
 import { CourseCard } from "@/components/course/CourseCard";
+import { FollowButton } from "@/components/course/FollowButton";
 import {
   Avatar, Badge, Breadcrumbs, Card, EmptyState, JsonLd, Stars,
 } from "@/components/ui/primitives";
@@ -36,6 +38,7 @@ async function loadCreator(slug: string) {
       expertise: true, isVerified: true, createdAt: true,
       user: {
         select: {
+          id: true,
           status: true,
           createdAt: true,
           profile: {
@@ -83,13 +86,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function CreatorPage({ params }: Props) {
   const { slug } = await params;
-  const [creator, { locale, t }, settings] = await Promise.all([
+  const [creator, { locale, t }, settings, viewer] = await Promise.all([
     loadCreator(slug),
     getI18n(),
     getSettings(),
+    getSessionUser(),
   ]);
 
   if (!creator) notFound();
+
+  // Two cheap counts rather than loading the follower list: this page only
+  // needs "how many" and "is it you".
+  const [followers, viewerFollows] = await Promise.all([
+    db.follow.count({ where: { followedUserId: creator.user.id } }),
+    viewer
+      ? db.follow.count({
+          where: { followerId: viewer.id, followedUserId: creator.user.id },
+        })
+      : Promise.resolve(0),
+  ]);
 
   const p = (path: string) => localePath(path, locale);
   const profile = creator.user.profile;
@@ -150,6 +165,28 @@ export default async function CreatorPage({ params }: Props) {
 
               {profile?.headline && (
                 <p className="mt-2 text-[15px] text-ink-muted sm:text-base">{profile.headline}</p>
+              )}
+
+              {/* Not shown on your own profile — following yourself is not a
+                  thing, and the server refuses it anyway. */}
+              {viewer?.id !== creator.user.id && (
+                <div className="mt-4">
+                  <FollowButton
+                    creatorId={creator.id}
+                    isAuthenticated={Boolean(viewer)}
+                    initiallyFollowing={viewerFollows > 0}
+                    initialFollowers={followers}
+                    locale={locale}
+                    loginHref={`${p("/login")}?next=${encodeURIComponent(
+                      p(`/creator/${creator.slug}`),
+                    )}`}
+                    labels={{
+                      follow: t.creator.follow,
+                      following: t.creator.following,
+                      followers: t.creator.followers,
+                    }}
+                  />
+                </div>
               )}
 
               <dl className="mt-5 flex flex-wrap gap-x-8 gap-y-3">
