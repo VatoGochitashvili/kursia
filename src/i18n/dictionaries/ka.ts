@@ -396,6 +396,10 @@ export const ka = {
   },
 
   creator: {
+    dangerZone: "საშიში ზონა",
+    archiveCourse: "კურსის დაარქივება",
+    deleteConfirmLabel: "დასადასტურებლად აკრიფე კურსის სახელი: {title}",
+    deleteConfirmHint: "ზუსტად ისე, როგორც ზემოთ წერია.",
     announcements: "შეტყობინებები",
     announcementsSubtitle: "მისწერე შენს სტუდენტებს",
     announcementNew: "ახალი შეტყობინება",
@@ -460,10 +464,8 @@ export const ka = {
     deleteCourse: "კურსის წაშლა",
     courseDeleted: "კურსი წაიშალა",
     courseArchived: "კურსი დაარქივდა",
-    deleteCourseTitle: "წავშალოთ ეს კურსი?",
     deleteCourseBody:
       "კურსი, მისი მოდულები, გაკვეთილები და ატვირთული ფაილები სამუდამოდ წაიშლება. ამ მოქმედების დაბრუნება შეუძლებელია.",
-    archiveCourseTitle: "კურსი დაარქივდება",
     archiveCourseBody:
       "ამ კურსზე უკვე არიან ჩარიცხული სტუდენტები, ამიტომ ის არ წაიშლება — დაარქივდება. კატალოგიდან გაქრება, სტუდენტები კი შეინარჩუნებენ წვდომას იმაზე, რაშიც გადაიხადეს.",
     confirmDeleteCourse: "დიახ, წავშალოთ",

@@ -257,6 +257,10 @@ export const en: Dictionary = {
   },
 
   creator: {
+    dangerZone: "Danger zone",
+    archiveCourse: "Archive course",
+    deleteConfirmLabel: "Type the course title to confirm: {title}",
+    deleteConfirmHint: "Exactly as written above.",
     announcements: "Announcements",
     announcementsSubtitle: "Write to your students",
     announcementNew: "New announcement",
@@ -321,10 +325,8 @@ export const en: Dictionary = {
     deleteCourse: "Delete course",
     courseDeleted: "Course deleted",
     courseArchived: "Course archived",
-    deleteCourseTitle: "Delete this course?",
     deleteCourseBody:
       "The course, its modules, lessons and uploaded files are removed permanently. This cannot be undone.",
-    archiveCourseTitle: "This course will be archived",
     archiveCourseBody:
       "Students are already enrolled, so this course is archived rather than deleted. It disappears from the catalogue, and the students who paid keep access to what they bought.",
     confirmDeleteCourse: "Yes, delete it",

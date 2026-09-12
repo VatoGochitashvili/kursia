@@ -29,7 +29,7 @@ export default async function CourseBuilderPage({
       select: {
         id: true, slug: true, title: true, subtitle: true, description: true,
         thumbnailUrl: true, categoryId: true, subcategoryId: true, language: true,
-        level: true, status: true, priceMinor: true, discountPriceMinor: true,
+        level: true, status: true, studentCount: true, priceMinor: true, discountPriceMinor: true,
         currency: true, previewVideoUrl: true, metaTitle: true, metaDescription: true,
         pricingModel: true, subscriptionPriceMinor: true,
         learningOutcomes: true, requirements: true, targetAudience: true,
@@ -72,6 +72,7 @@ export default async function CourseBuilderPage({
         language: course.language,
         level: course.level,
         status: course.status,
+        studentCount: course.studentCount,
         // Prices are edited in major units; the API converts back to minor.
         price: String(toMajor(course.priceMinor, course.currency)),
         discountPrice:

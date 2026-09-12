@@ -12,6 +12,7 @@ import { MediaUploader } from "@/components/ui/MediaUploader";
 import { Icon } from "@/components/ui/Icon";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { CurriculumEditor, type EditorModule } from "./CurriculumEditor";
+import { DangerZone } from "./DangerZone";
 import { ListEditor } from "./ListEditor";
 import { QuizEditor } from "./QuizEditor";
 import type { Dictionary } from "@/i18n";
@@ -31,6 +32,8 @@ export interface BuilderCourse {
   language: string;
   level: string;
   status: string;
+  /// Decides whether deleting destroys or archives. Read-only here.
+  studentCount: number;
   price: string;
   discountPrice: string;
   pricingModel: "ONE_TIME" | "SUBSCRIPTION" | "BOTH";
@@ -770,6 +773,15 @@ export function CourseBuilder({
               )}
             </Card>
           )}
+        {/* Last thing on the last tab, deliberately. */}
+        <DangerZone
+          courseId={course.id}
+          courseTitle={values.title}
+          studentCount={course.studentCount}
+          redirectTo={locale === "en" ? "/en/dashboard/creator/courses" : "/dashboard/creator/courses"}
+          t={t}
+        />
+
         </div>
       )}
 
