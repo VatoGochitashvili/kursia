@@ -126,6 +126,8 @@ const schema = z.object({
 
   DEFAULT_CURRENCY: z.string().default("GEL"),
   DEFAULT_COMMISSION_BPS: int(1000),
+  /** Monthly creator plan, in minor units. 4900 = 49 GEL. */
+  CREATOR_PLAN_PRICE_MINOR: z.coerce.number().int().min(0).default(4900),
   PAYOUT_CLEARING_DAYS: int(14),
   PAYOUT_MINIMUM_MINOR: int(5000),
   REFUND_WINDOW_DAYS: int(14),

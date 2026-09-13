@@ -2,6 +2,8 @@ import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db";
 import { communityLabel } from "@/lib/membership";
 import { CATALOGUE_TAG } from "@/lib/courses";
+import { payingCreatorFilter } from "@/lib/creator-plan";
+import { getSettings } from "@/lib/settings";
 import type { Locale } from "@/lib/enums";
 
 export interface CommunityCard {
@@ -38,12 +40,20 @@ async function query(input: {
   take: number;
 }): Promise<CommunityCard[]> {
   const { locale, categorySlug, sort, search, take } = input;
+  const settings = await getSettings();
 
   const rows = await db.creatorProfile.findMany({
     where: {
       communityEnabled: true,
-      // An unapproved creator is not advertised in the directory.
+      // Three separate gates, and all three have to hold:
+      //   • the creator was approved as a creator at all
+      //   • an admin approved THIS circle
+      //   • the creator's plan is currently paid
+      // Asked as one query rather than filtered afterwards, so paging and
+      // counts stay honest.
       approvedAt: { not: null },
+      communityStatus: "APPROVED",
+      ...payingCreatorFilter(settings.creatorPlanPriceMinor),
       ...(categorySlug ? { communityCategory: { slug: categorySlug } } : {}),
       ...(sort === "free" ? { communityPriceMinor: 0 } : {}),
       ...(search
@@ -130,20 +140,25 @@ export async function listCommunities(input: {
 
 /** Categories that actually have a community in them — no empty shelves. */
 export async function listCommunityCategories(locale: Locale) {
+  const settings = await getSettings();
+  const listable = {
+    communityEnabled: true,
+    approvedAt: { not: null },
+    communityStatus: "APPROVED",
+    ...payingCreatorFilter(settings.creatorPlanPriceMinor),
+  };
+
   const rows = await db.category.findMany({
-    where: {
-      isActive: true,
-      communities: { some: { communityEnabled: true, approvedAt: { not: null } } },
-    },
+    where: { isActive: true, communities: { some: listable } },
     orderBy: { sortOrder: "asc" },
     select: {
       slug: true,
       nameKa: true,
       nameEn: true,
       icon: true,
-      _count: {
-        select: { communities: { where: { communityEnabled: true, approvedAt: { not: null } } } },
-      },
+      // The same predicate as the listing, so a category never advertises a
+      // count the directory cannot then show.
+      _count: { select: { communities: { where: listable } } },
     },
   });
 

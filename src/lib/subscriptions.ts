@@ -92,6 +92,7 @@ export async function runSubscriptionMaintenance(): Promise<{
       id: true,
       userId: true,
       currentPeriodEnd: true,
+      kind: true,
       course: { select: { title: true, slug: true } },
       creator: { select: { slug: true, displayName: true, communityName: true } },
     },
@@ -101,10 +102,15 @@ export async function runSubscriptionMaintenance(): Promise<{
   for (const subscription of ending) {
     // Same warning, two destinations: renewing a course means going back to
     // the course page, renewing a membership means the community it opens.
-    const label = subscription.course?.title ?? communityLabel(subscription.creator);
-    const href = subscription.course
-      ? `/courses/${subscription.course.slug}`
-      : `/community/${subscription.creator.slug}`;
+    const isPlan = subscription.kind === "CREATOR_PLAN";
+    const label = isPlan
+      ? "ავტორის გეგმა"
+      : (subscription.course?.title ?? communityLabel(subscription.creator));
+    const href = isPlan
+      ? "/dashboard/creator/plan"
+      : subscription.course
+        ? `/courses/${subscription.course.slug}`
+        : `/community/${subscription.creator.slug}`;
 
     await notify({
       userId: subscription.userId,
@@ -123,7 +129,7 @@ export async function runSubscriptionMaintenance(): Promise<{
   // ── Already lapsed ──────────────────────────────────────────────────────
   const lapsed = await db.subscription.findMany({
     where: { status: { in: ["ACTIVE", "CANCELLED"] }, currentPeriodEnd: { lte: now } },
-    select: { id: true, userId: true, courseId: true, creatorId: true },
+    select: { id: true, userId: true, courseId: true, creatorId: true, kind: true },
     take: 500,
   });
 
@@ -135,7 +141,12 @@ export async function runSubscriptionMaintenance(): Promise<{
 
     // A lapsed membership is one fewer member on the directory card. Guarded
     // above zero so a double run cannot drive the count negative.
-    if (!subscription.courseId) {
+    //
+    // Keyed on the KIND, not on "courseId is null". A creator's own plan also
+    // has no course and names their own profile as the creator, so testing for
+    // a missing course would decrement a creator's member count every time
+    // their plan lapsed — subtracting a member who never existed.
+    if (subscription.kind === "COMMUNITY") {
       await db.creatorProfile
         .updateMany({
           where: { id: subscription.creatorId, communityMemberCount: { gt: 0 } },

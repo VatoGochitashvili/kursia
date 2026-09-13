@@ -2,6 +2,8 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { ApiError, beginMutation, handler, jsonOk, readJson } from "@/lib/api";
 import { requireUser } from "@/lib/auth/rbac";
+import { getPlanState } from "@/lib/creator-plan";
+import { getSettings } from "@/lib/settings";
 
 export const runtime = "nodejs";
 
@@ -36,18 +38,40 @@ export const PATCH = handler(async (request) => {
   const user = await requireUser();
   await beginMutation("write", user.id);
 
-  const creator = await db.creatorProfile.findUnique({
-    where: { userId: user.id },
-    select: { id: true },
-  });
+  const [creator, settings] = await Promise.all([
+    db.creatorProfile.findUnique({
+      where: { userId: user.id },
+      select: { id: true, communityEnabled: true, communityStatus: true },
+    }),
+    getSettings(),
+  ]);
   if (!creator) throw new ApiError(403, "FORBIDDEN", "ავტორის პროფილი არ გაქვთ");
 
   const body = await readJson(request, settingsSchema);
+
+  // Opening a circle is what the plan pays for. Everything else on this form —
+  // the name, the price, which courses are included — stays editable without
+  // one, so a creator between payments can keep their space in order rather
+  // than being locked out of their own settings.
+  const plan = await getPlanState(creator.id, settings.creatorPlanPriceMinor);
+  if (body.enabled === true && !creator.communityEnabled && !plan.active) {
+    throw new ApiError(402, "PLAN_REQUIRED", "წრის გასახსნელად საჭიროა ავტორის გეგმა");
+  }
+
+  // Enabling submits it for review. A circle that has already been approved
+  // stays approved — turning it off and on again is not a new application.
+  const reviewPatch =
+    body.enabled === true && creator.communityStatus === "DRAFT"
+      ? settings.communityApprovalRequired
+        ? { communityStatus: "PENDING", communitySubmittedAt: new Date() }
+        : { communityStatus: "APPROVED", communityReviewedAt: new Date() }
+      : {};
 
   const updated = await db.creatorProfile.update({
     where: { id: creator.id },
     data: {
       ...(body.enabled !== undefined ? { communityEnabled: body.enabled } : {}),
+      ...reviewPatch,
       ...(body.name !== undefined ? { communityName: body.name || null } : {}),
       ...(body.tagline !== undefined ? { communityTagline: body.tagline || null } : {}),
       ...(body.description !== undefined ? { communityDescription: body.description || null } : {}),
@@ -61,6 +85,7 @@ export const PATCH = handler(async (request) => {
       id: true, communityEnabled: true, communityName: true, communityTagline: true,
       communityDescription: true, communityCoverUrl: true, communityPriceMinor: true,
       communityCurrency: true, communityMemberCount: true, communityCategoryId: true,
+      communityStatus: true, communityReviewNote: true,
     },
   });
 

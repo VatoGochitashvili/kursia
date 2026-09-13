@@ -25,6 +25,14 @@ export interface PlatformSettings {
   refundWindowDays: number;
   /** When true, a creator cannot self-publish; admin approval is required. */
   courseApprovalRequired: boolean;
+  /**
+   * What a creator pays, per month, to keep a circle open. Zero makes the
+   * platform free to create on — the setting exists so that is a decision an
+   * admin makes rather than something baked into the code.
+   */
+  creatorPlanPriceMinor: number;
+  /** When true, a circle needs an admin's approval before it is listed. */
+  communityApprovalRequired: boolean;
   registrationOpen: boolean;
   creatorRegistrationOpen: boolean;
   creatorAutoApprove: boolean;
@@ -49,6 +57,8 @@ export const SETTING_DEFAULTS: PlatformSettings = {
   commissionBps: env.DEFAULT_COMMISSION_BPS,
   payoutClearingDays: env.PAYOUT_CLEARING_DAYS,
   payoutMinimumMinor: env.PAYOUT_MINIMUM_MINOR,
+  creatorPlanPriceMinor: env.CREATOR_PLAN_PRICE_MINOR,
+  communityApprovalRequired: true,
   refundWindowDays: env.REFUND_WINDOW_DAYS,
   courseApprovalRequired: true,
   registrationOpen: true,
@@ -86,7 +96,8 @@ const VALUE_TYPES: Record<Key, "string" | "number" | "boolean" | "json"> = {
   taglineEn: "string", logoUrl: "string", supportEmail: "string",
   currency: "string", commissionBps: "number", payoutClearingDays: "number",
   payoutMinimumMinor: "number", refundWindowDays: "number",
-  courseApprovalRequired: "boolean", registrationOpen: "boolean",
+  courseApprovalRequired: "boolean", creatorPlanPriceMinor: "number",
+  communityApprovalRequired: "boolean", registrationOpen: "boolean",
   creatorRegistrationOpen: "boolean", creatorAutoApprove: "boolean",
   homepageSections: "json", featuredCourseIds: "json", featuredCreatorIds: "json",
   paymentProviders: "json", defaultPaymentProvider: "string",
@@ -98,7 +109,8 @@ const GROUPS: Record<Key, string> = {
   taglineEn: "branding", logoUrl: "branding", supportEmail: "branding",
   currency: "commerce", commissionBps: "commerce", payoutClearingDays: "commerce",
   payoutMinimumMinor: "commerce", refundWindowDays: "commerce",
-  courseApprovalRequired: "moderation", registrationOpen: "access",
+  courseApprovalRequired: "moderation", communityApprovalRequired: "moderation",
+  creatorPlanPriceMinor: "commerce", registrationOpen: "access",
   creatorRegistrationOpen: "access", creatorAutoApprove: "access",
   homepageSections: "homepage", featuredCourseIds: "homepage",
   featuredCreatorIds: "homepage", paymentProviders: "payments",

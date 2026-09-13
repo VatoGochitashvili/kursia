@@ -115,7 +115,7 @@ model CreatorProfile {
   // ── The community as a product ───────────────────────────────────────────
   /// Off until the creator opens it. A community that is not enabled is not
   /// joinable and does not appear anywhere as something to pay for.
-  communityEnabled     Boolean  @default(false)
+  communityEnabled     Boolean   @default(false)
   /// The group's own name and pitch. Skool groups are branded separately from
   /// the person running them — "Georgian Traders", not "Giorgi Khutsishvili".
   communityName        String?
@@ -124,17 +124,31 @@ model CreatorProfile {
   communityCoverUrl    String?
   /// Monthly price in minor units. Zero means a free community anyone signed
   /// in can join — Skool has those too, and they are how most groups start.
-  communityPriceMinor  Int      @default(0)
-  communityCurrency    String   @default("GEL")
+  communityPriceMinor  Int       @default(0)
+  communityCurrency    String    @default("GEL")
   /// Members at the last count. Denormalised for the directory card; the
   /// truth is the set of live subscriptions.
-  communityMemberCount Int      @default(0)
+  communityMemberCount Int       @default(0)
+  /// The admin's decision about this circle, separate from the creator's own
+  /// switch above: "DRAFT" | "PENDING" | "APPROVED" | "SUSPENDED".
+  ///
+  /// Two fields rather than one because they answer different questions —
+  /// communityEnabled is "does the owner want it open", communityStatus is
+  /// "may it be listed". Collapsing them would mean an admin suspending a
+  /// circle silently flips the owner's own switch, and they would have no way
+  /// to tell that from having turned it off themselves.
+  communityStatus      String    @default("DRAFT")
+  communitySubmittedAt DateTime?
+  communityReviewedAt  DateTime?
+  /// Why it was rejected or suspended. Shown to the creator.
+  communityReviewNote  String?
+
   /// What the community is about, so the directory can be browsed by topic.
   /// Shares the Category tree with courses rather than inventing a second
   /// taxonomy — "fitness" means the same thing whichever it labels.
-  communityCategoryId  String?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  communityCategoryId String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   communityCategory Category?       @relation("communityCategory", fields: [communityCategoryId], references: [id], onDelete: SetNull)
@@ -153,6 +167,7 @@ model CreatorProfile {
   @@index([isFeatured, featuredRank])
   @@index([isVerified])
   @@index([communityEnabled, communityMemberCount])
+  @@index([communityStatus, communitySubmittedAt])
   @@index([communityCategoryId])
 }
 
@@ -947,10 +962,16 @@ model Subscription {
   courseId  String?
   creatorId String
 
-  /// "COURSE" | "COMMUNITY"
+  /// "COURSE" | "COMMUNITY" | "CREATOR_PLAN"
+  ///
+  /// CREATOR_PLAN is the creator paying the platform to keep a circle open —
+  /// the same period machinery, pointed the other way. Its `creatorId` is the
+  /// subscriber's own profile, and none of the money reaches a creator
+  /// balance: it is platform revenue, so the sale ledger is skipped.
   kind String @default("COURSE")
 
-  /// What this subscription is for: `course:<id>` or `community:<creatorId>`.
+  /// What this subscription is for: `course:<id>`, `community:<creatorId>` or
+  /// `plan:<creatorId>`.
   ///
   /// A plain unique on (userId, courseId) cannot express this: courseId is
   /// null for community rows, and SQL treats NULLs as distinct, so one person

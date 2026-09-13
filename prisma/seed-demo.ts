@@ -629,6 +629,8 @@ async function addDemo() {
       where: { id: cid },
       data: {
         communityEnabled: true,
+        communityStatus: "APPROVED",
+        communityReviewedAt: daysAgo(randInt(1, 30)),
         communityCategoryId: categoryBySlug.get(spec.categorySlug) ?? null,
         communityName: spec.name,
         communityTagline: spec.tagline,
@@ -681,6 +683,38 @@ async function addDemo() {
       where: { id: cid },
       data: { communityMemberCount: candidates.length },
     });
+
+    // A circle only appears in the directory if its creator is on the plan and
+    // an admin has approved it. Seeding the circle without those two is
+    // seeding something invisible.
+    const planPriceRow = await db.platformSetting.findUnique({
+      where: { key: "creatorPlanPriceMinor" },
+      select: { value: true },
+    });
+    const planPriceMinor = Number(planPriceRow?.value ?? 0) || 0;
+
+    const planOwner = await db.creatorProfile.findUnique({
+      where: { id: cid },
+      select: { userId: true },
+    });
+    if (planOwner) {
+      await db.subscription
+        .create({
+          data: {
+            userId: planOwner.userId,
+            courseId: null,
+            creatorId: cid,
+            kind: "CREATOR_PLAN",
+            scopeKey: `plan:${cid}`,
+            status: "ACTIVE",
+            priceMinor: planPriceMinor,
+            currency: CURRENCY,
+            currentPeriodStart: daysAgo(randInt(2, 20)),
+            currentPeriodEnd: new Date(Date.now() + randInt(5, 26) * 864e5),
+          },
+        })
+        .catch(() => undefined);
+    }
   }
 
   console.log(`  ✓ ${communitiesOpened} communities opened, ${membershipsAdded} memberships`);

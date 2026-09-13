@@ -17,6 +17,7 @@ export const AUDIT_ACTIONS = {
   CREATOR_VERIFIED: "creator.verified",
   CREATOR_UNVERIFIED: "creator.unverified",
   CREATOR_COMMISSION_SET: "creator.commission_set",
+  COMMUNITY_STATUS_CHANGED: "community.status_changed",
   COURSE_STATUS_CHANGED: "course.status_changed",
   COURSE_FEATURED: "course.featured",
   COURSE_DELETED: "course.deleted",

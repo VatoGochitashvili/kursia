@@ -1,37 +1,41 @@
 /**
  * The brand mark: წრე — "circle".
  *
- * A ring with three dots inside it. The ring is the circle you join; the dots
- * are the people already in it. Three rather than more because at favicon
- * size anything denser closes up into a smudge, and three is the smallest
- * number that reads as "a group" rather than "a dot".
+ * Eight dots in a ring, and nothing in the middle. The circle is not drawn;
+ * the people standing in it are, and the ring is the shape they make. That is
+ * the whole product in one figure, and it is a mark nobody else on this shelf
+ * is using.
  *
- * Deliberately not a ring with a single dot on its edge — that shape is a
- * loading spinner everywhere else on the web, and a logo that reads as "still
- * loading" is a bad first impression.
+ * No stroked ring at all, which is what keeps it legible small: a thin circle
+ * plus dots inside it was the previous mark, and below 24px the two closed up
+ * against each other into a smudge. Dots alone have nothing to collide with.
  *
- * Recolourable via currentColor so it works on the brand badge, on white and
- * inverted in a footer.
+ * The slow turn on hover is the only motion. A mark that spins on its own is
+ * a loading spinner; one that answers the cursor is alive. It is disabled
+ * under prefers-reduced-motion by the global rule in globals.css.
  */
 export function Logo({ size = 32 }: { size?: number }) {
   return (
     <span
-      className="inline-flex items-center justify-center rounded-full bg-brand-600 text-white"
+      className="group/logo inline-flex items-center justify-center rounded-full bg-brand-600 text-white"
       style={{ width: size, height: size }}
       aria-hidden="true"
     >
-      <svg width={size * 0.72} height={size * 0.72} viewBox="0 0 24 24" fill="none">
-        <circle
-          cx="12"
-          cy="12"
-          r="8.6"
-          stroke="currentColor"
-          strokeWidth="1.9"
-          strokeOpacity="0.92"
-        />
-        <circle cx="12" cy="7.7" r="1.7" fill="currentColor" />
-        <circle cx="8.28" cy="14.15" r="1.7" fill="currentColor" />
-        <circle cx="15.72" cy="14.15" r="1.7" fill="currentColor" />
+      <svg
+        width={size * 0.74}
+        height={size * 0.74}
+        viewBox="0 0 24 24"
+        fill="none"
+        className="origin-center transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/logo:rotate-45"
+      >
+        <circle cx="12.00" cy="4.50" r="1.72" fill="currentColor" />
+        <circle cx="17.30" cy="6.70" r="1.72" fill="currentColor" />
+        <circle cx="19.50" cy="12.00" r="1.72" fill="currentColor" />
+        <circle cx="17.30" cy="17.30" r="1.72" fill="currentColor" />
+        <circle cx="12.00" cy="19.50" r="1.72" fill="currentColor" />
+        <circle cx="6.70" cy="17.30" r="1.72" fill="currentColor" />
+        <circle cx="4.50" cy="12.00" r="1.72" fill="currentColor" />
+        <circle cx="6.70" cy="6.70" r="1.72" fill="currentColor" />
       </svg>
     </span>
   );

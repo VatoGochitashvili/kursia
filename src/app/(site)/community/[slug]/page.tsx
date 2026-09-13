@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!creator) notFound();
 
   return buildMetadata({
-    title: `${creator.displayName} — ${locale === "en" ? "Community" : "საზოგადოება"}`,
+    title: `${creator.displayName} — ${locale === "en" ? "Circle" : "წრე"}`,
     description:
       locale === "en"
         ? `The private space for ${creator.displayName}'s students.`

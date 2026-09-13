@@ -10,6 +10,8 @@
 /** A subscription's scope key. See `Subscription.scopeKey` in the schema. */
 export const courseScope = (courseId: string) => `course:${courseId}`;
 export const communityScope = (creatorId: string) => `community:${creatorId}`;
+/** The creator's own plan — what they pay the platform to keep a circle open. */
+export const planScope = (creatorId: string) => `plan:${creatorId}`;
 
 /**
  * Purchase kinds that buy a period rather than a thing.
@@ -17,7 +19,8 @@ export const communityScope = (creatorId: string) => `community:${creatorId}`;
  * Both extend a subscription at settlement; they differ only in what access
  * they produce, so every "is this a renewal?" question asks this.
  */
-export const isRecurring = (kind: string) => kind === "SUBSCRIPTION" || kind === "COMMUNITY";
+export const isRecurring = (kind: string) =>
+  kind === "SUBSCRIPTION" || kind === "COMMUNITY" || kind === "CREATOR_PLAN";
 
 /**
  * What to call a creator's community.
@@ -31,12 +34,12 @@ export function communityLabel(
   creator: { communityName?: string | null; displayName: string } | null | undefined,
   locale: "ka" | "en" = "ka",
 ): string {
-  if (!creator) return locale === "en" ? "Community" : "საზოგადოება";
+  if (!creator) return locale === "en" ? "Circle" : "წრე";
   const named = creator.communityName?.trim();
   if (named) return named;
   return locale === "en"
-    ? `${creator.displayName}'s community`
-    : `${creator.displayName} — საზოგადოება`;
+    ? `${creator.displayName}'s circle`
+    : `${creator.displayName} — წრე`;
 }
 
 /** Is this subscription granting access right now? */

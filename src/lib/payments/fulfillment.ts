@@ -4,7 +4,9 @@ import { getSettings, resolveCommissionBps } from "@/lib/settings";
 import { effectivePriceMinor, formatMoney, splitSale } from "@/lib/money";
 import { recordRefund, recordSale } from "@/lib/earnings";
 import { addMonths } from "@/lib/subscriptions";
-import { communityLabel, communityScope, courseScope, isRecurring } from "@/lib/membership";
+import {
+  communityLabel, communityScope, courseScope, isRecurring, planScope,
+} from "@/lib/membership";
 import { COUPON_MESSAGES, evaluateCoupon, recordRedemption } from "@/lib/coupons";
 import { notify, absoluteUrl } from "@/lib/notifications";
 import { audit, AUDIT_ACTIONS } from "@/lib/audit";
@@ -304,12 +306,12 @@ export async function startCommunityCheckout(input: {
     }),
   ]);
 
-  if (!creator) throw notFoundError("საზოგადოება ვერ მოიძებნა");
+  if (!creator) throw notFoundError("წრე ვერ მოიძებნა");
   if (!user || user.status !== "ACTIVE") {
     throw new ApiError(403, "FORBIDDEN", "ანგარიში არააქტიურია");
   }
   if (!creator.communityEnabled) {
-    throw conflict("ეს საზოგადოება ჯერ არ არის გახსნილი");
+    throw conflict("ეს წრე ჯერ არ არის გახსნილი");
   }
   if (creator.userId === input.userId) {
     throw conflict("ეს შენი სივრცეა");
@@ -450,6 +452,153 @@ export async function startCommunityCheckout(input: {
   }
 }
 
+/**
+ * Buy a month of the creator plan.
+ *
+ * Platform revenue, not a sale: `creatorEarningsMinor` is zero and the whole
+ * amount is the platform's, so `recordSale` never runs and nothing lands in a
+ * creator balance or a payout. `Purchase.creatorId` still points at the
+ * creator, because that is who bought it and the admin screens read that
+ * column to say so.
+ */
+export async function startCreatorPlanCheckout(input: {
+  userId: string;
+  providerId?: string;
+  locale: string;
+}): Promise<CheckoutResult> {
+  const [settings, creator, user] = await Promise.all([
+    getSettings(),
+    db.creatorProfile.findUnique({
+      where: { userId: input.userId },
+      select: { id: true, displayName: true },
+    }),
+    db.user.findUnique({
+      where: { id: input.userId },
+      select: { id: true, email: true, status: true, profile: { select: { fullName: true } } },
+    }),
+  ]);
+
+  if (!creator) throw new ApiError(403, "FORBIDDEN", "ავტორის პროფილი არ გაქვთ");
+  if (!user || user.status !== "ACTIVE") {
+    throw new ApiError(403, "FORBIDDEN", "ანგარიში არააქტიურია");
+  }
+
+  const amountMinor = Math.max(0, settings.creatorPlanPriceMinor);
+  if (amountMinor === 0) throw conflict("გეგმა უფასოა — გადახდა საჭირო არ არის");
+
+  const currency = settings.currency;
+  const scopeKey = planScope(creator.id);
+  const label = "ავტორის გეგმა";
+
+  const subscription = await db.subscription.upsert({
+    where: { userId_scopeKey: { userId: input.userId, scopeKey } },
+    create: {
+      userId: input.userId,
+      courseId: null,
+      creatorId: creator.id,
+      kind: "CREATOR_PLAN",
+      scopeKey,
+      status: "ACTIVE",
+      priceMinor: amountMinor,
+      currency,
+      // Not yet paid for; fulfilment writes the real period.
+      currentPeriodEnd: new Date(),
+    },
+    update: { priceMinor: amountMinor },
+    select: { id: true },
+  });
+
+  const purchase = await db.purchase.create({
+    data: {
+      reference: reference(),
+      userId: input.userId,
+      courseId: null,
+      creatorId: creator.id,
+      kind: "CREATOR_PLAN",
+      subscriptionId: subscription.id,
+      currency,
+      discountMinor: 0,
+      listPriceMinor: amountMinor,
+      amountMinor,
+      // The platform keeps all of it, so the commission rate is 100% and the
+      // creator's share is zero by construction rather than by subtraction.
+      commissionBps: 10_000,
+      platformFeeMinor: amountMinor,
+      processingFeeMinor: 0,
+      creatorEarningsMinor: 0,
+      status: "PENDING",
+    },
+  });
+
+  const providerId = await resolveProviderId(input.providerId);
+  const provider = getProvider(providerId);
+
+  const transaction = await db.transaction.create({
+    data: {
+      purchaseId: purchase.id,
+      userId: input.userId,
+      courseId: null,
+      provider: providerId,
+      status: "CREATED",
+      amountMinor,
+      currency,
+      idempotencyKey: `${purchase.id}:${providerId}`,
+    },
+  });
+
+  try {
+    const intent = await provider.createPayment({
+      transactionId: transaction.id,
+      purchaseReference: purchase.reference,
+      amountMinor,
+      currency,
+      description: label,
+      buyer: { id: user.id, email: user.email, name: user.profile?.fullName ?? user.email },
+      item: { kind: "COMMUNITY", id: creator.id, title: label, slug: "" },
+      locale: input.locale,
+      returnUrl: absoluteUrl(`/checkout/${purchase.reference}/complete`),
+      cancelUrl: absoluteUrl(`/checkout/${purchase.reference}/cancelled`),
+      callbackUrl: absoluteUrl(`/api/webhooks/payments/${providerId}`),
+      idempotencyKey: transaction.id,
+    });
+
+    await db.transaction.update({
+      where: { id: transaction.id },
+      data: {
+        status: "PENDING",
+        providerOrderId: intent.providerOrderId,
+        rawResponse: JSON.stringify(intent.raw ?? {}).slice(0, 10_000),
+      },
+    });
+
+    return {
+      purchaseId: purchase.id,
+      reference: purchase.reference,
+      transactionId: transaction.id,
+      redirectUrl: intent.redirectUrl,
+      provider: providerId,
+      amountMinor,
+      currency,
+      free: false,
+    };
+  } catch (error) {
+    await db.transaction.update({
+      where: { id: transaction.id },
+      data: {
+        status: "FAILED",
+        failureCode: "PROVIDER_ERROR",
+        failureMessage: (error as Error).message.slice(0, 500),
+      },
+    });
+    await db.purchase.update({ where: { id: purchase.id }, data: { status: "FAILED" } });
+    throw new ApiError(
+      502,
+      "PROVIDER_ERROR",
+      "გადახდის სისტემასთან დაკავშირება ვერ მოხერხდა. სცადეთ სხვა მეთოდი.",
+    );
+  }
+}
+
 /** The interactive client Prisma hands to a `$transaction` callback. */
 type Tx = Parameters<Parameters<typeof db.$transaction>[0]>[0];
 
@@ -528,6 +677,7 @@ export async function fulfillPurchase(input: FulfillInput): Promise<{ settled: b
       // checkout, so "never had a paid period" is the test for a first join
       // rather than a separate flag.
       isFirstCommunityPeriod =
+        purchase.kind === "COMMUNITY" &&
         !purchase.courseId &&
         (!subscription || subscription.currentPeriodEnd.getTime() <= subscription.currentPeriodStart.getTime());
       const from =
@@ -644,6 +794,40 @@ export async function fulfillPurchase(input: FulfillInput): Promise<{ settled: b
         select: { userId: true, slug: true, displayName: true, communityName: true },
       });
 
+  // The creator plan is the one purchase with no seller: the platform sold it
+  // to the creator. It gets its own receipt and no "you made a sale" notice,
+  // because nobody did.
+  if (p.kind === "CREATOR_PLAN") {
+    await audit({
+      actorId: input.actorId ?? p.userId,
+      action: AUDIT_ACTIONS.PURCHASE_PAID,
+      targetType: "Purchase",
+      targetId: p.id,
+      summary: `${p.reference} — ავტორის გეგმა`,
+      metadata: { amountMinor: p.amountMinor, currency: p.currency },
+    });
+
+    await notify({
+      userId: p.userId,
+      type: "MEMBERSHIP_STARTED",
+      title: "გეგმა გააქტიურდა",
+      body: "შენი წრე ახლა ხილვადია კატალოგში.",
+      linkUrl: "/dashboard/creator/plan",
+      data: { purchaseId: p.id },
+      email: {
+        template: "purchaseReceipt",
+        payload: {
+          courseTitle: "ავტორის გეგმა",
+          amount: formatMoney(p.amountMinor, p.currency),
+          reference: p.reference,
+          url: absoluteUrl("/dashboard/creator/plan"),
+        },
+      },
+    });
+
+    return { settled: true };
+  }
+
   const label = p.course?.title ?? communityLabel(creator);
   const destination = p.course
     ? `/learn/${p.course.slug}`
@@ -668,7 +852,7 @@ export async function fulfillPurchase(input: FulfillInput): Promise<{ settled: b
   await notify({
     userId: p.userId,
     type: p.course ? "COURSE_PURCHASED" : "MEMBERSHIP_STARTED",
-    title: p.course ? "კურსი წარმატებით შეიძინეთ" : "საზოგადოებაში შემოგვიერთდი",
+    title: p.course ? "კურსი წარმატებით შეიძინეთ" : "წრეში შემოგვიერთდი",
     body: label,
     linkUrl: destination,
     data: { courseId: p.courseId, purchaseId: p.id },

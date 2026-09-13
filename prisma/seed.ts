@@ -840,6 +840,8 @@ async function main() {
       where: { id: cid },
       data: {
         communityEnabled: true,
+        communityStatus: "APPROVED",
+        communityReviewedAt: daysAgo(randInt(1, 30)),
         communityCategoryId: categoryIds.get(community.categorySlug) ?? null,
         communityName: community.name,
         communityTagline: community.tagline,
@@ -893,6 +895,29 @@ async function main() {
         communityMemberCount: candidates.filter((_, i) => i !== candidates.length - 1).length,
       },
     });
+
+    // A circle is only listed when its creator is on the plan and an admin has
+    // approved it. Seeding one without both is seeding something invisible.
+    const owner = await db.creatorProfile.findUnique({
+      where: { id: cid },
+      select: { userId: true },
+    });
+    if (owner) {
+      await db.subscription.create({
+        data: {
+          userId: owner.userId,
+          courseId: null,
+          creatorId: cid,
+          kind: "CREATOR_PLAN",
+          scopeKey: `plan:${cid}`,
+          status: "ACTIVE",
+          priceMinor: SETTING_DEFAULTS.creatorPlanPriceMinor,
+          currency: CURRENCY,
+          currentPeriodStart: daysAgo(randInt(2, 20)),
+          currentPeriodEnd: new Date(Date.now() + randInt(5, 26) * 864e5),
+        },
+      });
+    }
   }
 
   console.log(`  ✓ ${COMMUNITIES.length} communities, ${memberships} live memberships`);
