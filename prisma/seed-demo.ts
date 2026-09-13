@@ -45,8 +45,9 @@ const rand = () => {
   rngState = (rngState * 1664525 + 1013904223) % 4294967296;
   return rngState / 4294967296;
 };
-const pick = <T,>(arr: T[]): T => arr[Math.floor(rand() * arr.length)]!;
-const randInt = (min: number, max: number) => min + Math.floor(rand() * (max - min + 1));
+const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)]!;
+const randInt = (min: number, max: number) =>
+  min + Math.floor(rand() * (max - min + 1));
 const daysAgo = (n: number) => new Date(Date.now() - n * 86_400_000);
 
 /**
@@ -59,7 +60,11 @@ const daysAgo = (n: number) => new Date(Date.now() - n * 86_400_000);
  * Purchase.reference. Keying on the pair is both stable and unique, since a
  * buyer never purchases the same course twice.
  */
-function purchaseReference(paidAt: Date, userId: string, courseId: string): string {
+function purchaseReference(
+  paidAt: Date,
+  userId: string,
+  courseId: string,
+): string {
   let hash = 0x811c9dc5;
   const pair = `${userId}:${courseId}`;
   for (let i = 0; i < pair.length; i++) {
@@ -71,22 +76,36 @@ function purchaseReference(paidAt: Date, userId: string, courseId: string): stri
 }
 
 const THUMBS: Record<string, string> = {
-  marketing: "https://images.unsplash.com/photo-1533750349088-cd871a92f312?w=800&q=70&auto=format&fit=crop",
-  python: "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800&q=70&auto=format&fit=crop",
-  business: "https://images.unsplash.com/photo-1507099985932-87a4520ed1d5?w=800&q=70&auto=format&fit=crop",
+  marketing:
+    "https://images.unsplash.com/photo-1533750349088-cd871a92f312?w=800&q=70&auto=format&fit=crop",
+  python:
+    "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800&q=70&auto=format&fit=crop",
+  business:
+    "https://images.unsplash.com/photo-1507099985932-87a4520ed1d5?w=800&q=70&auto=format&fit=crop",
   ai: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800&q=70&auto=format&fit=crop",
-  finance: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&q=70&auto=format&fit=crop",
-  design: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&q=70&auto=format&fit=crop",
-  sales: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=70&auto=format&fit=crop",
-  photo: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=70&auto=format&fit=crop",
-  english: "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=800&q=70&auto=format&fit=crop",
-  productivity: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&q=70&auto=format&fit=crop",
-  strength: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=70&auto=format&fit=crop",
-  homefit: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=70&auto=format&fit=crop",
-  nutrition: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=70&auto=format&fit=crop",
+  finance:
+    "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&q=70&auto=format&fit=crop",
+  design:
+    "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&q=70&auto=format&fit=crop",
+  sales:
+    "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=70&auto=format&fit=crop",
+  photo:
+    "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=70&auto=format&fit=crop",
+  english:
+    "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=800&q=70&auto=format&fit=crop",
+  productivity:
+    "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&q=70&auto=format&fit=crop",
+  strength:
+    "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=70&auto=format&fit=crop",
+  homefit:
+    "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=70&auto=format&fit=crop",
+  nutrition:
+    "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=70&auto=format&fit=crop",
   yoga: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&q=70&auto=format&fit=crop",
-  shortform: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=800&q=70&auto=format&fit=crop",
-  monetise: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=70&auto=format&fit=crop",
+  shortform:
+    "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=800&q=70&auto=format&fit=crop",
+  monetise:
+    "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=70&auto=format&fit=crop",
 };
 
 const AVATARS = [
@@ -125,7 +144,10 @@ async function removeDemo() {
   // rather than quietly erasing someone's purchase.
   const realPurchases = demoCourseIds.length
     ? await db.purchase.count({
-        where: { courseId: { in: demoCourseIds }, userId: { notIn: demoUserIds } },
+        where: {
+          courseId: { in: demoCourseIds },
+          userId: { notIn: demoUserIds },
+        },
       })
     : 0;
 
@@ -145,7 +167,9 @@ async function removeDemo() {
     db.purchase.deleteMany({
       where: {
         OR: [
-          ...(demoCourseIds.length ? [{ courseId: { in: demoCourseIds } }] : []),
+          ...(demoCourseIds.length
+            ? [{ courseId: { in: demoCourseIds } }]
+            : []),
           { userId: { in: demoUserIds } },
         ],
       },
@@ -158,8 +182,12 @@ async function removeDemo() {
     db.course.count(),
     db.review.count(),
   ]);
-  console.log(`  removed ${demoUsers.length} demo accounts and everything they owned`);
-  console.log(`  remaining: ${users} users · ${courses} courses · ${reviews} reviews`);
+  console.log(
+    `  removed ${demoUsers.length} demo accounts and everything they owned`,
+  );
+  console.log(
+    `  remaining: ${users} users · ${courses} courses · ${reviews} reviews`,
+  );
 }
 
 // ── Add ─────────────────────────────────────────────────────────────────────
@@ -176,7 +204,9 @@ async function removeDemo() {
  * admin has since edited or unpublished stays that way.
  */
 async function addDemo() {
-  const categories = await db.category.findMany({ select: { id: true, slug: true } });
+  const categories = await db.category.findMany({
+    select: { id: true, slug: true },
+  });
   const categoryBySlug = new Map(categories.map((c) => [c.slug, c.id]));
   if (categoryBySlug.size === 0) {
     throw new Error("No categories found. Run the production seed first.");
@@ -238,7 +268,9 @@ async function addDemo() {
     creatorIdByEmail.set(c.email, user.creatorProfile!.id);
     creatorsAdded++;
   }
-  console.log(`  ✓ ${creatorsAdded} instructors added (${CREATORS.length - creatorsAdded} already present)`);
+  console.log(
+    `  ✓ ${creatorsAdded} instructors added (${CREATORS.length - creatorsAdded} already present)`,
+  );
 
   // ── Students ─────────────────────────────────────────────────────────────
   const studentHash = await hashPassword(DEMO_STUDENT_PASSWORD);
@@ -246,7 +278,10 @@ async function addDemo() {
   let studentsAdded = 0;
 
   for (const s of STUDENTS) {
-    const existing = await db.user.findUnique({ where: { email: s.email }, select: { id: true } });
+    const existing = await db.user.findUnique({
+      where: { email: s.email },
+      select: { id: true },
+    });
     if (existing) {
       // Still collect them: they are the buyers for any newly added course.
       studentIds.push(existing.id);
@@ -275,19 +310,29 @@ async function addDemo() {
     studentIds.push(user.id);
     studentsAdded++;
   }
-  console.log(`  ✓ ${studentsAdded} students added (${STUDENTS.length - studentsAdded} already present)`);
+  console.log(
+    `  ✓ ${studentsAdded} students added (${STUDENTS.length - studentsAdded} already present)`,
+  );
 
   // ── Courses ──────────────────────────────────────────────────────────────
-  const created: { id: string; creatorId: string; priceMinor: number; title: string }[] = [];
+  const created: {
+    id: string;
+    creatorId: string;
+    priceMinor: number;
+    title: string;
+  }[] = [];
 
   for (const course of COURSES) {
     const slug = slugify(course.title);
-    if (await db.course.findUnique({ where: { slug }, select: { id: true } })) continue;
+    if (await db.course.findUnique({ where: { slug }, select: { id: true } }))
+      continue;
 
     const creatorId = creatorIdByEmail.get(course.creatorEmail)!;
     const publishedAt = daysAgo(randInt(15, 240));
     const priceMinor = Math.round(course.price * 100);
-    const discountMinor = course.discountPrice ? Math.round(course.discountPrice * 100) : null;
+    const discountMinor = course.discountPrice
+      ? Math.round(course.discountPrice * 100)
+      : null;
 
     const row = await db.course.create({
       data: {
@@ -349,7 +394,8 @@ async function addDemo() {
       });
 
       for (const lesson of mod.lessons) {
-        const duration = lesson.type === "VIDEO" ? (lesson.durationSeconds ?? 15) : 0;
+        const duration =
+          lesson.type === "VIDEO" ? (lesson.durationSeconds ?? 15) : 0;
         const createdLesson = await db.lesson.create({
           data: {
             courseId: row.id,
@@ -378,7 +424,8 @@ async function addDemo() {
               lessonId: createdLesson.id,
               title: lesson.quiz.title,
               passingScore: lesson.quiz.passingScore,
-              instructions: "აირჩიეთ სწორი პასუხები. შედეგს დაუყოვნებლივ ნახავთ.",
+              instructions:
+                "აირჩიეთ სწორი პასუხები. შედეგს დაუყოვნებლივ ნახავთ.",
             },
             select: { id: true },
           });
@@ -408,7 +455,11 @@ async function addDemo() {
 
     await db.course.update({
       where: { id: row.id },
-      data: { lessonCount, moduleCount: course.modules.length, durationSeconds: totalDuration },
+      data: {
+        lessonCount,
+        moduleCount: course.modules.length,
+        durationSeconds: totalDuration,
+      },
     });
 
     created.push({
@@ -418,7 +469,9 @@ async function addDemo() {
       title: course.title,
     });
   }
-  console.log(`  ✓ ${created.length} courses added (${COURSES.length - created.length} already present)`);
+  console.log(
+    `  ✓ ${created.length} courses added (${COURSES.length - created.length} already present)`,
+  );
 
   // ── Enrolments, sales and reviews ────────────────────────────────────────
   let purchases = 0;
@@ -426,7 +479,9 @@ async function addDemo() {
   const seen = new Set<string>();
 
   for (const course of created) {
-    const buyers = [...studentIds].sort(() => rand() - 0.5).slice(0, randInt(3, 9));
+    const buyers = [...studentIds]
+      .sort(() => rand() - 0.5)
+      .slice(0, randInt(3, 9));
 
     for (const userId of buyers) {
       const key = `${userId}:${course.id}`;
@@ -465,8 +520,14 @@ async function addDemo() {
       });
       const roll = rand();
       const done =
-        roll < 0.25 ? lessons.length : roll < 0.7 ? Math.floor(lessons.length * rand()) : 0;
-      const percent = lessons.length ? Math.round((done / lessons.length) * 100) : 0;
+        roll < 0.25
+          ? lessons.length
+          : roll < 0.7
+            ? Math.floor(lessons.length * rand())
+            : 0;
+      const percent = lessons.length
+        ? Math.round((done / lessons.length) * 100)
+        : 0;
 
       await db.enrollment.create({
         data: {
@@ -530,7 +591,10 @@ async function addDemo() {
 
       await db.course.update({
         where: { id: course.id },
-        data: { studentCount: { increment: 1 }, viewCount: { increment: randInt(4, 40) } },
+        data: {
+          studentCount: { increment: 1 },
+          viewCount: { increment: randInt(4, 40) },
+        },
       });
 
       if (percent > 20 && rand() < 0.55) {
@@ -588,7 +652,8 @@ async function addDemo() {
       categorySlug: "janmrteloba",
       name: "ჯანსაღი რიტმი",
       tagline: "ვარჯიში, კვება და ანგარიშვალდებულება — ერთად",
-      description: "ყოველდღიური მხარდაჭერა, კვირის გეგმები და ცოცხალი ვარჯიშები.",
+      description:
+        "ყოველდღიური მხარდაჭერა, კვირის გეგმები და ცოცხალი ვარჯიშები.",
       priceMinor: 0,
     },
     {
@@ -611,6 +676,7 @@ async function addDemo() {
   ];
 
   let communitiesOpened = 0;
+  let plansGranted = 0;
   let membershipsAdded = 0;
 
   for (const spec of DEMO_COMMUNITIES) {
@@ -620,88 +686,131 @@ async function addDemo() {
 
     const existing = await db.creatorProfile.findUnique({
       where: { id: cid },
-      select: { communityEnabled: true, approvedAt: true },
-    });
-    // Already open — leave whatever the owner set alone.
-    if (!existing || existing.communityEnabled) continue;
-
-    await db.creatorProfile.update({
-      where: { id: cid },
-      data: {
+      select: {
         communityEnabled: true,
-        communityStatus: "APPROVED",
-        communityReviewedAt: daysAgo(randInt(1, 30)),
-        communityCategoryId: categoryBySlug.get(spec.categorySlug) ?? null,
-        communityName: spec.name,
-        communityTagline: spec.tagline,
-        communityDescription: spec.description,
-        communityPriceMinor: spec.priceMinor,
-        communityCurrency: CURRENCY,
-        // The directory only advertises approved creators, so a demo community
-        // that is never approved would be invisible — which is the one thing
-        // this block exists to prevent.
-        approvedAt: existing.approvedAt ?? daysAgo(randInt(30, 200)),
+        approvedAt: true,
+        communityStatus: true,
       },
     });
-    communitiesOpened += 1;
+    if (!existing) continue;
 
-    // Members drawn from this creator's own students, so the counts on the
-    // directory card correspond to real rows rather than a made-up number.
-    const candidates = await db.enrollment.findMany({
-      where: { course: { creatorId: cid }, revokedAt: null, user: { email: { endsWith: DEMO_DOMAIN } } },
-      select: { userId: true },
-      distinct: ["userId"],
-      take: 6,
-    });
-
-    for (const candidate of candidates) {
-      const scopeKey = `community:${cid}`;
-      const already = await db.subscription.findUnique({
-        where: { userId_scopeKey: { userId: candidate.userId, scopeKey } },
-        select: { id: true },
-      });
-      if (already) continue;
-
-      await db.subscription.create({
+    // Two different jobs, and only the first one is skippable.
+    //
+    // Configuring a circle OVERWRITES what its owner chose, so it runs once and
+    // never again. Granting one a plan or an approval takes nothing away, and
+    // has to run every time — a circle opened by an earlier release predates
+    // both gates and would sit invisible in the directory for ever otherwise.
+    // Collapsing these two into one guard is exactly how that happened.
+    if (!existing.communityEnabled) {
+      await db.creatorProfile.update({
+        where: { id: cid },
         data: {
-          userId: candidate.userId,
-          courseId: null,
-          creatorId: cid,
-          kind: "COMMUNITY",
-          scopeKey,
-          status: "ACTIVE",
-          priceMinor: spec.priceMinor,
-          currency: CURRENCY,
-          currentPeriodStart: daysAgo(randInt(3, 25)),
-          currentPeriodEnd: new Date(Date.now() + randInt(3, 27) * 864e5),
+          communityEnabled: true,
+          communityStatus: "APPROVED",
+          communityReviewedAt: daysAgo(randInt(1, 30)),
+          communityCategoryId: categoryBySlug.get(spec.categorySlug) ?? null,
+          communityName: spec.name,
+          communityTagline: spec.tagline,
+          communityDescription: spec.description,
+          communityPriceMinor: spec.priceMinor,
+          communityCurrency: CURRENCY,
+          // The directory only advertises approved creators, so a demo community
+          // that is never approved would be invisible — which is the one thing
+          // this block exists to prevent.
+          approvedAt: existing.approvedAt ?? daysAgo(randInt(30, 200)),
         },
       });
-      membershipsAdded += 1;
+      communitiesOpened += 1;
+
+      // Members drawn from this creator's own students, so the counts on the
+      // directory card correspond to real rows rather than a made-up number.
+      const candidates = await db.enrollment.findMany({
+        where: {
+          course: { creatorId: cid },
+          revokedAt: null,
+          user: { email: { endsWith: DEMO_DOMAIN } },
+        },
+        select: { userId: true },
+        distinct: ["userId"],
+        take: 6,
+      });
+
+      for (const candidate of candidates) {
+        const scopeKey = `community:${cid}`;
+        const already = await db.subscription.findUnique({
+          where: { userId_scopeKey: { userId: candidate.userId, scopeKey } },
+          select: { id: true },
+        });
+        if (already) continue;
+
+        await db.subscription.create({
+          data: {
+            userId: candidate.userId,
+            courseId: null,
+            creatorId: cid,
+            kind: "COMMUNITY",
+            scopeKey,
+            status: "ACTIVE",
+            priceMinor: spec.priceMinor,
+            currency: CURRENCY,
+            currentPeriodStart: daysAgo(randInt(3, 25)),
+            currentPeriodEnd: new Date(Date.now() + randInt(3, 27) * 864e5),
+          },
+        });
+        membershipsAdded += 1;
+      }
+
+      await db.creatorProfile.update({
+        where: { id: cid },
+        data: { communityMemberCount: candidates.length },
+      });
     }
 
-    await db.creatorProfile.update({
-      where: { id: cid },
-      data: { communityMemberCount: candidates.length },
-    });
-
-    // A circle only appears in the directory if its creator is on the plan and
-    // an admin has approved it. Seeding the circle without those two is
-    // seeding something invisible.
+    // ── Always: make sure this demo circle can actually be seen ────────────
+    // A circle is listed only when its creator is approved, an admin has
+    // approved the circle, and the creator's plan is paid. All three are
+    // grants, so re-running this can only ever add.
     const planPriceRow = await db.platformSetting.findUnique({
       where: { key: "creatorPlanPriceMinor" },
       select: { value: true },
     });
     const planPriceMinor = Number(planPriceRow?.value ?? 0) || 0;
 
-    const planOwner = await db.creatorProfile.findUnique({
+    const owner = await db.creatorProfile.findUnique({
       where: { id: cid },
-      select: { userId: true },
+      select: {
+        userId: true,
+        approvedAt: true,
+        communityStatus: true,
+        communityEnabled: true,
+      },
     });
-    if (planOwner) {
+    if (!owner || !owner.communityEnabled) continue;
+
+    await db.creatorProfile.update({
+      where: { id: cid },
+      data: {
+        approvedAt: owner.approvedAt ?? daysAgo(randInt(30, 200)),
+        // Promote a circle that is merely waiting. A REJECTED or SUSPENDED one
+        // is an admin's decision and is left exactly as they left it.
+        ...(owner.communityStatus === "DRAFT" ||
+        owner.communityStatus === "PENDING"
+          ? { communityStatus: "APPROVED", communityReviewedAt: new Date() }
+          : {}),
+      },
+    });
+
+    const plan = await db.subscription.findFirst({
+      where: { scopeKey: `plan:${cid}` },
+      select: { id: true, currentPeriodEnd: true },
+    });
+    const periodEnd = new Date(Date.now() + randInt(5, 26) * 864e5);
+
+    if (!plan) {
       await db.subscription
         .create({
           data: {
-            userId: planOwner.userId,
+            userId: owner.userId,
             courseId: null,
             creatorId: cid,
             kind: "CREATOR_PLAN",
@@ -710,14 +819,25 @@ async function addDemo() {
             priceMinor: planPriceMinor,
             currency: CURRENCY,
             currentPeriodStart: daysAgo(randInt(2, 20)),
-            currentPeriodEnd: new Date(Date.now() + randInt(5, 26) * 864e5),
+            currentPeriodEnd: periodEnd,
           },
         })
         .catch(() => undefined);
+      plansGranted += 1;
+    } else if (plan.currentPeriodEnd.getTime() <= Date.now()) {
+      // A demo plan that ran out should come back on the next deploy rather
+      // than quietly emptying the directory.
+      await db.subscription.update({
+        where: { id: plan.id },
+        data: { status: "ACTIVE", currentPeriodEnd: periodEnd },
+      });
+      plansGranted += 1;
     }
   }
 
-  console.log(`  ✓ ${communitiesOpened} communities opened, ${membershipsAdded} memberships`);
+  console.log(
+    `  ✓ ${communitiesOpened} circles opened, ${membershipsAdded} memberships, ${plansGranted} plans`,
+  );
 }
 
 // ── Entry point ─────────────────────────────────────────────────────────────
@@ -738,10 +858,15 @@ async function main() {
     return;
   }
 
-  console.log("🎭 adding demo content (fabricated instructors, courses and reviews)");
+  console.log(
+    "🎭 adding demo content (fabricated instructors, courses and reviews)",
+  );
   await addDemo();
 
-  const [users, courses] = await Promise.all([db.user.count(), db.course.count()]);
+  const [users, courses] = await Promise.all([
+    db.user.count(),
+    db.course.count(),
+  ]);
   console.log(`\n✅ done — ${users} users · ${courses} courses`);
   console.log("   Remove it later with SEED_DEMO_DATA=remove\n");
 }
