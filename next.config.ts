@@ -17,6 +17,23 @@ const config: NextConfig = {
       .map((hostname) => ({ protocol: "https" as const, hostname })),
   },
   experimental: { optimizePackageImports: [] },
+  async redirects() {
+    // The course catalogue is gone — courses live inside a circle now. This
+    // is a config redirect rather than a page that calls redirect(), because
+    // a page with no data of its own is STATIC: Next prerenders it at build
+    // time, prerendering renders the layout, and the layout reads the
+    // database. There is no database during a Docker build, so that version
+    // failed the build outright. A redirect here never renders anything.
+    //
+    // Exact paths only: /courses/[slug] must keep working for direct links,
+    // receipts and the classroom.
+    return [
+      { source: "/courses", destination: "/communities", permanent: false },
+      { source: "/en/courses", destination: "/en/communities", permanent: false },
+      { source: "/categories", destination: "/communities", permanent: false },
+      { source: "/en/categories", destination: "/en/communities", permanent: false },
+    ];
+  },
   async rewrites() {
     // Informational pages live in one templated route but are served at the
     // short, memorable URLs the footer and sitemap advertise.
