@@ -5,9 +5,10 @@ import { getI18n, localePath } from "@/i18n";
 import { getSessionUser } from "@/lib/auth/session";
 import { loadCommunityPage } from "@/lib/community-page";
 import { buildMetadata } from "@/lib/seo";
-import { Avatar, Badge, Breadcrumbs, Card, ProgressBar } from "@/components/ui/primitives";
+import { Badge, Breadcrumbs, Card, ProgressBar } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
 import { CommunityTabs } from "@/components/community/CommunityTabs";
+import { CommunityHeader } from "@/components/community/CommunityHeader";
 import { CommunityGate } from "@/components/community/CommunityGate";
 import { JoinCommunityCard } from "@/components/community/JoinCommunityCard";
 
@@ -99,13 +100,12 @@ export default async function ClassroomPage({ params }: Props) {
         ]}
       />
 
-      <div className="mb-6 flex flex-wrap items-center gap-4">
-        <Avatar src={creator.avatarUrl} name={creator.displayName} size={56} />
-        <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl">{creator.displayName}</h1>
-          <p className="mt-0.5 text-[14px] text-ink-muted">{t.membership.perkCourses}</p>
-        </div>
-      </div>
+      <CommunityHeader
+        creator={creator}
+        community={community}
+        isMember={membership.isMember}
+        t={t}
+      />
 
       <div className="mx-auto max-w-2xl">
         <CommunityTabs slug={creator.slug} active="classroom" locale={locale} t={t} />

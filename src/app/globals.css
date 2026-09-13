@@ -24,8 +24,6 @@
   }
 
   html {
-    /* The base coat. <body> is transparent so <AmbientBackdrop> — which is
-       fixed behind the document — can show through it. */
     @apply bg-surface;
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;
@@ -55,11 +53,12 @@
   }
 
   body {
-    /* Transparent, not white: <AmbientBackdrop> is painted behind the whole
-       document and a solid body would hide it. The backdrop paints its own
-       base colour, and every card and section above it is opaque, so no text
-       loses contrast. */
-    @apply bg-transparent text-ink antialiased;
+    /* Plain. There used to be a fixed decorative layer behind the document —
+       drifting shapes, a grid, a wash — and the page was transparent so it
+       could show through. It is gone: the quietest background is one nobody
+       notices, and every gram of attention it took was borrowed from the
+       content. */
+    @apply bg-surface text-ink antialiased;
     font-family: var(--font-sans);
     /* Georgian glyphs sit slightly differently; a touch more line-height
        keeps mixed ka/en paragraphs comfortable. */

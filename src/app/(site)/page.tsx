@@ -4,10 +4,8 @@ import { getI18n, localePath, fill } from "@/i18n";
 import { getSettings } from "@/lib/settings";
 import {
   getCategoryTree,
-  getNewCourses,
   getPlatformStats,
   getPopularCreators,
-  getRankedCourses,
 } from "@/lib/courses";
 import { listCommunities } from "@/lib/communities";
 import { buildMetadata, itemListSchema } from "@/lib/seo";
@@ -17,7 +15,12 @@ import { CommunityCard } from "@/components/community/CommunityCard";
 import { CreatorCard } from "@/components/course/CreatorCard";
 import { SearchBar } from "@/components/layout/SearchBar";
 import { ButtonLink } from "@/components/ui/Button";
-import { Card, JsonLd, SectionHeading, Stars } from "@/components/ui/primitives";
+import {
+  Card,
+  JsonLd,
+  SectionHeading,
+  Stars,
+} from "@/components/ui/primitives";
 import { Icon, categoryIcon, type IconName } from "@/components/ui/Icon";
 import { Reveal } from "@/components/ui/Reveal";
 import { Stagger } from "@/components/ui/Stagger";
@@ -39,7 +42,8 @@ export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   const [{ locale }, settings] = await Promise.all([getI18n(), getSettings()]);
-  const brand = locale === "en" ? settings.platformName : settings.platformNameKa;
+  const brand =
+    locale === "en" ? settings.platformName : settings.platformNameKa;
   return buildMetadata({
     title: `${brand} — ${locale === "en" ? settings.taglineEn : settings.seoDefaultTitleKa}`,
     description: settings.seoDefaultDescriptionKa,
@@ -51,21 +55,25 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [{ locale, t }, settings] = await Promise.all([getI18n(), getSettings()]);
+  const [{ locale, t }, settings] = await Promise.all([
+    getI18n(),
+    getSettings(),
+  ]);
 
-  const [stats, categories, ranked, newest, creators, communities] = await Promise.all([
+  const [stats, categories, creators, communities] = await Promise.all([
     getPlatformStats(),
     getCategoryTree(),
-    getRankedCourses(9),
-    getNewCourses(6),
     getPopularCreators(6, settings.featuredCreatorIds),
     listCommunities({ locale, take: 6 }),
   ]);
 
   const p = (path: string) => localePath(path, locale);
-  const catName = (c: { nameKa: string; nameEn: string }) => (locale === "en" ? c.nameEn : c.nameKa);
+  const catName = (c: { nameKa: string; nameEn: string }) =>
+    locale === "en" ? c.nameEn : c.nameKa;
   const creatorShare = String(100 - bpsToPercent(settings.commissionBps));
-  const marketplaceEmpty = ranked.length === 0;
+  // Zeroes are not a pitch: the hero's stats are hidden until there is
+  // something on the platform to count.
+  const marketplaceEmpty = communities.length === 0;
 
   // The category tree is ordered editorially, wellness first. That is the
   // right order for the hero chips, which carry no counts. The tile grid
@@ -85,9 +93,7 @@ export default async function HomePage() {
 
         <div className="container-page py-12 sm:py-16 lg:py-20">
           <div className="mx-auto max-w-4xl text-center">
-            <p
-              className="animate-fade-up mx-auto inline-flex items-center gap-2 rounded-full border border-line bg-surface/70 py-1.5 pe-4 ps-2 text-[13px] font-semibold text-ink-muted shadow-xs backdrop-blur"
-            >
+            <p className="animate-fade-up mx-auto inline-flex items-center gap-2 rounded-full border border-line bg-surface/70 py-1.5 pe-4 ps-2 text-[13px] font-semibold text-ink-muted shadow-xs backdrop-blur">
               <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-accent-50 text-accent-600">
                 <Icon name="zap" size={13} />
               </span>
@@ -113,9 +119,10 @@ export default async function HomePage() {
               <span>{t.home.heroTitleLine2} </span>
               {/* pb-[0.08em] keeps background-clip from shaving the
                   descenders off ვ and უ. */}
-              <span className="text-gradient-animated inline-block pb-[0.08em]">
-                {t.home.heroTitleLine3}
-              </span>
+              {/* The third line used to carry an animated gradient. A
+                  headline that changes colour while you read it is the
+                  loudest thing on a page that is trying to be quiet. */}
+              <span className="text-brand-600">{t.home.heroTitleLine3}</span>
             </h1>
 
             <p
@@ -131,7 +138,7 @@ export default async function HomePage() {
             >
               <SearchBar
                 placeholder={t.home.heroSearchPlaceholder}
-                action={p("/courses")}
+                action={p("/communities")}
                 size="lg"
                 submitLabel={t.home.heroSearchCta}
               />
@@ -141,15 +148,15 @@ export default async function HomePage() {
               className="animate-fade-up mt-5 flex flex-wrap justify-center gap-3"
               style={{ animationDelay: "280ms" }}
             >
-              <ButtonLink
-                href={p("/courses")}
-                size="lg"
-                className="shadow-glow hover:shadow-[0_0_0_1px_rgb(53_89_240_/_0.2),0_12px_40px_-8px_rgb(53_89_240_/_0.45)]"
-              >
-                {t.home.heroPrimaryCta}
+              <ButtonLink href={p("/communities")} size="lg">
+                {t.communities.browse}
                 <Icon name="arrowRight" size={17} />
               </ButtonLink>
-              <ButtonLink href={p("/become-instructor")} variant="outline" size="lg">
+              <ButtonLink
+                href={p("/become-instructor")}
+                variant="outline"
+                size="lg"
+              >
                 {t.home.heroSecondaryCta}
               </ButtonLink>
             </div>
@@ -162,49 +169,22 @@ export default async function HomePage() {
             </p>
           </div>
 
-          {/*
-            Category rail. The fastest possible answer to "what is sold here?"
-            — and on a marketplace this size, a faster route into the
-            catalogue than the search box above it.
-
-            Two rows drifting in opposite directions, because a single
-            direction reads as a banner ad; opposing motion reads as depth.
-            Both pause on hover, so a moving chip is still clickable.
-          */}
+          {/* Category row. One line, no motion: this is a way into the
+              directory, not a banner. */}
           {categories.length > 0 && (
             <div
-              className="animate-fade-up -mx-4 mt-12 space-y-3 sm:mx-0"
+              className="animate-fade-up mt-10 flex flex-wrap justify-center gap-2"
               style={{ animationDelay: "390ms" }}
             >
-              <Marquee duration={52}>
-                {categories.slice(0, Math.ceil(categories.length / 2)).map((c) => (
-                  <CategoryChip
-                    key={c.slug}
-                    href={p(`/category/${c.slug}`)}
-                    name={catName(c)}
-                    icon={categoryIcon(c.icon)}
-                    color={c.colorHex}
-                  />
-                ))}
-              </Marquee>
-              <Marquee duration={58} reverse>
-                {categories.slice(Math.ceil(categories.length / 2)).map((c) => (
-                  <CategoryChip
-                    key={c.slug}
-                    href={p(`/category/${c.slug}`)}
-                    name={catName(c)}
-                    icon={categoryIcon(c.icon)}
-                    color={c.colorHex}
-                  />
-                ))}
+              {categories.slice(0, 8).map((c) => (
                 <Link
-                  href={p("/categories")}
-                  className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-dashed border-line-strong px-4 text-[13px] font-semibold text-ink-muted transition-colors hover:border-brand-300 hover:text-brand-700"
+                  key={c.slug}
+                  href={p(`/communities?category=${c.slug}`)}
+                  className="inline-flex h-9 items-center rounded-full border border-line px-4 text-[13px] font-medium text-ink-muted transition-colors hover:border-brand-300 hover:text-ink"
                 >
-                  {t.common.seeAll}
-                  <Icon name="arrowRight" size={14} />
+                  {catName(c)}
                 </Link>
-              </Marquee>
+              ))}
             </div>
           )}
 
@@ -228,50 +208,20 @@ export default async function HomePage() {
                 label={t.home.statCreators}
               />
               <HeroStat
-                value={stats.averageRating > 0 ? stats.averageRating.toFixed(1) : "—"}
+                value={
+                  stats.averageRating > 0 ? stats.averageRating.toFixed(1) : "—"
+                }
                 label={t.home.statRating}
                 extra={
-                  stats.averageRating > 0 ? <Stars rating={stats.averageRating} size={11} /> : null
+                  stats.averageRating > 0 ? (
+                    <Stars rating={stats.averageRating} size={11} />
+                  ) : null
                 }
               />
             </dl>
           )}
         </div>
       </section>
-
-      {/* ── Empty marketplace ────────────────────────────────────────────── */}
-      {/* With no courses, four whole sections below render nothing and the page
-          reads as half-built. A launching platform is in this state by
-          definition, so say so deliberately and point at the action that fixes
-          it, rather than showing a gap. */}
-      {marketplaceEmpty && (
-        <Section muted>
-          <div className="mx-auto max-w-2xl text-center">
-            <span className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
-              <Icon name="sparkles" size={26} />
-            </span>
-            <h2 className="mt-5 text-2xl sm:text-3xl">
-              {locale === "en"
-                ? "The first courses are on their way"
-                : "პირველი კურსები მალე გამოჩნდება"}
-            </h2>
-            <p className="mt-3 text-pretty text-[15px] leading-relaxed text-ink-muted">
-              {locale === "en"
-                ? "This marketplace is brand new. If you coach, train or create, you can be one of the first here — and keep the majority of every sale."
-                : "პლატფორმა ახლახან გაიხსნა. თუ ავარჯიშებ, ასწავლი ან კონტენტს ქმნი, შეგიძლია იყო ერთ-ერთი პირველი — და გაყიდვის დიდი ნაწილი შენ დაგრჩეს."}
-            </p>
-            <div className="mt-7 flex flex-wrap justify-center gap-3">
-              <ButtonLink href={p("/register?type=creator")} size="lg">
-                {t.home.creatorCtaButton}
-                <Icon name="arrowRight" size={17} />
-              </ButtonLink>
-              <ButtonLink href={p("/become-instructor")} variant="outline" size="lg">
-                {t.common.showMore}
-              </ButtonLink>
-            </div>
-          </div>
-        </Section>
-      )}
 
       {/* ── Communities ──────────────────────────────────────────────────── */}
       {/* The lead shelf. A membership is what this platform sells; a course is
@@ -282,7 +232,9 @@ export default async function HomePage() {
           <SectionHeading
             title={t.communities.title}
             subtitle={t.communities.subtitle}
-            action={<SeeAllLink href={p("/communities")} label={t.common.seeAll} />}
+            action={
+              <SeeAllLink href={p("/communities")} label={t.common.seeAll} />
+            }
           />
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {communities.map((community) => (
@@ -297,38 +249,19 @@ export default async function HomePage() {
         </Section>
       )}
 
-      {/* ── Courses ──────────────────────────────────────────────────────── */}
-      {/* One shelf, ordered by the catalogue itself: anything an admin has
-          featured, then whatever students are actually enrolling in and
-          rating well. This replaced separate "featured" and "popular"
-          shelves, which asked for two hand-curated lists and then showed the
-          same courses twice on one page. */}
-      {ranked.length > 0 && (
-        <Section muted>
-          <SectionHeading
-            title={t.home.rankedTitle}
-            subtitle={t.home.rankedSubtitle}
-            action={<SeeAllLink href={p("/courses")} label={t.common.seeAll} />}
-          />
-          {/* A scroll-snap rail on mobile beats a JS carousel: no bundle, and
-              it respects native momentum scrolling. */}
-          <div className="rail md:hidden">
-            {ranked.map((c) => (
-              <CourseCard key={c.id} course={c} locale={locale} t={t} variant="rail" />
-            ))}
-          </div>
-          <div className="hidden md:block">
-            <CourseGrid courses={ranked} locale={locale} t={t} priorityCount={3} />
-          </div>
-        </Section>
-      )}
-
       {/* ── Who this is for ──────────────────────────────────────────────── */}
       {/* The positioning statement. Everything else on the page is a
           marketplace; this is the one block that says which marketplace. */}
       <Section>
-        <SectionHeading title={t.home.audienceTitle} subtitle={t.home.audienceSubtitle} />
-        <Stagger as="ul" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" step={80}>
+        <SectionHeading
+          title={t.home.audienceTitle}
+          subtitle={t.home.audienceSubtitle}
+        />
+        <Stagger
+          as="ul"
+          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+          step={80}
+        >
           {[
             {
               icon: "dumbbell" as IconName,
@@ -376,7 +309,9 @@ export default async function HomePage() {
           eyebrow={t.nav.categories}
           title={t.home.categoriesTitle}
           subtitle={t.home.categoriesSubtitle}
-          action={<SeeAllLink href={p("/categories")} label={t.common.seeAll} />}
+          action={
+            <SeeAllLink href={p("/categories")} label={t.common.seeAll} />
+          }
         />
         <Stagger
           as="ul"
@@ -386,7 +321,7 @@ export default async function HomePage() {
           {tileCategories.map((c) => (
             <li key={c.slug}>
               <CategoryTile
-                href={p(`/category/${c.slug}`)}
+                href={p(`/communities?category=${c.slug}`)}
                 name={catName(c)}
                 icon={categoryIcon(c.icon)}
                 color={c.colorHex}
@@ -398,27 +333,15 @@ export default async function HomePage() {
         </Stagger>
       </Section>
 
-      {/* ── New courses ──────────────────────────────────────────────────── */}
-      {newest.length > 0 && (
-        <Section muted>
-          <SectionHeading
-            eyebrow={t.common.new}
-            title={t.home.newTitle}
-            subtitle={t.home.newSubtitle}
-            action={<SeeAllLink href={`${p("/courses")}?sort=newest`} label={t.common.seeAll} />}
-          />
-          <CourseGrid courses={newest} locale={locale} t={t} />
-        </Section>
-      )}
-
-      {/* ── Creators ─────────────────────────────────────────────────────── */}
       {creators.length > 0 && (
         <Section>
           <SectionHeading
             eyebrow={t.nav.creators}
             title={t.home.creatorsTitle}
             subtitle={t.home.creatorsSubtitle}
-            action={<SeeAllLink href={p("/instructors")} label={t.common.seeAll} />}
+            action={
+              <SeeAllLink href={p("/instructors")} label={t.common.seeAll} />
+            }
           />
           <Spotlight className="-m-3 rounded-3xl p-3" size={420}>
             <Stagger
@@ -435,12 +358,30 @@ export default async function HomePage() {
 
       {/* ── How it works ─────────────────────────────────────────────────── */}
       <Section muted>
-        <SectionHeading title={t.home.howItWorksTitle} subtitle={t.home.howItWorksSubtitle} />
+        <SectionHeading
+          title={t.home.howItWorksTitle}
+          subtitle={t.home.howItWorksSubtitle}
+        />
         <ol className="grid gap-5 md:grid-cols-3">
           {[
-            { n: "1", title: t.home.step1Title, body: t.home.step1Body, icon: "search" as IconName },
-            { n: "2", title: t.home.step2Title, body: t.home.step2Body, icon: "creditCard" as IconName },
-            { n: "3", title: t.home.step3Title, body: t.home.step3Body, icon: "award" as IconName },
+            {
+              n: "1",
+              title: t.home.step1Title,
+              body: t.home.step1Body,
+              icon: "search" as IconName,
+            },
+            {
+              n: "2",
+              title: t.home.step2Title,
+              body: t.home.step2Body,
+              icon: "creditCard" as IconName,
+            },
+            {
+              n: "3",
+              title: t.home.step3Title,
+              body: t.home.step3Body,
+              icon: "award" as IconName,
+            },
           ].map((step) => (
             <li key={step.n}>
               <Card className="group relative h-full overflow-hidden p-6 transition-shadow duration-300 hover:shadow-lg">
@@ -451,7 +392,9 @@ export default async function HomePage() {
                   <Icon name={step.icon} size={21} />
                 </span>
                 <h3 className="relative mt-4 text-lg">{step.title}</h3>
-                <p className="relative mt-2 text-sm leading-relaxed text-ink-muted">{step.body}</p>
+                <p className="relative mt-2 text-sm leading-relaxed text-ink-muted">
+                  {step.body}
+                </p>
               </Card>
             </li>
           ))}
@@ -463,10 +406,26 @@ export default async function HomePage() {
         <SectionHeading title={t.home.studentBenefitsTitle} />
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            { icon: "globe" as IconName, title: t.home.studentBenefit1Title, body: t.home.studentBenefit1Body },
-            { icon: "unlock" as IconName, title: t.home.studentBenefit2Title, body: t.home.studentBenefit2Body },
-            { icon: "video" as IconName, title: t.home.studentBenefit3Title, body: t.home.studentBenefit3Body },
-            { icon: "award" as IconName, title: t.home.studentBenefit4Title, body: t.home.studentBenefit4Body },
+            {
+              icon: "globe" as IconName,
+              title: t.home.studentBenefit1Title,
+              body: t.home.studentBenefit1Body,
+            },
+            {
+              icon: "unlock" as IconName,
+              title: t.home.studentBenefit2Title,
+              body: t.home.studentBenefit2Body,
+            },
+            {
+              icon: "video" as IconName,
+              title: t.home.studentBenefit3Title,
+              body: t.home.studentBenefit3Body,
+            },
+            {
+              icon: "award" as IconName,
+              title: t.home.studentBenefit4Title,
+              body: t.home.studentBenefit4Body,
+            },
           ].map((b) => (
             <li key={b.title}>
               <Card className="h-full p-5 transition-all duration-300 hover:-translate-y-1 hover:border-success-500/30 hover:shadow-lg">
@@ -474,7 +433,9 @@ export default async function HomePage() {
                   <Icon name={b.icon} size={19} />
                 </span>
                 <h3 className="mt-3.5 text-[15px]">{b.title}</h3>
-                <p className="mt-1.5 text-[13px] leading-relaxed text-ink-muted">{b.body}</p>
+                <p className="mt-1.5 text-[13px] leading-relaxed text-ink-muted">
+                  {b.body}
+                </p>
               </Card>
             </li>
           ))}
@@ -485,7 +446,11 @@ export default async function HomePage() {
       <Testimonials locale={locale} t={t} />
 
       {/* ── FAQ ──────────────────────────────────────────────────────────── */}
-      <HomeFaq locale={locale} t={t} settings={{ refundWindowDays: settings.refundWindowDays }} />
+      <HomeFaq
+        locale={locale}
+        t={t}
+        settings={{ refundWindowDays: settings.refundWindowDays }}
+      />
 
       {/* ── Creator CTA ──────────────────────────────────────────────────── */}
       <section className="container-page pb-20">
@@ -500,12 +465,18 @@ export default async function HomePage() {
             }}
           />
           <div className="relative mx-auto max-w-2xl">
-            <h2 className="text-balance text-3xl text-white sm:text-4xl">{t.home.creatorCtaTitle}</h2>
+            <h2 className="text-balance text-3xl text-white sm:text-4xl">
+              {t.home.creatorCtaTitle}
+            </h2>
             <p className="mt-4 text-pretty text-[15px] leading-relaxed text-white/70 sm:text-base">
               {t.home.creatorCtaBody}
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <ButtonLink href={p("/register?type=creator")} size="lg" className="bg-white text-ink hover:bg-white/90">
+              <ButtonLink
+                href={p("/register?type=creator")}
+                size="lg"
+                className="bg-white text-ink hover:bg-white/90"
+              >
                 {t.home.creatorCtaButton}
                 <Icon name="arrowRight" size={17} />
               </ButtonLink>
@@ -518,16 +489,21 @@ export default async function HomePage() {
                 {t.common.showMore}
               </ButtonLink>
             </div>
-            <p className="mt-5 text-[13px] text-white/50">{t.home.creatorCtaNote}</p>
+            <p className="mt-5 text-[13px] text-white/50">
+              {t.home.creatorCtaNote}
+            </p>
           </div>
         </div>
       </section>
 
       <JsonLd
         data={itemListSchema(
-          ranked.map((c) => ({ name: c.title, path: `/courses/${c.slug}` })),
+          communities.map((c) => ({
+            name: c.name,
+            path: `/community/${c.slug}`,
+          })),
           locale,
-          t.home.rankedTitle,
+          t.communities.title,
         )}
       />
     </>
@@ -543,17 +519,24 @@ export default async function HomePage() {
  */
 function HeroBackdrop() {
   return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+    >
       {/* Three washes on different rhythms. They drift out of phase, so the
           background never repeats a frame and never asks for attention. */}
       <div
         className="aurora absolute -left-1/4 -top-1/2 h-[46rem] w-[46rem] rounded-full opacity-80 blur-3xl"
-        style={{ background: "radial-gradient(circle, rgb(53 89 240 / 0.22), transparent 62%)" }}
+        style={{
+          background:
+            "radial-gradient(circle, rgb(53 89 240 / 0.22), transparent 62%)",
+        }}
       />
       <div
         className="aurora absolute -right-1/4 top-0 h-[38rem] w-[38rem] rounded-full opacity-80 blur-3xl"
         style={{
-          background: "radial-gradient(circle, rgb(255 87 16 / 0.18), transparent 62%)",
+          background:
+            "radial-gradient(circle, rgb(255 87 16 / 0.18), transparent 62%)",
           animationDelay: "-7s",
           animationDuration: "26s",
         }}
@@ -561,7 +544,8 @@ function HeroBackdrop() {
       <div
         className="aurora absolute -bottom-1/3 left-1/3 h-[32rem] w-[32rem] rounded-full opacity-70 blur-3xl"
         style={{
-          background: "radial-gradient(circle, rgb(124 58 237 / 0.16), transparent 62%)",
+          background:
+            "radial-gradient(circle, rgb(124 58 237 / 0.16), transparent 62%)",
           animationDelay: "-14s",
           animationDuration: "30s",
         }}
@@ -576,8 +560,10 @@ function HeroBackdrop() {
             "linear-gradient(to right, rgb(13 17 23 / 0.045) 1px, transparent 1px)," +
             "linear-gradient(to bottom, rgb(13 17 23 / 0.045) 1px, transparent 1px)",
           backgroundSize: "56px 56px",
-          maskImage: "radial-gradient(62rem 38rem at 50% 0%, #000 40%, transparent 78%)",
-          WebkitMaskImage: "radial-gradient(62rem 38rem at 50% 0%, #000 40%, transparent 78%)",
+          maskImage:
+            "radial-gradient(62rem 38rem at 50% 0%, #000 40%, transparent 78%)",
+          WebkitMaskImage:
+            "radial-gradient(62rem 38rem at 50% 0%, #000 40%, transparent 78%)",
         }}
       />
 
@@ -592,38 +578,23 @@ function HeroBackdrop() {
   );
 }
 
-function Section({ children, muted }: { children: React.ReactNode; muted?: boolean }) {
+function Section({
+  children,
+  muted,
+}: {
+  children: React.ReactNode;
+  muted?: boolean;
+}) {
   return (
     // Muted bands are translucent so the ambient backdrop still reads through
     // them; fully opaque, they cut the page into stripes of texture and blank.
-    <section className={muted ? "border-y border-line bg-surface-muted/75" : ""}>
+    <section
+      className={muted ? "border-y border-line bg-surface-muted/75" : ""}
+    >
       <div className="container-page py-14 sm:py-16">
         <Reveal>{children}</Reveal>
       </div>
     </section>
-  );
-}
-
-function CourseGrid({
-  courses,
-  locale,
-  t,
-  priorityCount = 0,
-}: {
-  courses: Awaited<ReturnType<typeof getRankedCourses>>;
-  locale: Parameters<typeof CourseCard>[0]["locale"];
-  t: Parameters<typeof CourseCard>[0]["t"];
-  /** Above-the-fold images worth fetching eagerly. */
-  priorityCount?: number;
-}) {
-  return (
-    <Spotlight className="-m-3 rounded-3xl p-3" size={460}>
-      <Stagger className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" step={60}>
-        {courses.map((c, i) => (
-          <CourseCard key={c.id} course={c} locale={locale} t={t} priority={i < priorityCount} />
-        ))}
-      </Stagger>
-    </Spotlight>
   );
 }
 
@@ -643,7 +614,9 @@ function HeroStat({
       <dt className="order-2 mt-1 text-[13px] text-ink-muted">{label}</dt>
       <dd className="order-1 text-3xl font-bold tabular-nums tracking-tight text-ink sm:text-4xl">
         {value}
-        {extra && <span className="ms-1 inline-block align-middle">{extra}</span>}
+        {extra && (
+          <span className="ms-1 inline-block align-middle">{extra}</span>
+        )}
       </dd>
     </div>
   );
@@ -704,7 +677,9 @@ function CategoryTile({
       <span
         aria-hidden="true"
         className="absolute inset-x-0 bottom-0 h-0 opacity-0 transition-all duration-300 group-hover:h-full group-hover:opacity-100"
-        style={{ background: `linear-gradient(to top, ${tint}14, transparent)` }}
+        style={{
+          background: `linear-gradient(to top, ${tint}14, transparent)`,
+        }}
       />
       <span
         className="relative inline-flex h-11 w-11 items-center justify-center rounded-xl transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-110"
@@ -712,7 +687,9 @@ function CategoryTile({
       >
         <Icon name={icon} size={20} />
       </span>
-      <span className="relative text-[13px] font-semibold leading-tight text-ink">{name}</span>
+      <span className="relative text-[13px] font-semibold leading-tight text-ink">
+        {name}
+      </span>
       <span className="relative text-[11px] text-ink-subtle">
         {count} {countLabel}
       </span>
@@ -751,7 +728,9 @@ function AudienceCard({
         <Icon name={icon} size={23} />
       </span>
       <h3 className="relative mt-4 text-[17px]">{title}</h3>
-      <p className="relative mt-2 text-[14px] leading-relaxed text-ink-muted">{body}</p>
+      <p className="relative mt-2 text-[14px] leading-relaxed text-ink-muted">
+        {body}
+      </p>
     </div>
   );
 }
@@ -809,7 +788,8 @@ function EarningsBand({
         aria-hidden="true"
         className="aurora pointer-events-none absolute -left-32 top-1/4 h-[34rem] w-[34rem] rounded-full opacity-50 blur-3xl"
         style={{
-          background: "radial-gradient(circle, rgb(53 89 240 / 0.35), transparent 62%)",
+          background:
+            "radial-gradient(circle, rgb(53 89 240 / 0.35), transparent 62%)",
           animationDuration: "28s",
         }}
       />
@@ -839,7 +819,11 @@ function EarningsBand({
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">
-                <ButtonLink href={href} size="lg" className="bg-white text-ink hover:bg-white/90">
+                <ButtonLink
+                  href={href}
+                  size="lg"
+                  className="bg-white text-ink hover:bg-white/90"
+                >
                   {t.home.earningsCta}
                   <Icon name="arrowRight" size={17} />
                 </ButtonLink>
@@ -861,7 +845,9 @@ function EarningsBand({
                   {share}
                   <span className="text-3xl sm:text-4xl">%</span>
                 </p>
-                <p className="mt-1 text-sm text-white/60">{t.home.earningsPoint1Body}</p>
+                <p className="mt-1 text-sm text-white/60">
+                  {t.home.earningsPoint1Body}
+                </p>
 
                 <ul className="mt-7 space-y-5 border-t border-white/10 pt-6">
                   {points.map((point) => (
@@ -917,19 +903,46 @@ function Testimonials({
   const quotes =
     locale === "en"
       ? [
-          { body: "Twelve weeks of training I could actually follow from home, in Georgian, without guessing at the technique.", name: "Mariam K.", role: "Student" },
-          { body: "I coach eleven people in the gym. The programme I published here now reaches four hundred.", name: "Nika C.", role: "Personal trainer" },
-          { body: "I had the audience for years and no way to sell to it in GEL. I launched my first product in a weekend.", name: "Saba L.", role: "Content creator" },
+          {
+            body: "Twelve weeks of training I could actually follow from home, in Georgian, without guessing at the technique.",
+            name: "Mariam K.",
+            role: "Student",
+          },
+          {
+            body: "I coach eleven people in the gym. The programme I published here now reaches four hundred.",
+            name: "Nika C.",
+            role: "Personal trainer",
+          },
+          {
+            body: "I had the audience for years and no way to sell to it in GEL. I launched my first product in a weekend.",
+            name: "Saba L.",
+            role: "Content creator",
+          },
         ]
       : [
-          { body: "12 კვირა ვარჯიში, რომელსაც სახლიდან, ქართულად და ტექნიკის გამოცნობის გარეშე მივყევი.", name: "მარიამ ქ.", role: "სტუდენტი" },
-          { body: "დარბაზში თერთმეტ ადამიანს ვამზადებ. აქ გამოქვეყნებული პროგრამა უკვე ოთხასს სწვდება.", name: "ნიკა ჩ.", role: "პერსონალური მწვრთნელი" },
-          { body: "აუდიტორია წლებია მყავს, ლარში გაყიდვის გზა კი — არა. პირველი პროდუქტი ერთ შაბათ-კვირაში გავუშვი.", name: "საბა ლ.", role: "კონტენტ-კრეატორი" },
+          {
+            body: "12 კვირა ვარჯიში, რომელსაც სახლიდან, ქართულად და ტექნიკის გამოცნობის გარეშე მივყევი.",
+            name: "მარიამ ქ.",
+            role: "სტუდენტი",
+          },
+          {
+            body: "დარბაზში თერთმეტ ადამიანს ვამზადებ. აქ გამოქვეყნებული პროგრამა უკვე ოთხასს სწვდება.",
+            name: "ნიკა ჩ.",
+            role: "პერსონალური მწვრთნელი",
+          },
+          {
+            body: "აუდიტორია წლებია მყავს, ლარში გაყიდვის გზა კი — არა. პირველი პროდუქტი ერთ შაბათ-კვირაში გავუშვი.",
+            name: "საბა ლ.",
+            role: "კონტენტ-კრეატორი",
+          },
         ];
 
   return (
     <Section muted>
-      <SectionHeading title={t.home.testimonialsTitle} subtitle={t.home.testimonialsSubtitle} />
+      <SectionHeading
+        title={t.home.testimonialsTitle}
+        subtitle={t.home.testimonialsSubtitle}
+      />
       <ul className="grid gap-4 md:grid-cols-3">
         {quotes.map((q) => (
           <li key={q.name}>
@@ -983,7 +996,9 @@ function HomeFaq({
         : `დიახ. თუ კურსი არ დაგაკმაყოფილათ, თანხის დაბრუნება შესაძლებელია შეძენიდან ${settings.refundWindowDays} დღის განმავლობაში.`,
     },
     {
-      q: en ? "Can I follow a course on my phone?" : "შემიძლია კურსის გავლა ტელეფონიდან?",
+      q: en
+        ? "Can I follow a course on my phone?"
+        : "შემიძლია კურსის გავლა ტელეფონიდან?",
       a: en
         ? "Yes. The whole platform works on a phone, which is where most people actually train. Your progress syncs, so you can start a lesson on a laptop and finish it at the gym."
         : "დიახ. პლატფორმა სრულად მუშაობს ტელეფონზე — სწორედ იქიდან ვარჯიშობს ხალხის უმეტესობა. პროგრესი ინახება, ასე რომ გაკვეთილი კომპიუტერზე დაიწყე და დარბაზში დაასრულე.",
@@ -1003,7 +1018,9 @@ function HomeFaq({
         : "დარეგისტრირდი კრეატორად, შექმენი კურსი კონსტრუქტორში და გააგზავნე განხილვაზე. დამტკიცების შემდეგ ის გამოქვეყნდება და გაყიდვები დაიწყება. საკომისიო იჭრება მხოლოდ რეალური გაყიდვისას.",
     },
     {
-      q: en ? "When do I receive my earnings?" : "როდის მივიღებ გამომუშავებულ თანხას?",
+      q: en
+        ? "When do I receive my earnings?"
+        : "როდის მივიღებ გამომუშავებულ თანხას?",
       a: en
         ? "A sale is held pending until the refund window closes, then becomes available to withdraw. Payouts go to a Georgian bank account."
         : "გაყიდვის თანხა ჯერ მოლოდინის რეჟიმში ხვდება (დაბრუნების ვადის გასვლამდე), შემდეგ ხდება ხელმისაწვდომი გასატანად. გატანა ხდება ქართულ საბანკო ანგარიშზე.",
@@ -1015,7 +1032,10 @@ function HomeFaq({
       <SectionHeading title={t.home.faqTitle} subtitle={t.home.faqSubtitle} />
       <div className="mx-auto max-w-3xl divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
         {faqs.map((f) => (
-          <details key={f.q} className="group px-5 py-4 [&_summary::-webkit-details-marker]:hidden">
+          <details
+            key={f.q}
+            className="group px-5 py-4 [&_summary::-webkit-details-marker]:hidden"
+          >
             <summary className="flex cursor-pointer items-center justify-between gap-4 text-[15px] font-semibold text-ink">
               {f.q}
               <Icon

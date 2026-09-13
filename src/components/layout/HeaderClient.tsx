@@ -103,7 +103,7 @@ export function HeaderClient({ user, categories, labels, localeSwitch }: Props) 
               {categories.map((c) => (
                 <Link
                   key={c.slug}
-                  href={`/category/${c.slug}`}
+                  href={`/communities?category=${c.slug}`}
                   className="group flex items-start gap-3 rounded-xl p-3 transition-colors hover:bg-surface-muted"
                 >
                   <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
@@ -254,7 +254,6 @@ export function HeaderClient({ user, categories, labels, localeSwitch }: Props) 
               )}
 
               <MenuLink href="/communities" icon="users" label={labels.communities} mobile />
-              <MenuLink href="/courses" icon="book" label={labels.courses} mobile />
               {user && <MenuLink href={dashboardHref} icon="grid" label={labels.dashboard} mobile />}
               {user && <MenuLink href="/dashboard/notifications" icon="bell" label={labels.notifications} mobile />}
               {!user && <MenuLink href="/become-instructor" icon="sparkles" label={labels.becomeCreator} mobile />}
@@ -263,7 +262,7 @@ export function HeaderClient({ user, categories, labels, localeSwitch }: Props) 
                 {labels.categories}
               </p>
               {categories.map((c) => (
-                <MenuLink key={c.slug} href={`/category/${c.slug}`} icon={c.icon} label={c.name} mobile />
+                <MenuLink key={c.slug} href={`/communities?category=${c.slug}`} icon={c.icon} label={c.name} mobile />
               ))}
             </nav>
 

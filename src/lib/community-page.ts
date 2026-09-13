@@ -42,6 +42,7 @@ export async function loadCommunityPage(
       communityPriceMinor: true,
       communityCurrency: true,
       communityMemberCount: true,
+      communityCategory: { select: { slug: true, nameKa: true, nameEn: true } },
       user: { select: { profile: { select: { avatarUrl: true } } } },
       _count: { select: { courses: { where: { includedInMembership: true, status: "PUBLISHED" } } } },
     },
@@ -79,6 +80,15 @@ export async function loadCommunityPage(
       memberCount: creator.communityMemberCount,
       enabled: creator.communityEnabled,
       includedCourseCount: creator._count.courses,
+      category: creator.communityCategory
+        ? {
+            slug: creator.communityCategory.slug,
+            name:
+              locale === "en"
+                ? creator.communityCategory.nameEn
+                : creator.communityCategory.nameKa,
+          }
+        : null,
     },
     cancelled,
   };

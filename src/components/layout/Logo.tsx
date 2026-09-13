@@ -1,41 +1,26 @@
 /**
  * The brand mark: წრე — "circle".
  *
- * Eight dots in a ring, and nothing in the middle. The circle is not drawn;
- * the people standing in it are, and the ring is the shape they make. That is
- * the whole product in one figure, and it is a mark nobody else on this shelf
- * is using.
+ * One thin ring, drawn in the brand colour on nothing. No filled badge, no
+ * dots, no motion.
  *
- * No stroked ring at all, which is what keeps it legible small: a thin circle
- * plus dots inside it was the previous mark, and below 24px the two closed up
- * against each other into a smudge. Dots alone have nothing to collide with.
- *
- * The slow turn on hover is the only motion. A mark that spins on its own is
- * a loading spinner; one that answers the cursor is alive. It is disabled
- * under prefers-reduced-motion by the global rule in globals.css.
+ * The two marks before this were a ring with dots inside and then eight dots
+ * in a ring; both were busy, and busy is the opposite of what the name means.
+ * A circle is the simplest shape there is, and the mark should be too — its
+ * whole job is to sit quietly to the left of the word and let the word be the
+ * logo.
  */
-export function Logo({ size = 32 }: { size?: number }) {
+export function Logo({ size = 28 }: { size?: number }) {
   return (
     <span
-      className="group/logo inline-flex items-center justify-center rounded-full bg-brand-600 text-white"
+      className="inline-flex shrink-0 items-center justify-center text-brand-600"
       style={{ width: size, height: size }}
       aria-hidden="true"
     >
-      <svg
-        width={size * 0.74}
-        height={size * 0.74}
-        viewBox="0 0 24 24"
-        fill="none"
-        className="origin-center transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/logo:rotate-45"
-      >
-        <circle cx="12.00" cy="4.50" r="1.72" fill="currentColor" />
-        <circle cx="17.30" cy="6.70" r="1.72" fill="currentColor" />
-        <circle cx="19.50" cy="12.00" r="1.72" fill="currentColor" />
-        <circle cx="17.30" cy="17.30" r="1.72" fill="currentColor" />
-        <circle cx="12.00" cy="19.50" r="1.72" fill="currentColor" />
-        <circle cx="6.70" cy="17.30" r="1.72" fill="currentColor" />
-        <circle cx="4.50" cy="12.00" r="1.72" fill="currentColor" />
-        <circle cx="6.70" cy="6.70" r="1.72" fill="currentColor" />
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+        {/* Stroke scaled to the box so the ring keeps its weight at any size
+            instead of going spindly large and clogging small. */}
+        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.4" />
       </svg>
     </span>
   );

@@ -75,12 +75,6 @@ export async function Header() {
             {t.communities.title}
           </Link>
           <Link
-            href={localePath("/courses", locale)}
-            className="inline-flex h-10 items-center rounded-lg px-3 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink"
-          >
-            {t.nav.courses}
-          </Link>
-          <Link
             href={localePath("/instructors", locale)}
             className="inline-flex h-10 items-center rounded-lg px-3 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink"
           >
@@ -138,8 +132,8 @@ export async function Header() {
       {/* Mobile search sits below the bar so the header stays uncluttered —
           except on the homepage, whose hero already leads with one. */}
       <MobileHeaderSearch
-        placeholder={t.home.heroSearchPlaceholder}
-        action={localePath("/courses", locale)}
+        placeholder={t.communities.searchPlaceholder}
+        action={localePath("/communities", locale)}
         homePaths={["/", "/en"]}
       />
     </StickyHeader>
