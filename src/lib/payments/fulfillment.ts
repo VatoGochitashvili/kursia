@@ -8,6 +8,7 @@ import {
   communityLabel, communityScope, courseScope, isRecurring, planScope,
 } from "@/lib/membership";
 import { COUPON_MESSAGES, evaluateCoupon, recordRedemption } from "@/lib/coupons";
+import { canCheckout } from "@/lib/join-requests";
 import { notify, absoluteUrl } from "@/lib/notifications";
 import { audit, AUDIT_ACTIONS } from "@/lib/audit";
 import { ApiError, conflict, notFoundError } from "@/lib/api";
@@ -315,6 +316,13 @@ export async function startCommunityCheckout(input: {
   }
   if (creator.userId === input.userId) {
     throw conflict("ეს შენი სივრცეა");
+  }
+
+  // A gated circle is approved before it is paid for, never the other way
+  // round. Re-read from the database: the join panel decides which button to
+  // draw, this decides whether the charge may happen at all.
+  if (!(await canCheckout(creator.id, input.userId))) {
+    throw new ApiError(403, "APPROVAL_REQUIRED", "ჯერ საჭიროა ავტორის დადასტურება");
   }
 
   const label = communityLabel(creator);

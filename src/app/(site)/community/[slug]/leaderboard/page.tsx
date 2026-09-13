@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function CommunityLeaderboardPage({ params }: Props) {
   const { slug } = await params;
   const [{ locale, t }, viewer] = await Promise.all([getI18n(), getSessionUser()]);
-  const { creator, membership, community, cancelled } = await loadCommunityPage(
+  const { creator, membership, community, cancelled, gate } = await loadCommunityPage(
     slug,
     viewer?.id ?? null,
     locale,
@@ -107,6 +107,7 @@ export default async function CommunityLeaderboardPage({ params }: Props) {
             creatorSlug={creator.slug}
             isAuthenticated={Boolean(viewer)}
             isOwner={membership.isOwner}
+            gate={gate}
             loginHref={p(`/login?next=/community/${creator.slug}`)}
             coursesHref={p(`/creator/${creator.slug}`)}
             locale={locale}

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, errorMessage } from "@/lib/client/fetcher";
 import { Button, ButtonLink } from "@/components/ui/Button";
-import { Alert, Card } from "@/components/ui/primitives";
+import { Alert, Card, Textarea } from "@/components/ui/primitives";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Icon } from "@/components/ui/Icon";
 import { useToast } from "@/components/ui/Toast";
@@ -42,6 +42,7 @@ export function JoinCommunityCard({
   isSubscriber,
   memberUntil,
   cancelled,
+  gate,
   loginHref,
   locale,
   t,
@@ -52,6 +53,13 @@ export function JoinCommunityCard({
   isSubscriber: boolean;
   memberUntil: string | null;
   cancelled: boolean;
+  /** Whether this circle reviews applicants, and where this viewer stands. */
+  gate?: {
+    required: boolean;
+    status: "NONE" | "PENDING" | "APPROVED" | "REJECTED";
+    cleared: boolean;
+    reviewNote: string | null;
+  };
   loginHref: string;
   locale: Locale;
   t: Dictionary;
@@ -61,8 +69,15 @@ export function JoinCommunityCard({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmLeave, setConfirmLeave] = useState(false);
+  const [message, setMessage] = useState("");
+  const [applied, setApplied] = useState(false);
 
   const free = community.priceMinor === 0;
+  // Somebody who must be approved and has not been cannot reach checkout, so
+  // the panel offers the application instead of a pay button. The server
+  // refuses the charge either way; this only decides which button is drawn.
+  const needsApproval = Boolean(gate?.required) && !gate?.cleared;
+  const pendingReview = applied || gate?.status === "PENDING";
 
   async function join() {
     if (!isAuthenticated) {
@@ -80,6 +95,27 @@ export function JoinCommunityCard({
       router.refresh();
     } catch (err) {
       setError(errorMessage(err));
+      setPending(false);
+    }
+  }
+
+  async function apply() {
+    if (!isAuthenticated) {
+      router.push(loginHref);
+      return;
+    }
+    setPending(true);
+    setError(null);
+    try {
+      await api.post("/api/communities/requests", {
+        creatorId: community.creatorId,
+        message: message.trim() || undefined,
+      });
+      setApplied(true);
+      toast.show(t.membership.requestSent, "success");
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
       setPending(false);
     }
   }
@@ -219,6 +255,37 @@ export function JoinCommunityCard({
             <ButtonLink href={loginHref} size="lg" fullWidth>
               {t.membership.signInToJoin}
             </ButtonLink>
+          ) : pendingReview ? (
+            <div className="rounded-xl bg-surface-sunken px-4 py-3.5 text-center">
+              <p className="inline-flex items-center gap-1.5 text-[14px] font-semibold">
+                <Icon name="clock" size={15} />
+                {t.membership.requestPending}
+              </p>
+              <p className="mt-1 text-[13px] text-ink-muted">
+                {t.membership.requestPendingBody}
+              </p>
+            </div>
+          ) : needsApproval ? (
+            <div className="grid gap-3">
+              {gate?.status === "REJECTED" && (
+                <Alert tone="danger">
+                  <span className="font-semibold">{t.membership.requestRejected}</span>
+                  {gate.reviewNote && (
+                    <span className="mt-0.5 block text-[13px]">{gate.reviewNote}</span>
+                  )}
+                </Alert>
+              )}
+              <Textarea
+                rows={3}
+                value={message}
+                placeholder={t.membership.requestMessage}
+                onChange={(e) => setMessage(e.target.value)}
+              />
+              <Button size="lg" fullWidth loading={pending} onClick={apply}>
+                {t.membership.requestToJoin}
+                <Icon name="arrowRight" size={17} />
+              </Button>
+            </div>
           ) : (
             <Button size="lg" fullWidth loading={pending} onClick={join}>
               {free ? t.membership.joinFree : t.membership.join}

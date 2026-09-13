@@ -18,6 +18,7 @@ export function CommunityGate({
   creatorSlug,
   isAuthenticated,
   isOwner,
+  gate,
   loginHref,
   coursesHref,
   locale,
@@ -27,6 +28,12 @@ export function CommunityGate({
   creatorSlug: string;
   isAuthenticated: boolean;
   isOwner: boolean;
+  gate?: {
+    required: boolean;
+    status: "NONE" | "PENDING" | "APPROVED" | "REJECTED";
+    cleared: boolean;
+    reviewNote: string | null;
+  };
   loginHref: string;
   coursesHref: string;
   locale: Locale;
@@ -41,6 +48,7 @@ export function CommunityGate({
         isSubscriber={false}
         memberUntil={null}
         cancelled={false}
+        gate={gate}
         loginHref={loginHref}
         locale={locale}
         t={t}

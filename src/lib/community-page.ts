@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { getMembership, type Membership } from "@/lib/community";
 import { communityLabel, communityScope } from "@/lib/membership";
+import { getJoinGate, type JoinGate } from "@/lib/join-requests";
 import type { CommunityView } from "@/components/community/JoinCommunityCard";
 import type { Locale } from "@/lib/enums";
 
@@ -28,6 +29,8 @@ export async function loadCommunityPage(
   community: CommunityView;
   /** True when they have said "do not renew" but the period is still running. */
   cancelled: boolean;
+  /** Whether this circle reviews applicants, and where this viewer stands. */
+  gate: JoinGate;
 }> {
   const creator = await db.creatorProfile.findUnique({
     where: { slug },
@@ -42,6 +45,7 @@ export async function loadCommunityPage(
       communityPriceMinor: true,
       communityCurrency: true,
       communityMemberCount: true,
+      communityRequiresApproval: true,
       communityCategory: { select: { slug: true, nameKa: true, nameEn: true } },
       user: { select: { profile: { select: { avatarUrl: true } } } },
       _count: { select: { courses: { where: { includedInMembership: true, status: "PUBLISHED" } } } },
@@ -62,7 +66,14 @@ export async function loadCommunityPage(
     cancelled = subscription?.status === "CANCELLED";
   }
 
+  // Only asked for people who are not already inside — a member has nothing
+  // left to apply for.
+  const gate = membership.isMember
+    ? { required: false, status: "APPROVED" as const, cleared: true, reviewNote: null }
+    : await getJoinGate(creator.id, viewerId, creator.communityRequiresApproval);
+
   return {
+    gate,
     creator: {
       id: creator.id,
       slug: creator.slug,

@@ -40,30 +40,31 @@ model User {
   sessions       Session[]
   tokens         VerificationToken[]
 
-  enrollments       Enrollment[]
-  purchases         Purchase[]
-  transactions      Transaction[]
-  reviews           Review[]
-  wishlist          Wishlist[]
-  lessonProgress    LessonProgress[]
-  quizAttempts      QuizAttempt[]
-  submissions       AssignmentSubmission[]
-  notifications     Notification[]
-  subscriptions     Subscription[]
-  couponRedemptions CouponRedemption[]
-  posts             Post[]
-  postLikes         PostLike[]
-  eventAttendance   EventAttendee[]
-  pointEvents       PointEvent[]
-  comments          Comment[]
-  commentLikes      CommentLike[]
-  notes             LessonNote[]
-  following         Follow[]               @relation("follower")
-  followers         Follow[]               @relation("followedUser")
-  reportsFiled      Report[]               @relation("reporter")
-  reportsHandled    Report[]               @relation("reportHandler")
-  auditLogs         AuditLog[]
-  courseViews       CourseView[]
+  enrollments           Enrollment[]
+  purchases             Purchase[]
+  transactions          Transaction[]
+  reviews               Review[]
+  wishlist              Wishlist[]
+  lessonProgress        LessonProgress[]
+  quizAttempts          QuizAttempt[]
+  submissions           AssignmentSubmission[]
+  notifications         Notification[]
+  subscriptions         Subscription[]
+  couponRedemptions     CouponRedemption[]
+  posts                 Post[]
+  postLikes             PostLike[]
+  eventAttendance       EventAttendee[]
+  pointEvents           PointEvent[]
+  comments              Comment[]
+  commentLikes          CommentLike[]
+  notes                 LessonNote[]
+  following             Follow[]               @relation("follower")
+  followers             Follow[]               @relation("followedUser")
+  reportsFiled          Report[]               @relation("reporter")
+  reportsHandled        Report[]               @relation("reportHandler")
+  auditLogs             AuditLog[]
+  courseViews           CourseView[]
+  communityJoinRequests CommunityJoinRequest[]
 
   @@index([role, status])
   @@index([createdAt])
@@ -115,20 +116,24 @@ model CreatorProfile {
   // ── The community as a product ───────────────────────────────────────────
   /// Off until the creator opens it. A community that is not enabled is not
   /// joinable and does not appear anywhere as something to pay for.
-  communityEnabled     Boolean   @default(false)
+  communityEnabled          Boolean @default(false)
   /// The group's own name and pitch. Skool groups are branded separately from
   /// the person running them — "Georgian Traders", not "Giorgi Khutsishvili".
-  communityName        String?
-  communityTagline     String?
-  communityDescription String?
-  communityCoverUrl    String?
+  communityName             String?
+  communityTagline          String?
+  communityDescription      String?
+  communityCoverUrl         String?
   /// Monthly price in minor units. Zero means a free community anyone signed
   /// in can join — Skool has those too, and they are how most groups start.
-  communityPriceMinor  Int       @default(0)
-  communityCurrency    String    @default("GEL")
+  communityPriceMinor       Int     @default(0)
+  communityCurrency         String  @default("GEL")
   /// Members at the last count. Denormalised for the directory card; the
   /// truth is the set of live subscriptions.
-  communityMemberCount Int       @default(0)
+  communityMemberCount      Int     @default(0)
+  /// When true, joining is a request the owner reviews rather than something
+  /// money alone completes.
+  communityRequiresApproval Boolean @default(false)
+
   /// The admin's decision about this circle, separate from the creator's own
   /// switch above: "DRAFT" | "PENDING" | "APPROVED" | "SUSPENDED".
   ///
@@ -150,19 +155,20 @@ model CreatorProfile {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
-  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  communityCategory Category?       @relation("communityCategory", fields: [communityCategoryId], references: [id], onDelete: SetNull)
-  courses           Course[]
-  balance           CreatorBalance?
-  payouts           Payout[]
-  payoutMethods     PayoutMethod[]
-  balanceEntries    BalanceEntry[]
-  subscriptions     Subscription[]
-  coupons           Coupon[]
-  announcements     Announcement[]
-  posts             Post[]
-  events            Event[]
-  pointEvents       PointEvent[]
+  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  communityCategory     Category?              @relation("communityCategory", fields: [communityCategoryId], references: [id], onDelete: SetNull)
+  courses               Course[]
+  balance               CreatorBalance?
+  payouts               Payout[]
+  payoutMethods         PayoutMethod[]
+  balanceEntries        BalanceEntry[]
+  subscriptions         Subscription[]
+  coupons               Coupon[]
+  announcements         Announcement[]
+  posts                 Post[]
+  events                Event[]
+  pointEvents           PointEvent[]
+  communityJoinRequests CommunityJoinRequest[]
 
   @@index([isFeatured, featuredRank])
   @@index([isVerified])
@@ -1331,4 +1337,35 @@ model PointEvent {
   @@unique([creatorId, userId, sourceType, sourceId])
   @@index([creatorId, createdAt])
   @@index([creatorId, userId])
+}
+
+/// Somebody asking to be let into a circle.
+///
+/// Separate from the subscription on purpose: approval is about WHO may join,
+/// the subscription is about whether they have paid. Folding one into the
+/// other would mean either taking money from someone who is then refused, or
+/// letting an approval double as a payment.
+model CommunityJoinRequest {
+  id        String @id @default(cuid())
+  creatorId String
+  userId    String
+
+  /// "PENDING" | "APPROVED" | "REJECTED"
+  status     String  @default("PENDING")
+  /// The applicant's own words. Owners asked for this before they let someone
+  /// into a paid space.
+  message    String?
+  /// Why it was refused. Shown to the applicant.
+  reviewNote String?
+
+  createdAt  DateTime  @default(now())
+  reviewedAt DateTime?
+
+  creator CreatorProfile @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// One standing request per person per circle; re-applying reuses the row.
+  @@unique([creatorId, userId])
+  @@index([creatorId, status, createdAt])
+  @@index([userId])
 }

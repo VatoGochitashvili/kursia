@@ -4,7 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, errorMessage } from "@/lib/client/fetcher";
 import { Button } from "@/components/ui/Button";
-import { Alert, Card, Checkbox, Field, Input, Select, Textarea } from "@/components/ui/primitives";
+import {
+  Alert,
+  Card,
+  Checkbox,
+  Field,
+  Input,
+  Select,
+  Textarea,
+} from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
 import { useToast } from "@/components/ui/Toast";
 import { formatMoney } from "@/lib/money";
@@ -51,6 +59,7 @@ export function CommunitySettings({
     currency: string;
     memberCount: number;
     categoryId: string;
+    requiresApproval: boolean;
   };
   categories: { id: string; name: string }[];
   courses: CourseRow[];
@@ -66,17 +75,23 @@ export function CommunitySettings({
     tagline: initial.tagline,
     description: initial.description,
     // Whole units in the box; tetri on the wire.
-    price: initial.priceMinor === 0 ? "" : String(Math.round(initial.priceMinor / 100)),
+    price:
+      initial.priceMinor === 0
+        ? ""
+        : String(Math.round(initial.priceMinor / 100)),
     categoryId: initial.categoryId,
+    requiresApproval: initial.requiresApproval,
   });
   const [included, setIncluded] = useState<Set<string>>(
-    () => new Set(courses.filter((c) => c.includedInMembership).map((c) => c.id)),
+    () =>
+      new Set(courses.filter((c) => c.includedInMembership).map((c) => c.id)),
   );
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const priceMinor = Math.max(0, Math.round(Number(form.price || 0) * 100));
-  const priceInvalid = form.price !== "" && !Number.isFinite(Number(form.price));
+  const priceInvalid =
+    form.price !== "" && !Number.isFinite(Number(form.price));
 
   async function save() {
     if (priceInvalid) return;
@@ -90,6 +105,7 @@ export function CommunitySettings({
         description: form.description.trim() || null,
         priceMinor,
         categoryId: form.categoryId || null,
+        requiresApproval: form.requiresApproval,
         includedCourseIds: [...included],
       });
       toast.show(t.membership.saved, "success");
@@ -139,12 +155,32 @@ export function CommunitySettings({
             onChange={(e) => setForm({ ...form, enabled: e.target.checked })}
           />
           <span className="min-w-0">
-            <span className="block text-[14px] font-semibold">{t.membership.enable}</span>
+            <span className="block text-[14px] font-semibold">
+              {t.membership.enable}
+            </span>
             {initial.memberCount > 0 && (
               <span className="mt-0.5 block text-[12px] text-ink-subtle">
-                {fill(t.membership.members, { count: formatNumber(initial.memberCount) })}
+                {fill(t.membership.members, {
+                  count: formatNumber(initial.memberCount),
+                })}
               </span>
             )}
+          </span>
+        </label>
+        <label className="mt-3 flex cursor-pointer items-start gap-3 rounded-xl border border-line p-4">
+          <Checkbox
+            checked={form.requiresApproval}
+            onChange={(e) =>
+              setForm({ ...form, requiresApproval: e.target.checked })
+            }
+          />
+          <span className="min-w-0">
+            <span className="block text-[14px] font-semibold">
+              {t.membership.requiresApproval}
+            </span>
+            <span className="mt-0.5 block text-[12px] text-ink-subtle">
+              {t.membership.requiresApprovalHint}
+            </span>
           </span>
         </label>
       </Card>
@@ -166,7 +202,10 @@ export function CommunitySettings({
           />
         </Field>
 
-        <Field label={t.membership.categoryLabel} hint={t.membership.categoryHint}>
+        <Field
+          label={t.membership.categoryLabel}
+          hint={t.membership.categoryHint}
+        >
           <Select
             value={form.categoryId}
             onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
@@ -232,10 +271,15 @@ export function CommunitySettings({
                   <label
                     className={cn(
                       "flex cursor-pointer items-center gap-3 rounded-xl border p-3.5 transition-colors",
-                      on ? "border-brand-300 bg-brand-50/40" : "border-line hover:bg-surface-sunken",
+                      on
+                        ? "border-brand-300 bg-brand-50/40"
+                        : "border-line hover:bg-surface-sunken",
                     )}
                   >
-                    <Checkbox checked={on} onChange={() => toggleCourse(course.id)} />
+                    <Checkbox
+                      checked={on}
+                      onChange={() => toggleCourse(course.id)}
+                    />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-[14px] font-semibold">
                         {course.title}

@@ -19,6 +19,7 @@ const settingsSchema = z
     coverUrl: z.union([z.string().trim().url().max(1000), z.literal("")]).nullable().optional(),
     priceMinor: z.number().int().min(0).max(MAX_PRICE_MINOR).optional(),
     categoryId: z.string().trim().max(40).nullable().optional(),
+    requiresApproval: z.boolean().optional(),
     /** Which of the creator's courses come with the membership. */
     includedCourseIds: z.array(z.string().trim().max(40)).max(200).optional(),
   })
@@ -80,12 +81,15 @@ export const PATCH = handler(async (request) => {
       ...(body.categoryId !== undefined
         ? { communityCategoryId: body.categoryId || null }
         : {}),
+      ...(body.requiresApproval !== undefined
+        ? { communityRequiresApproval: body.requiresApproval }
+        : {}),
     },
     select: {
       id: true, communityEnabled: true, communityName: true, communityTagline: true,
       communityDescription: true, communityCoverUrl: true, communityPriceMinor: true,
       communityCurrency: true, communityMemberCount: true, communityCategoryId: true,
-      communityStatus: true, communityReviewNote: true,
+      communityStatus: true, communityReviewNote: true, communityRequiresApproval: true,
     },
   });
 

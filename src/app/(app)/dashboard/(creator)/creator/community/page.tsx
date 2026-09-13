@@ -5,6 +5,7 @@ import { getI18n, localePath } from "@/i18n";
 import { getSessionUser } from "@/lib/auth/session";
 import { PageHeader } from "@/components/layout/DashboardShell";
 import { CommunitySettings } from "@/components/creator/CommunitySettings";
+import { JoinRequests } from "@/components/creator/JoinRequests";
 
 export const metadata: Metadata = { title: "Community", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -34,6 +35,7 @@ export default async function CreatorCommunityPage() {
       communityCurrency: true,
       communityMemberCount: true,
       communityCategoryId: true,
+      communityRequiresApproval: true,
     },
   });
   if (!creator) redirect(p("/dashboard/profile"));
@@ -70,6 +72,7 @@ export default async function CreatorCommunityPage() {
           currency: creator.communityCurrency,
           memberCount: creator.communityMemberCount,
           categoryId: creator.communityCategoryId ?? "",
+          requiresApproval: creator.communityRequiresApproval,
         }}
         categories={categories.map((c) => ({
           id: c.id,
@@ -80,6 +83,14 @@ export default async function CreatorCommunityPage() {
         locale={locale}
         t={t}
       />
+
+      {/* Only worth showing when the circle actually reviews applicants;
+          otherwise it is a permanently empty box. */}
+      {creator.communityRequiresApproval && (
+        <div className="mt-5">
+          <JoinRequests creatorId={user.creatorId} locale={locale} t={t} />
+        </div>
+      )}
     </>
   );
 }
