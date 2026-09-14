@@ -47,6 +47,7 @@ export interface StorageDriver {
 export const STORAGE_PREFIX = {
   avatar: "avatars",
   thumbnail: "thumbnails",
+  cover: "covers",
   coursePreview: "previews",
   lessonVideo: "lessons/video",
   lessonPdf: "lessons/pdf",
@@ -62,6 +63,9 @@ export type StoragePrefix = (typeof STORAGE_PREFIX)[keyof typeof STORAGE_PREFIX]
 export const PUBLIC_PREFIXES: string[] = [
   STORAGE_PREFIX.avatar,
   STORAGE_PREFIX.thumbnail,
+  // A circle's cover is its shop window — shown to visitors who are not
+  // signed in, so it cannot sit behind a user-bound grant.
+  STORAGE_PREFIX.cover,
   STORAGE_PREFIX.coursePreview,
 ];
 

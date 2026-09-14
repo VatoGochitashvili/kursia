@@ -635,6 +635,7 @@ export const ka = {
   },
 
   upload: {
+    coverHint: "ფართო, მინიმუმ 1600×900 — მაქსიმუმ 8MB",
     dropImage: "გადმოაგდე სურათი აქ",
     dropVideo: "გადმოაგდე ვიდეო აქ",
     dropFile: "გადმოაგდე ფაილი აქ",
@@ -737,6 +738,9 @@ export const ka = {
   },
 
   membership: {
+    coverLabel: "ქავერ ფოტო",
+    coverHint: "ფართო ფოტო, რომელიც ჩანს წრის ბარათზე და გვერდის თავში.",
+    coverRemove: "ფოტოს წაშლა",
     requiresApproval: "დადასტურება საჭიროა",
     requiresApprovalHint: "ახალი წევრები ჯერ განაცხადს გამოგზავნიან, შენ კი დაამტკიცებ.",
     requestToJoin: "განაცხადის გაგზავნა",

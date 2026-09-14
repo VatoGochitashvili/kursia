@@ -30,6 +30,7 @@ export interface UploadResult {
 export type UploadKind =
   | "avatar"
   | "thumbnail"
+  | "cover"
   | "coursePreview"
   | "video"
   | "pdf"
@@ -45,6 +46,11 @@ const CLIENT_LIMITS: Record<UploadKind, { maxBytes: number; accept: string; exte
     extensions: ["jpg", "jpeg", "png", "webp", "avif"],
   },
   thumbnail: {
+    maxBytes: 8 * 1024 * 1024,
+    accept: "image/jpeg,image/png,image/webp,image/avif",
+    extensions: ["jpg", "jpeg", "png", "webp", "avif"],
+  },
+  cover: {
     maxBytes: 8 * 1024 * 1024,
     accept: "image/jpeg,image/png,image/webp,image/avif",
     extensions: ["jpg", "jpeg", "png", "webp", "avif"],

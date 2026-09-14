@@ -428,6 +428,7 @@ export const en: Dictionary = {
   },
 
   upload: {
+    coverHint: "Wide, at least 1600×900 — up to 8MB",
     dropImage: "Drop an image here",
     dropVideo: "Drop a video here",
     dropFile: "Drop a file here",
@@ -529,6 +530,9 @@ export const en: Dictionary = {
   },
 
   membership: {
+    coverLabel: "Cover photo",
+    coverHint: "A wide photo, shown on your circle's card and at the top of its page.",
+    coverRemove: "Remove photo",
     requiresApproval: "Approve members",
     requiresApprovalHint: "New members apply first, and you decide.",
     requestToJoin: "Request to join",

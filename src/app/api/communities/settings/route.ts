@@ -16,7 +16,17 @@ const settingsSchema = z
     name: z.string().trim().max(80).nullable().optional(),
     tagline: z.string().trim().max(200).nullable().optional(),
     description: z.string().trim().max(4000).nullable().optional(),
-    coverUrl: z.union([z.string().trim().url().max(1000), z.literal("")]).nullable().optional(),
+    // An absolute URL, or a cover this platform stored. The relative form is
+    // held to the covers prefix, so the field cannot be pointed at a lesson
+    // video or anyone else's private file.
+    coverUrl: z
+      .union([
+        z.string().trim().url().max(1000),
+        z.string().trim().regex(/^\/api\/files\/covers\/[\w./-]+$/).max(300),
+        z.literal(""),
+      ])
+      .nullable()
+      .optional(),
     priceMinor: z.number().int().min(0).max(MAX_PRICE_MINOR).optional(),
     categoryId: z.string().trim().max(40).nullable().optional(),
     requiresApproval: z.boolean().optional(),

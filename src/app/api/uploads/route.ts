@@ -62,6 +62,9 @@ export const POST = handler(async (request) => {
     if (!access.canView) throw new ApiError(403, "FORBIDDEN", "კურსზე წვდომა არ გაქვთ");
   } else if (courseId) {
     await requireCourseOwner(courseId);
+  } else if (kind === "cover") {
+    // A cover belongs to a creator's circle, not to any course, so it is gated
+    // on being a creator. Students are refused by the role check below.
   } else if (kind !== "avatar") {
     throw badRequest("courseId სავალდებულოა ამ ტიპისთვის");
   }

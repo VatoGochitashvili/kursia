@@ -25,6 +25,7 @@ export interface CommunityView {
   enabled: boolean;
   includedCourseCount: number;
   category?: { slug: string; name: string } | null;
+  coverUrl?: string | null;
 }
 
 /**

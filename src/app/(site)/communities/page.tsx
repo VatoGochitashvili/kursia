@@ -147,10 +147,11 @@ export default async function CommunitiesPage({ searchParams }: Props) {
         </Card>
       ) : (
         <Stagger className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {communities.map((community) => (
+          {communities.map((community, index) => (
             <CommunityCard
               key={community.creatorId}
               community={community}
+              priority={index < 3}
               href={p(`/community/${community.slug}`)}
               t={t}
             />

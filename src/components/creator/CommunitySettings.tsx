@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
 import { useToast } from "@/components/ui/Toast";
+import { MediaUploader } from "@/components/ui/MediaUploader";
 import { formatMoney } from "@/lib/money";
 import { formatNumber } from "@/lib/format";
 import { fill } from "@/i18n/config";
@@ -60,6 +61,7 @@ export function CommunitySettings({
     memberCount: number;
     categoryId: string;
     requiresApproval: boolean;
+    coverUrl: string;
   };
   categories: { id: string; name: string }[];
   courses: CourseRow[];
@@ -81,6 +83,7 @@ export function CommunitySettings({
         : String(Math.round(initial.priceMinor / 100)),
     categoryId: initial.categoryId,
     requiresApproval: initial.requiresApproval,
+    coverUrl: initial.coverUrl,
   });
   const [included, setIncluded] = useState<Set<string>>(
     () =>
@@ -106,6 +109,7 @@ export function CommunitySettings({
         priceMinor,
         categoryId: form.categoryId || null,
         requiresApproval: form.requiresApproval,
+        coverUrl: form.coverUrl || null,
         includedCourseIds: [...included],
       });
       toast.show(t.membership.saved, "success");
@@ -186,6 +190,46 @@ export function CommunitySettings({
       </Card>
 
       <Card className="grid gap-4 p-5">
+        <Field label={t.membership.coverLabel} hint={t.membership.coverHint}>
+          <div className="grid gap-3">
+            {form.coverUrl && (
+              <div className="relative h-36 overflow-hidden rounded-xl border border-line sm:h-44">
+                {/* eslint-disable-next-line @next/next/no-img-element -- stored or user-configured host */}
+                <img src={form.coverUrl} alt="" className="h-full w-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, coverUrl: "" })}
+                  className="absolute right-2 top-2 rounded-lg bg-surface/95 px-2.5 py-1 text-[12px] font-semibold text-ink shadow-sm hover:bg-surface"
+                >
+                  {t.membership.coverRemove}
+                </button>
+              </div>
+            )}
+            <MediaUploader
+              kind="cover"
+              preview="image"
+              // The photo above is the preview; the uploader stays a drop zone.
+              value={null}
+              onUploaded={(result) =>
+                setForm((f) => ({ ...f, coverUrl: result.url ?? `/api/files/${result.key}` }))
+              }
+              labels={{
+                drop: t.upload.dropImage,
+                browse: t.upload.browse,
+                uploading: t.upload.uploading,
+                replace: t.upload.replace,
+                remove: t.upload.remove,
+                cancel: t.upload.cancel,
+                tooLarge: t.upload.tooLarge,
+                wrongType: t.upload.wrongType,
+                hint: t.upload.coverHint,
+              }}
+              icon="camera"
+              compact
+            />
+          </div>
+        </Field>
+
         <Field label={t.membership.nameLabel}>
           <Input
             value={form.name}

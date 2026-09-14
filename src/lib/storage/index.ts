@@ -48,6 +48,13 @@ export const UPLOAD_KINDS = {
     extensions: ["jpg", "jpeg", "png", "webp", "avif"],
     mimeTypes: ["image/jpeg", "image/png", "image/webp", "image/avif"],
   },
+  /** A circle's cover photo. Public, like a thumbnail; owned by a creator, not a course. */
+  cover: {
+    prefix: "covers",
+    maxBytes: 8 * MB,
+    extensions: ["jpg", "jpeg", "png", "webp", "avif"],
+    mimeTypes: ["image/jpeg", "image/png", "image/webp", "image/avif"],
+  },
   /**
    * Course trailer shown on the public course page.
    *

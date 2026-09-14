@@ -28,6 +28,7 @@ import { hashPassword } from "../src/lib/crypto";
 import { slugify } from "../src/lib/slug";
 import { splitSale } from "../src/lib/money";
 import { COURSES, CREATORS, REVIEW_TEXTS, STUDENTS } from "./seed-data";
+import { CIRCLE_POSTS, CIRCLE_SPECS, LEGACY_CIRCLE_NAMES } from "./community-specs";
 
 const db = new PrismaClient();
 
@@ -637,45 +638,11 @@ async function addDemo() {
   // Idempotent like everything else here: a community that is already open is
   // left exactly as its owner configured it, so a redeploy never overwrites a
   // price somebody set by hand.
-  const DEMO_COMMUNITIES = [
-    {
-      index: 0,
-      categorySlug: "marketingi",
-      name: "ციფრული მარკეტინგის კლუბი",
-      tagline: "ყოველკვირეული ცოცხალი სესიები, უკუკავშირი და ერთად მუშაობა",
-      description:
-        "დახურული სივრცე მათთვის, ვინც რეალურ კამპანიებზე მუშაობს. ყოველ კვირას ვხვდებით ცოცხლად და ვარჩევთ თქვენს ფუნელებს.",
-      priceMinor: 2500,
-    },
-    {
-      index: 1,
-      categorySlug: "janmrteloba",
-      name: "ჯანსაღი რიტმი",
-      tagline: "ვარჯიში, კვება და ანგარიშვალდებულება — ერთად",
-      description:
-        "ყოველდღიური მხარდაჭერა, კვირის გეგმები და ცოცხალი ვარჯიშები.",
-      priceMinor: 0,
-    },
-    {
-      index: 2,
-      categorySlug: "treidingi",
-      name: "ტრეიდერების ოთახი",
-      tagline: "დილის ანალიზი, გარიგებების განხილვა და რისკის მართვა",
-      description:
-        "ყოველ დილით ვიხილავთ ბაზარს, ვაზიარებთ სეტაპებს და კვირის ბოლოს ვაანალიზებთ რა იმუშავა.",
-      priceMinor: 4900,
-    },
-    {
-      index: 3,
-      categorySlug: "kontenti",
-      name: "კრეატორების სახელოსნო",
-      tagline: "სცენარი, მონტაჟი და ზრდა — ერთ სივრცეში",
-      description: "ვამოწმებთ ერთმანეთის ვიდეოებს და ვაწყობთ კონტენტ-გეგმას.",
-      priceMinor: 1900,
-    },
-  ];
+  const DEMO_COMMUNITIES = CIRCLE_SPECS;
 
   let communitiesOpened = 0;
+  let coversAdded = 0;
+  let postsAdded = 0;
   let plansGranted = 0;
   let membershipsAdded = 0;
 
@@ -714,6 +681,7 @@ async function addDemo() {
           communityDescription: spec.description,
           communityPriceMinor: spec.priceMinor,
           communityCurrency: CURRENCY,
+          communityCoverUrl: spec.coverUrl,
           // The directory only advertises approved creators, so a demo community
           // that is never approved would be invisible — which is the one thing
           // this block exists to prevent.
@@ -734,6 +702,18 @@ async function addDemo() {
         distinct: ["userId"],
         take: 6,
       });
+      if (candidates.length < 4) {
+        const extra = await db.user.findMany({
+          where: {
+            role: "STUDENT",
+            email: { endsWith: DEMO_DOMAIN },
+            id: { notIn: candidates.map((c) => c.userId) },
+          },
+          select: { id: true },
+          take: 5 - candidates.length,
+        });
+        candidates.push(...extra.map((u) => ({ userId: u.id })));
+      }
 
       for (const candidate of candidates) {
         const scopeKey = `community:${cid}`;
@@ -800,6 +780,80 @@ async function addDemo() {
       },
     });
 
+    // ── Seed-owned content ───────────────────────────────────────────────
+    // Fill what is empty; re-point only what an earlier seed wrote and nobody
+    // has since changed. Neither ever replaces a choice a person made.
+    const current = await db.creatorProfile.findUnique({
+      where: { id: cid },
+      select: { communityName: true, communityCoverUrl: true },
+    });
+    const legacyName = LEGACY_CIRCLE_NAMES[spec.index];
+    const stillSeedOwned =
+      Boolean(legacyName) &&
+      current?.communityName === legacyName &&
+      legacyName !== spec.name;
+
+    if (stillSeedOwned) {
+      await db.creatorProfile.update({
+        where: { id: cid },
+        data: {
+          communityName: spec.name,
+          communityTagline: spec.tagline,
+          communityDescription: spec.description,
+          communityCategoryId: categoryBySlug.get(spec.categorySlug) ?? null,
+          communityPriceMinor: spec.priceMinor,
+          communityCoverUrl: current?.communityCoverUrl ?? spec.coverUrl,
+        },
+      });
+    } else if (!current?.communityCoverUrl) {
+      await db.creatorProfile.update({
+        where: { id: cid },
+        data: { communityCoverUrl: spec.coverUrl },
+      });
+      coversAdded += 1;
+    }
+
+    // The card's member count, from the subscriptions that are actually live.
+    const liveMembers = await db.subscription.count({
+      where: {
+        creatorId: cid,
+        kind: "COMMUNITY",
+        status: { in: ["ACTIVE", "CANCELLED"] },
+        currentPeriodEnd: { gt: new Date() },
+      },
+    });
+    await db.creatorProfile.update({
+      where: { id: cid },
+      data: { communityMemberCount: liveMembers },
+    });
+
+    // An empty feed makes a live circle look abandoned. Only ever written into
+    // a circle with no posts at all, so it cannot pile up across deploys.
+    if ((await db.post.count({ where: { creatorId: cid } })) === 0) {
+      const memberRows = await db.subscription.findMany({
+        where: { creatorId: cid, kind: "COMMUNITY", status: { in: ["ACTIVE", "CANCELLED"] } },
+        select: { userId: true },
+        take: 6,
+      });
+      const authors = [owner.userId, ...memberRows.map((m) => m.userId)];
+      for (const [i, post] of CIRCLE_POSTS.entries()) {
+        const authorId = authors[i % authors.length]!;
+        await db.post.create({
+          data: {
+            creatorId: cid,
+            authorId,
+            title: post.title,
+            body: post.body,
+            // The owner's welcome sits at the top of the feed.
+            isPinned: i === 0 && authorId === owner.userId,
+            likeCount: randInt(1, 9),
+            createdAt: daysAgo(randInt(1, 14)),
+          },
+        });
+        postsAdded += 1;
+      }
+    }
+
     const plan = await db.subscription.findFirst({
       where: { scopeKey: `plan:${cid}` },
       select: { id: true, currentPeriodEnd: true },
@@ -836,7 +890,7 @@ async function addDemo() {
   }
 
   console.log(
-    `  ✓ ${communitiesOpened} circles opened, ${membershipsAdded} memberships, ${plansGranted} plans`,
+    `  ✓ ${communitiesOpened} circles opened, ${membershipsAdded} memberships, ${plansGranted} plans, ${coversAdded} covers, ${postsAdded} posts`,
   );
 }
 

@@ -36,6 +36,7 @@ export default async function CreatorCommunityPage() {
       communityMemberCount: true,
       communityCategoryId: true,
       communityRequiresApproval: true,
+      communityCoverUrl: true,
     },
   });
   if (!creator) redirect(p("/dashboard/profile"));
@@ -73,6 +74,7 @@ export default async function CreatorCommunityPage() {
           memberCount: creator.communityMemberCount,
           categoryId: creator.communityCategoryId ?? "",
           requiresApproval: creator.communityRequiresApproval,
+          coverUrl: creator.communityCoverUrl ?? "",
         }}
         categories={categories.map((c) => ({
           id: c.id,
