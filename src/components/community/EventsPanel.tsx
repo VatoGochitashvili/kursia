@@ -31,6 +31,7 @@ interface Membership {
   isMember: boolean;
   isOwner: boolean;
   isAdmin: boolean;
+  canModerate?: boolean;
 }
 
 /** The doors open ten minutes early, as they do for a real room. */
@@ -118,7 +119,7 @@ export function EventsPanel({
     void load(tab);
   }, [load, tab]);
 
-  const canSchedule = Boolean(membership?.isOwner || membership?.isAdmin);
+  const canSchedule = Boolean(membership?.canModerate);
 
   async function toggleAttend(event: EventRow) {
     setBusyId(event.id);

@@ -92,7 +92,7 @@ export const POST = handler(async (request) => {
 
   const membership = await getMembership(user.id, body.creatorId);
   // Members attend; only the creator schedules.
-  if (!membership.isOwner && !membership.isAdmin) {
+  if (!membership.canModerate) {
     throw new ApiError(403, "FORBIDDEN", "შეხვედრის დანიშვნა მხოლოდ ავტორს შეუძლია");
   }
 

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Avatar } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
 import { formatMoney } from "@/lib/money";
 import { formatNumber } from "@/lib/format";
@@ -11,13 +10,12 @@ import type { Dictionary } from "@/i18n";
 /**
  * One circle in the directory.
  *
- * Photo first, because it answers "what kind of place is this" faster than any
- * sentence. The owner's face sits on the edge of the photo, because a circle is
- * joined for a person as much as a topic. The member count leads over the
- * price: on a discovery page the question is "is anyone here?".
+ * The cover carries the card: it answers "what kind of place is this" before
+ * a word is read. No owner photo on top of it — two images competing on one
+ * small card read as clutter, and the circle is the thing being chosen here.
  *
- * Motion is two things only — the card lifts, and the photo drifts closer — and
- * both stop under prefers-reduced-motion via the global rule.
+ * Motion is two things only, a lift and a slow zoom of the cover on hover,
+ * and both stop under prefers-reduced-motion.
  */
 export function CommunityCard({
   community,
@@ -29,11 +27,7 @@ export function CommunityCard({
   community: Community;
   href: string;
   className?: string;
-  /**
-   * Cards in the first visible row. Their photos are the largest thing on the
-   * screen when the page opens, so they load straight away instead of waiting
-   * for the browser to decide they are near the viewport.
-   */
+  /** First visible row: its covers load immediately rather than lazily. */
   priority?: boolean;
   t: Dictionary;
 }) {
@@ -49,7 +43,7 @@ export function CommunityCard({
         className,
       )}
     >
-      <div className="relative h-40 shrink-0 overflow-hidden bg-surface-sunken">
+      <div className="relative aspect-[16/9] shrink-0 overflow-hidden bg-surface-sunken">
         {community.coverUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- covers come
           // from user-configured hosts as well as our own storage.
@@ -65,6 +59,11 @@ export function CommunityCard({
           <div className="h-full w-full bg-gradient-to-br from-brand-100 via-brand-50 to-surface-sunken" />
         )}
 
+        {community.category && (
+          <span className="absolute left-3 top-3 max-w-[60%] truncate rounded-full bg-surface/95 px-2.5 py-1 text-[11px] font-semibold text-ink shadow-sm backdrop-blur">
+            {community.category.name}
+          </span>
+        )}
         <span className="absolute right-3 top-3 inline-flex items-baseline gap-0.5 rounded-full bg-surface/95 px-2.5 py-1 text-[12px] font-bold text-ink shadow-sm backdrop-blur">
           {free ? t.membership.free : formatMoney(community.priceMinor, community.currency)}
           {!free && (
@@ -73,22 +72,8 @@ export function CommunityCard({
         </span>
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col px-4 pb-4">
-        <div className="-mt-6 flex items-end justify-between gap-2">
-          <Avatar
-            src={community.avatarUrl}
-            name={community.creatorName}
-            size={48}
-            className="ring-4 ring-surface"
-          />
-          {community.category && (
-            <span className="mb-1 truncate rounded-full bg-surface-sunken px-2.5 py-1 text-[11px] font-semibold text-ink-muted">
-              {community.category.name}
-            </span>
-          )}
-        </div>
-
-        <h3 className="mt-2.5 line-clamp-1 text-[16px] font-bold leading-snug text-ink transition-colors group-hover:text-brand-700">
+      <div className="flex min-w-0 flex-1 flex-col p-4">
+        <h3 className="line-clamp-1 text-[16px] font-bold leading-snug text-ink transition-colors group-hover:text-brand-700">
           {community.name}
         </h3>
         <p className="mt-0.5 flex items-center gap-1 text-[12px] text-ink-subtle">

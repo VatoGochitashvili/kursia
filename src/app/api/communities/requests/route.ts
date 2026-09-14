@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/auth/rbac";
 import { notify } from "@/lib/notifications";
 import { communityLabel } from "@/lib/membership";
 import { cuid } from "@/lib/validation";
+import { getMembership } from "@/lib/community";
 
 export const runtime = "nodejs";
 
@@ -59,13 +60,21 @@ export const POST = handler(async (request) => {
     select: { id: true, status: true },
   });
 
-  await notify({
-    userId: creator.userId,
-    type: "COMMUNITY_JOIN_REQUEST",
-    title: "ახალი განაცხადი წრეში",
-    body: body.message?.slice(0, 200) || communityLabel(creator),
-    linkUrl: "/dashboard/creator/community",
-  }).catch(() => undefined);
+  // Everyone who can act on it hears about it — the owner and each admin —
+  // so a request does not sit waiting for one person who is away.
+  const reviewers = await db.communityRole.findMany({
+    where: { creatorId: creator.id },
+    select: { userId: true },
+  });
+  for (const reviewerId of new Set([creator.userId, ...reviewers.map((r) => r.userId)])) {
+    await notify({
+      userId: reviewerId,
+      type: "COMMUNITY_JOIN_REQUEST",
+      title: "ახალი განაცხადი წრეში",
+      body: body.message?.slice(0, 200) || communityLabel(creator),
+      linkUrl: `/community/${creator.slug}/members`,
+    }).catch(() => undefined);
+  }
 
   return jsonOk({ request: saved });
 });
@@ -80,7 +89,8 @@ export const GET = handler(async (request) => {
     select: { id: true, userId: true },
   });
   if (!creator) throw notFoundError("წრე ვერ მოიძებნა");
-  if (creator.userId !== user.id && user.role !== "ADMIN") {
+  // The owner, a platform admin, or an admin the owner appointed.
+  if (!(await getMembership(user.id, creator.id)).canModerate) {
     throw new ApiError(403, "FORBIDDEN", "წვდომა შეზღუდულია");
   }
 

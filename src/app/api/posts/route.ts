@@ -44,7 +44,7 @@ export const GET = handler(async (request) => {
     const replies = await db.post.findMany({
       where: {
         parentId,
-        ...(membership.isOwner || membership.isAdmin
+        ...(membership.canModerate
           ? { status: { not: "REMOVED" } }
           : {
               OR: [

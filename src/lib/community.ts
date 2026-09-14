@@ -25,6 +25,15 @@ export interface Membership {
   isSubscriber: boolean;
   /** End of the current period, when they are here on a subscription. */
   memberUntil: Date | null;
+  /** An admin the owner appointed for this circle. */
+  isCircleAdmin: boolean;
+  /**
+   * May approve join requests, pin and hide posts, and schedule events: the
+   * owner, a platform admin, or an appointed circle admin. Every route asks
+   * this one field instead of re-deriving the list, so the three can never
+   * drift apart.
+   */
+  canModerate: boolean;
 }
 
 export async function getMembership(
@@ -34,6 +43,7 @@ export async function getMembership(
   const denied: Membership = {
     isMember: false, isOwner: false, isAdmin: false,
     isSubscriber: false, memberUntil: null,
+    isCircleAdmin: false, canModerate: false,
   };
   if (!userId) return denied;
 
@@ -50,7 +60,10 @@ export async function getMembership(
   const isAdmin = user.role === "ADMIN";
   const isOwner = user.creatorProfile?.id === creatorId;
   if (isOwner || isAdmin) {
-    return { isMember: true, isOwner, isAdmin, isSubscriber: false, memberUntil: null };
+    return {
+      isMember: true, isOwner, isAdmin, isSubscriber: false, memberUntil: null,
+      isCircleAdmin: false, canModerate: true,
+    };
   }
 
   // A live enrolment on anything this creator sells. `accessExpiresAt` is
@@ -59,7 +72,7 @@ export async function getMembership(
   // notice would leave them posting for up to ten minutes after they stopped
   // paying.
   const now = new Date();
-  const [subscription, enrolment] = await Promise.all([
+  const [subscription, enrolment, role] = await Promise.all([
     db.subscription.findUnique({
       where: { userId_scopeKey: { userId, scopeKey: communityScope(creatorId) } },
       select: { status: true, currentPeriodEnd: true },
@@ -72,7 +85,12 @@ export async function getMembership(
         course: { creatorId },
       },
     }),
+    db.communityRole.findUnique({
+      where: { creatorId_userId: { creatorId, userId } },
+      select: { role: true },
+    }),
   ]);
+  const isCircleAdmin = role?.role === "ADMIN";
 
   // A CANCELLED subscription still grants access until its period ends —
   // cancelling means "do not renew", not "cut me off tonight".
@@ -83,11 +101,14 @@ export async function getMembership(
   );
 
   return {
-    isMember: isSubscriber || enrolment > 0,
+    // An appointed admin is staff, not a customer: in whether or not they pay.
+    isMember: isSubscriber || enrolment > 0 || isCircleAdmin,
     isOwner: false,
     isAdmin: false,
     isSubscriber,
     memberUntil: isSubscriber ? subscription!.currentPeriodEnd : null,
+    isCircleAdmin,
+    canModerate: isCircleAdmin,
   };
 }
 
@@ -128,7 +149,7 @@ export async function loadFeed(input: {
   take?: number;
 }) {
   const take = Math.min(input.take ?? 20, 50);
-  const canSeeHidden = input.membership.isOwner || input.membership.isAdmin;
+  const canSeeHidden = input.membership.canModerate;
 
   const posts = await db.post.findMany({
     where: {

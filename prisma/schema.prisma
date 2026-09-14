@@ -65,6 +65,7 @@ model User {
   auditLogs             AuditLog[]
   courseViews           CourseView[]
   communityJoinRequests CommunityJoinRequest[]
+  communityRoles        CommunityRole[]
 
   @@index([role, status])
   @@index([createdAt])
@@ -132,7 +133,9 @@ model CreatorProfile {
   communityMemberCount      Int     @default(0)
   /// When true, joining is a request the owner reviews rather than something
   /// money alone completes.
-  communityRequiresApproval Boolean @default(false)
+  /// On by default: a circle is a closed room, and the people its owner trusts
+  /// decide who comes in.
+  communityRequiresApproval Boolean @default(true)
 
   /// The admin's decision about this circle, separate from the creator's own
   /// switch above: "DRAFT" | "PENDING" | "APPROVED" | "SUSPENDED".
@@ -169,6 +172,7 @@ model CreatorProfile {
   events                Event[]
   pointEvents           PointEvent[]
   communityJoinRequests CommunityJoinRequest[]
+  communityRoles        CommunityRole[]
 
   @@index([isFeatured, featuredRank])
   @@index([isVerified])
@@ -1367,5 +1371,28 @@ model CommunityJoinRequest {
   /// One standing request per person per circle; re-applying reuses the row.
   @@unique([creatorId, userId])
   @@index([creatorId, status, createdAt])
+  @@index([userId])
+}
+
+/// Somebody a circle's owner has trusted with extra powers.
+///
+/// An ADMIN approves join requests, moderates posts and schedules events.
+/// Only the owner (or a platform admin) can appoint one — an admin cannot
+/// appoint more admins, so one compromised account cannot hand the room to
+/// others. An assigned admin counts as a member whether or not they pay:
+/// they are staff, not customers.
+model CommunityRole {
+  id           String   @id @default(cuid())
+  creatorId    String
+  userId       String
+  /// "ADMIN"
+  role         String   @default("ADMIN")
+  assignedById String?
+  createdAt    DateTime @default(now())
+
+  creator CreatorProfile @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([creatorId, userId])
   @@index([userId])
 }

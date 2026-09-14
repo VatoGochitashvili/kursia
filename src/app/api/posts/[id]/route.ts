@@ -50,7 +50,7 @@ export const PATCH = handler(async (request, context: Ctx) => {
   const input = await readJson(request, patchSchema);
 
   const isAuthor = post.authorId === user.id;
-  const canModerate = membership.isOwner || membership.isAdmin;
+  const canModerate = membership.canModerate;
 
   if ((input.body !== undefined || input.title !== undefined) && !isAuthor) {
     throw new ApiError(403, "FORBIDDEN", "მხოლოდ ავტორს შეუძლია ტექსტის შეცვლა");
@@ -80,7 +80,7 @@ export const DELETE = handler(async (_request, context: Ctx) => {
   await beginMutation("write", user.id);
 
   const { post, membership } = await load(id, user.id);
-  const canDelete = post.authorId === user.id || membership.isOwner || membership.isAdmin;
+  const canDelete = post.authorId === user.id || membership.canModerate;
   if (!canDelete) throw new ApiError(403, "FORBIDDEN", "წაშლის უფლება არ გაქვთ");
 
   // Marked REMOVED rather than deleted. A hard delete would take its replies

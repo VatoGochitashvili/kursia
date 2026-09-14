@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { getMembership, type Membership } from "@/lib/community";
@@ -14,7 +15,7 @@ import type { Locale } from "@/lib/enums";
  * Three copies would eventually answer differently, and the one that drifted
  * would be the one showing a paywall to somebody who had paid.
  */
-export async function loadCommunityPage(
+async function load(
   slug: string,
   viewerId: string | null,
   locale: Locale = "ka",
@@ -31,6 +32,8 @@ export async function loadCommunityPage(
   cancelled: boolean;
   /** Whether this circle reviews applicants, and where this viewer stands. */
   gate: JoinGate;
+  /** The people who run the room, named in the sidebar. */
+  admins: { userId: string; name: string }[];
 }> {
   const creator = await db.creatorProfile.findUnique({
     where: { slug },
@@ -73,8 +76,22 @@ export async function loadCommunityPage(
     ? { required: false, status: "APPROVED" as const, cleared: true, reviewNote: null }
     : await getJoinGate(creator.id, viewerId, creator.communityRequiresApproval);
 
+  const adminRows = await db.communityRole.findMany({
+    where: { creatorId: creator.id, role: "ADMIN" },
+    orderBy: { createdAt: "asc" },
+    select: {
+      userId: true,
+      user: { select: { profile: { select: { fullName: true } } } },
+    },
+  });
+  const admins = adminRows.map((row) => ({
+    userId: row.userId,
+    name: row.user.profile?.fullName ?? "—",
+  }));
+
   return {
     gate,
+    admins,
     creator: {
       id: creator.id,
       slug: creator.slug,
@@ -106,3 +123,10 @@ export async function loadCommunityPage(
     cancelled,
   };
 }
+
+/**
+ * Cached for the length of one request. The circle's layout and the page
+ * inside it both need this, and without the cache every circle page would ask
+ * the database the same questions twice.
+ */
+export const loadCommunityPage = cache(load);

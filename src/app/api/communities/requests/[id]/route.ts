@@ -4,6 +4,7 @@ import { ApiError, beginMutation, handler, jsonOk, notFoundError, readJson } fro
 import { requireUser } from "@/lib/auth/rbac";
 import { notify } from "@/lib/notifications";
 import { communityLabel } from "@/lib/membership";
+import { getMembership } from "@/lib/community";
 
 export const runtime = "nodejs";
 
@@ -38,7 +39,8 @@ export const PATCH = handler(async (request, context: { params: Promise<{ id: st
   });
   if (!joinRequest) throw notFoundError("განაცხადი ვერ მოიძებნა");
 
-  if (joinRequest.creator.userId !== user.id && user.role !== "ADMIN") {
+  // The owner, a platform admin, or an admin the owner appointed.
+  if (!(await getMembership(user.id, joinRequest.creator.id)).canModerate) {
     throw new ApiError(403, "FORBIDDEN", "წვდომა შეზღუდულია");
   }
 

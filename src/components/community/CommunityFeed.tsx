@@ -35,6 +35,7 @@ interface Membership {
   isMember: boolean;
   isOwner: boolean;
   isAdmin: boolean;
+  canModerate?: boolean;
 }
 
 /**
@@ -241,7 +242,7 @@ function PostCard({
   const [replying, setReplying] = useState(false);
 
   const isAuthor = viewerId === post.author.id;
-  const canModerate = Boolean(membership?.isOwner || membership?.isAdmin);
+  const canModerate = Boolean(membership?.canModerate);
   const name =
     post.author.creatorProfile?.displayName ?? post.author.profile?.fullName ?? "—";
 

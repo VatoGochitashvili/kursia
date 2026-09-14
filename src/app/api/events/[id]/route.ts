@@ -81,7 +81,7 @@ export const PATCH = handler(async (request, context: Ctx) => {
   await beginMutation("write", user.id);
   const { event, membership } = await load(id, user.id);
 
-  if (!membership.isOwner && !membership.isAdmin) {
+  if (!membership.canModerate) {
     throw new ApiError(403, "FORBIDDEN", "რედაქტირების უფლება არ გაქვთ");
   }
 

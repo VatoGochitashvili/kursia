@@ -2,18 +2,11 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getI18n, localePath, fill } from "@/i18n";
 import { getSettings } from "@/lib/settings";
-import {
-  getCategoryTree,
-  getPlatformStats,
-  getPopularCreators,
-} from "@/lib/courses";
-import { listCommunities } from "@/lib/communities";
+import { listCommunities, listCommunityCategories } from "@/lib/communities";
 import { buildMetadata, itemListSchema } from "@/lib/seo";
 import { bpsToPercent } from "@/lib/money";
 import { CourseCard } from "@/components/course/CourseCard";
 import { CommunityCard } from "@/components/community/CommunityCard";
-import { CreatorCard } from "@/components/course/CreatorCard";
-import { SearchBar } from "@/components/layout/SearchBar";
 import { ButtonLink } from "@/components/ui/Button";
 import {
   Card,
@@ -21,12 +14,9 @@ import {
   SectionHeading,
   Stars,
 } from "@/components/ui/primitives";
-import { Icon, categoryIcon, type IconName } from "@/components/ui/Icon";
+import { Icon, type IconName } from "@/components/ui/Icon";
 import { Reveal } from "@/components/ui/Reveal";
 import { Stagger } from "@/components/ui/Stagger";
-import { Marquee } from "@/components/ui/Marquee";
-import { Spotlight } from "@/components/ui/Spotlight";
-import { CountUp } from "@/components/ui/CountUp";
 
 /**
  * The homepage is fully server-rendered from the database and revalidated
@@ -60,195 +50,80 @@ export default async function HomePage() {
     getSettings(),
   ]);
 
-  const [stats, categories, creators, communities] = await Promise.all([
-    getPlatformStats(),
-    getCategoryTree(),
-    getPopularCreators(6, settings.featuredCreatorIds),
-    listCommunities({ locale, take: 6 }),
+  const [communities, communityCategories] = await Promise.all([
+    listCommunities({ locale, take: 9 }),
+    listCommunityCategories(locale),
   ]);
 
   const p = (path: string) => localePath(path, locale);
-  const catName = (c: { nameKa: string; nameEn: string }) =>
-    locale === "en" ? c.nameEn : c.nameKa;
   const creatorShare = String(100 - bpsToPercent(settings.commissionBps));
-  // Zeroes are not a pitch: the hero's stats are hidden until there is
-  // something on the platform to count.
-  const marketplaceEmpty = communities.length === 0;
-
-  // The category tree is ordered editorially, wellness first. That is the
-  // right order for the hero chips, which carry no counts. The tile grid
-  // below shows a course count, and a tile reading "0 courses" is a dead end
-  // — so tiles lead with the categories that actually have something in them,
-  // keeping the editorial order within each group.
-  const tileCategories = [
-    ...categories.filter((c) => c.courseCount > 0),
-    ...categories.filter((c) => c.courseCount === 0),
-  ].slice(0, 12);
 
   return (
     <>
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden border-b border-line">
-        <HeroBackdrop />
-
-        <div className="container-page py-12 sm:py-16 lg:py-20">
-          <div className="mx-auto max-w-4xl text-center">
-            <p className="animate-fade-up mx-auto inline-flex items-center gap-2 rounded-full border border-line bg-surface/70 py-1.5 pe-4 ps-2 text-[13px] font-semibold text-ink-muted shadow-xs backdrop-blur">
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-accent-50 text-accent-600">
-                <Icon name="zap" size={13} />
-              </span>
-              {t.home.heroEyebrow}
-            </p>
-
-            {/*
-              The line-height is bound to each font-size with the `/` syntax
-              rather than a separate `leading-` class: Tailwind's text-*
-              utilities set line-height themselves (1 for arbitrary sizes and
-              for text-6xl), so a standalone leading- class is silently
-              overridden at every breakpoint.
-
-              1.16 at the largest step, not the 1.08 this used to carry.
-              Georgian ascenders and descenders are far deeper than Latin, so
-              a tighter value makes consecutive lines physically overlap.
-            */}
-            <h1
-              className="animate-fade-up mt-6 text-balance text-[2.5rem]/[1.2] sm:text-[3.5rem]/[1.16] lg:text-[4.5rem]/[1.14]"
-              style={{ animationDelay: "70ms" }}
-            >
-              <span>{t.home.heroTitleLine1} </span>
-              <span>{t.home.heroTitleLine2} </span>
-              {/* pb-[0.08em] keeps background-clip from shaving the
-                  descenders off ვ and უ. */}
-              {/* The third line used to carry an animated gradient. A
-                  headline that changes colour while you read it is the
-                  loudest thing on a page that is trying to be quiet. */}
-              <span className="text-brand-600">{t.home.heroTitleLine3}</span>
+      {/* ── Discovery ──────────────────────────────────────────────────── */}
+      {/* The landing is the directory. No headline to read past and no search
+          box to fill in first: the categories, then the circles themselves,
+          which is what anyone arriving here came to look at. */}
+      <section className="container-page pb-12 pt-8 sm:pt-10">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-[1.75rem]/[1.25] font-bold tracking-tight sm:text-[2.1rem]/[1.2]">
+              {t.communities.title}
             </h1>
-
-            <p
-              className="animate-fade-up mx-auto mt-6 max-w-2xl text-pretty text-base leading-relaxed text-ink-muted sm:text-[17px]"
-              style={{ animationDelay: "140ms" }}
-            >
-              {t.home.heroSubtitle}
-            </p>
-
-            <div
-              className="animate-fade-up mx-auto mt-8 max-w-xl"
-              style={{ animationDelay: "210ms" }}
-            >
-              <SearchBar
-                placeholder={t.home.heroSearchPlaceholder}
-                action={p("/communities")}
-                size="lg"
-                submitLabel={t.home.heroSearchCta}
-              />
-            </div>
-
-            <div
-              className="animate-fade-up mt-5 flex flex-wrap justify-center gap-3"
-              style={{ animationDelay: "280ms" }}
-            >
-              <ButtonLink href={p("/communities")} size="lg">
-                {t.communities.browse}
-                <Icon name="arrowRight" size={17} />
-              </ButtonLink>
-              <ButtonLink
-                href={p("/become-instructor")}
-                variant="outline"
-                size="lg"
-              >
-                {t.home.heroSecondaryCta}
-              </ButtonLink>
-            </div>
-
-            <p
-              className="animate-fade-up mt-4 text-[13px] text-ink-subtle"
-              style={{ animationDelay: "330ms" }}
-            >
-              {t.home.heroTrust}
+            <p className="mt-1.5 text-[14px] text-ink-muted sm:text-[15px]">
+              {t.communities.subtitle}
             </p>
           </div>
-
-          {/* Category row. One line, no motion: this is a way into the
-              directory, not a banner. */}
-          {categories.length > 0 && (
-            <div
-              className="animate-fade-up mt-10 flex flex-wrap justify-center gap-2"
-              style={{ animationDelay: "390ms" }}
-            >
-              {categories.slice(0, 8).map((c) => (
-                <Link
-                  key={c.slug}
-                  href={p(`/communities?category=${c.slug}`)}
-                  className="inline-flex h-9 items-center rounded-full border border-line px-4 text-[13px] font-medium text-ink-muted transition-colors hover:border-brand-300 hover:text-ink"
-                >
-                  {catName(c)}
-                </Link>
-              ))}
-            </div>
-          )}
-
-          {/* Stats sit last: they are reassurance, not the pitch, and an
-              empty marketplace should not lead with four zeroes. */}
-          {!marketplaceEmpty && (
-            <dl
-              className="animate-fade-up mx-auto mt-10 grid max-w-3xl grid-cols-2 gap-x-6 gap-y-6 border-t border-line/70 pt-8 sm:grid-cols-4"
-              style={{ animationDelay: "450ms" }}
-            >
-              <HeroStat
-                value={<CountUp value={stats.courses} locale={locale} />}
-                label={t.home.statCourses}
-              />
-              <HeroStat
-                value={<CountUp value={stats.students} locale={locale} />}
-                label={t.home.statStudents}
-              />
-              <HeroStat
-                value={<CountUp value={stats.creators} locale={locale} />}
-                label={t.home.statCreators}
-              />
-              <HeroStat
-                value={
-                  stats.averageRating > 0 ? stats.averageRating.toFixed(1) : "—"
-                }
-                label={t.home.statRating}
-                extra={
-                  stats.averageRating > 0 ? (
-                    <Stars rating={stats.averageRating} size={11} />
-                  ) : null
-                }
-              />
-            </dl>
-          )}
+          <SeeAllLink href={p("/communities")} label={t.common.seeAll} />
         </div>
-      </section>
 
-      {/* ── Communities ──────────────────────────────────────────────────── */}
-      {/* The lead shelf. A membership is what this platform sells; a course is
-          something you find once you are inside one, which is why the course
-          shelf now sits below this rather than above it. */}
-      {communities.length > 0 && (
-        <Section>
-          <SectionHeading
-            title={t.communities.title}
-            subtitle={t.communities.subtitle}
-            action={
-              <SeeAllLink href={p("/communities")} label={t.common.seeAll} />
-            }
-          />
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {communityCategories.length > 0 && (
+          <nav
+            aria-label={t.nav.categories}
+            className="mt-5 flex flex-wrap gap-2"
+          >
+            <Link
+              href={p("/communities")}
+              className="inline-flex h-9 items-center rounded-full bg-ink px-4 text-[13px] font-semibold text-white"
+            >
+              {t.communities.all}
+            </Link>
+            {communityCategories.map((c) => (
+              <Link
+                key={c.slug}
+                href={p(`/communities?category=${c.slug}`)}
+                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line px-3.5 text-[13px] font-semibold text-ink-muted transition-colors hover:border-brand-300 hover:text-ink"
+              >
+                {c.name}
+                <span className="text-[11px] tabular-nums opacity-60">
+                  {c.count}
+                </span>
+              </Link>
+            ))}
+          </nav>
+        )}
+
+        {communities.length > 0 ? (
+          <Stagger className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {communities.map((community, index) => (
               <CommunityCard
                 key={community.creatorId}
                 community={community}
-                priority={index < 3}
                 href={p(`/community/${community.slug}`)}
+                priority={index < 3}
                 t={t}
               />
             ))}
-          </div>
-        </Section>
-      )}
+          </Stagger>
+        ) : (
+          <Card className="mt-6 p-10 text-center">
+            <p className="text-[15px] font-semibold">{t.communities.noneYet}</p>
+            <p className="mx-auto mt-1.5 max-w-sm text-[14px] text-ink-muted">
+              {t.communities.noneYetBody}
+            </p>
+          </Card>
+        )}
+      </section>
 
       {/* ── Who this is for ──────────────────────────────────────────────── */}
       {/* The positioning statement. Everything else on the page is a
@@ -303,59 +178,6 @@ export default async function HomePage() {
         href={p("/register?type=creator")}
         secondaryHref={p("/become-instructor")}
       />
-
-      {/* ── Categories ───────────────────────────────────────────────────── */}
-      <Section>
-        <SectionHeading
-          eyebrow={t.nav.categories}
-          title={t.home.categoriesTitle}
-          subtitle={t.home.categoriesSubtitle}
-          action={
-            <SeeAllLink href={p("/categories")} label={t.common.seeAll} />
-          }
-        />
-        <Stagger
-          as="ul"
-          className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6"
-          step={45}
-        >
-          {tileCategories.map((c) => (
-            <li key={c.slug}>
-              <CategoryTile
-                href={p(`/communities?category=${c.slug}`)}
-                name={catName(c)}
-                icon={categoryIcon(c.icon)}
-                color={c.colorHex}
-                count={c.courseCount}
-                countLabel={t.home.statCourses}
-              />
-            </li>
-          ))}
-        </Stagger>
-      </Section>
-
-      {creators.length > 0 && (
-        <Section>
-          <SectionHeading
-            eyebrow={t.nav.creators}
-            title={t.home.creatorsTitle}
-            subtitle={t.home.creatorsSubtitle}
-            action={
-              <SeeAllLink href={p("/instructors")} label={t.common.seeAll} />
-            }
-          />
-          <Spotlight className="-m-3 rounded-3xl p-3" size={420}>
-            <Stagger
-              className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
-              step={55}
-            >
-              {creators.map((c) => (
-                <CreatorCard key={c.id} creator={c} locale={locale} t={t} />
-              ))}
-            </Stagger>
-          </Spotlight>
-        </Section>
-      )}
 
       {/* ── How it works ─────────────────────────────────────────────────── */}
       <Section muted>
@@ -513,72 +335,6 @@ export default async function HomePage() {
 
 // ── Local building blocks ──────────────────────────────────────────────────
 
-/**
- * Decorative depth behind the hero. Two slow, low-contrast washes that drift
- * on different rhythms, so the page feels alive without anything demanding
- * attention. Pure CSS — no JavaScript, no repaint cost beyond the compositor.
- */
-function HeroBackdrop() {
-  return (
-    <div
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
-    >
-      {/* Three washes on different rhythms. They drift out of phase, so the
-          background never repeats a frame and never asks for attention. */}
-      <div
-        className="aurora absolute -left-1/4 -top-1/2 h-[46rem] w-[46rem] rounded-full opacity-80 blur-3xl"
-        style={{
-          background:
-            "radial-gradient(circle, rgb(53 89 240 / 0.22), transparent 62%)",
-        }}
-      />
-      <div
-        className="aurora absolute -right-1/4 top-0 h-[38rem] w-[38rem] rounded-full opacity-80 blur-3xl"
-        style={{
-          background:
-            "radial-gradient(circle, rgb(255 87 16 / 0.18), transparent 62%)",
-          animationDelay: "-7s",
-          animationDuration: "26s",
-        }}
-      />
-      <div
-        className="aurora absolute -bottom-1/3 left-1/3 h-[32rem] w-[32rem] rounded-full opacity-70 blur-3xl"
-        style={{
-          background:
-            "radial-gradient(circle, rgb(124 58 237 / 0.16), transparent 62%)",
-          animationDelay: "-14s",
-          animationDuration: "30s",
-        }}
-      />
-
-      {/* A faint grid gives the wash something to sit against, and the mask
-          keeps it from reaching the content below. */}
-      <div
-        className="absolute inset-0 opacity-[0.4]"
-        style={{
-          backgroundImage:
-            "linear-gradient(to right, rgb(13 17 23 / 0.045) 1px, transparent 1px)," +
-            "linear-gradient(to bottom, rgb(13 17 23 / 0.045) 1px, transparent 1px)",
-          backgroundSize: "56px 56px",
-          maskImage:
-            "radial-gradient(62rem 38rem at 50% 0%, #000 40%, transparent 78%)",
-          WebkitMaskImage:
-            "radial-gradient(62rem 38rem at 50% 0%, #000 40%, transparent 78%)",
-        }}
-      />
-
-      {/* Grain over the whole thing. Large soft gradients band on cheap
-          panels; a couple of percent of noise is what stops this looking
-          like a screenshot of a gradient. */}
-      <div className="grain absolute inset-0" />
-
-      {/* The hero resolves into the page rather than ending at a hard edge. */}
-      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-surface" />
-    </div>
-  );
-}
-
 function Section({
   children,
   muted,
@@ -599,31 +355,6 @@ function Section({
   );
 }
 
-function HeroStat({
-  value,
-  label,
-  extra,
-}: {
-  value: React.ReactNode;
-  label: string;
-  extra?: React.ReactNode;
-}) {
-  return (
-    // flex-col so `order` actually applies: HTML requires <dt> before <dd>,
-    // but the design wants the number first and the label beneath it.
-    <div className="flex flex-col items-center">
-      <dt className="order-2 mt-1 text-[13px] text-ink-muted">{label}</dt>
-      <dd className="order-1 text-3xl font-bold tabular-nums tracking-tight text-ink sm:text-4xl">
-        {value}
-        {extra && (
-          <span className="ms-1 inline-block align-middle">{extra}</span>
-        )}
-      </dd>
-    </div>
-  );
-}
-
-/** Compact, scrollable entry point into a category — the hero's fast lane. */
 function CategoryChip({
   href,
   name,

@@ -36,6 +36,7 @@ const TYPE_ICON: Record<string, IconName> = {
   CREATOR_VERIFIED: "check",
   COMMUNITY_REVIEWED: "shield",
   COMMUNITY_JOIN_REQUEST: "user",
+  COMMUNITY_ROLE: "shield",
   MEMBERSHIP_STARTED: "users",
   MEMBERSHIP_SOLD: "users",
   MEMBERSHIP_ENDING: "alert",

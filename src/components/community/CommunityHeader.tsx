@@ -1,4 +1,4 @@
-import { Avatar, Badge } from "@/components/ui/primitives";
+import { Badge } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
 import { formatMoney } from "@/lib/money";
 import { formatNumber } from "@/lib/format";
@@ -14,8 +14,8 @@ import type { Dictionary } from "@/i18n";
  * on the page that tells you, before reading a word, what kind of place this
  * is — a gym, a trading desk, a yoga room.
  *
- * The gradient over the bottom of the photo is not decoration either: it is
- * what keeps the avatar ring readable against a bright image.
+ * Cover only — no owner photo on top of it. The owner is named in the facts
+ * row instead, which is what a visitor actually needs from them.
  */
 export function CommunityHeader({
   creator,
@@ -50,16 +50,7 @@ export function CommunityHeader({
       </div>
 
       <div className="px-5 pb-5 sm:px-6 sm:pb-6">
-        <div className="-mt-10 animate-fade-up sm:-mt-12">
-          <Avatar
-            src={creator.avatarUrl}
-            name={creator.displayName}
-            size={80}
-            className="ring-4 ring-surface"
-          />
-        </div>
-
-        <div className="mt-3 animate-fade-up" style={{ animationDelay: "60ms" }}>
+        <div className="pt-5 animate-fade-up sm:pt-6">
           <h1 className="text-2xl sm:text-[1.9rem]/[1.25]">{community.name}</h1>
           <p className="mt-1 text-[14px] text-ink-muted">
             {community.tagline || creator.displayName}
