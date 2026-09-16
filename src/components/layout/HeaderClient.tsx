@@ -25,6 +25,8 @@ export interface NavCategory {
 
 interface Props {
   user: HeaderUser | null;
+  /** True only when the creator's plan is paid; the studio is locked without it. */
+  showCreatorStudio?: boolean;
   categories: NavCategory[];
   labels: Record<string, string>;
   localeSwitch: { href: string; label: string };
@@ -35,7 +37,13 @@ interface Props {
  * component around it; this only owns the menus, so the amount of JavaScript
  * shipped for navigation stays small.
  */
-export function HeaderClient({ user, categories, labels, localeSwitch }: Props) {
+export function HeaderClient({
+  user,
+  categories,
+  labels,
+  localeSwitch,
+  showCreatorStudio,
+}: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [menu, setMenu] = useState<"none" | "categories" | "user">("none");
   const pathname = usePathname();
@@ -161,11 +169,8 @@ export function HeaderClient({ user, categories, labels, localeSwitch }: Props) 
                 </div>
                 <nav className="p-1.5">
                   <MenuLink href={dashboardHref} icon="grid" label={labels.dashboard} />
-                  {user.role !== "ADMIN" && (
-                    <MenuLink href="/dashboard" icon="book" label={labels.myLearning} />
-                  )}
-                  {user.role === "CREATOR" && (
-                    <MenuLink href="/dashboard/creator/courses" icon="video" label={labels.creatorStudio} />
+                  {user.role === "CREATOR" && showCreatorStudio && (
+                    <MenuLink href="/dashboard/creator" icon="video" label={labels.creatorStudio} />
                   )}
                   {user.role === "ADMIN" && (
                     <MenuLink href="/admin" icon="shield" label={labels.admin} />

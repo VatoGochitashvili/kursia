@@ -2,6 +2,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth/session";
 import { getSettings } from "@/lib/settings";
+import { getPlanState } from "@/lib/creator-plan";
 import { getCategoryTree } from "@/lib/courses";
 import { getI18n, localePath } from "@/i18n";
 import { categoryIcon } from "@/components/ui/Icon";
@@ -26,6 +27,12 @@ export async function Header() {
   const unread = sessionUser
     ? await db.notification.count({ where: { userId: sessionUser.id, readAt: null } })
     : 0;
+
+  // The studio link is shown only to a creator whose plan is paid — the menu
+  // should not offer a door that opens onto a locked room.
+  const studioOpen = sessionUser?.creatorId
+    ? (await getPlanState(sessionUser.creatorId, settings.creatorPlanPriceMinor)).active
+    : false;
 
   const user: HeaderUser | null = sessionUser
     ? {
@@ -100,6 +107,7 @@ export async function Header() {
           )}
           <HeaderClient
             user={user}
+            showCreatorStudio={studioOpen}
             categories={navCategories}
             localeSwitch={{
               href: localePath("/", otherLocale),
@@ -113,7 +121,6 @@ export async function Header() {
               notifications: t.nav.notifications,
               profile: t.nav.profile,
               dashboard: t.nav.dashboard,
-              myLearning: t.nav.myLearning,
               creatorStudio: t.nav.creatorStudio,
               admin: t.nav.admin,
               wishlist: t.nav.wishlist,

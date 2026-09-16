@@ -295,20 +295,11 @@ export default async function HomePage() {
               {t.home.creatorCtaBody}
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <ButtonLink
-                href={p("/register?type=creator")}
-                size="lg"
-                className="bg-white text-ink hover:bg-white/90"
-              >
+              <ButtonLink href={p("/register?type=creator")} size="lg" variant="inverse">
                 {t.home.creatorCtaButton}
                 <Icon name="arrowRight" size={17} />
               </ButtonLink>
-              <ButtonLink
-                href={p("/become-instructor")}
-                size="lg"
-                variant="ghost"
-                className="text-white hover:bg-white/10"
-              >
+              <ButtonLink href={p("/become-instructor")} size="lg" variant="ghostOnDark">
                 {t.common.showMore}
               </ButtonLink>
             </div>
@@ -551,20 +542,11 @@ function EarningsBand({
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">
-                <ButtonLink
-                  href={href}
-                  size="lg"
-                  className="bg-white text-ink hover:bg-white/90"
-                >
+                <ButtonLink href={href} size="lg" variant="inverse">
                   {t.home.earningsCta}
                   <Icon name="arrowRight" size={17} />
                 </ButtonLink>
-                <ButtonLink
-                  href={secondaryHref}
-                  size="lg"
-                  variant="ghost"
-                  className="border border-white/20 text-white hover:bg-white/10"
-                >
+                <ButtonLink href={secondaryHref} size="lg" variant="ghostOnDark">
                   {t.common.showMore}
                 </ButtonLink>
               </div>

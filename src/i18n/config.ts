@@ -39,6 +39,8 @@ export function stripLocale(pathname: string): { locale: Locale; path: string } 
 }
 
 export const LOCALE_HEADER = "x-kursia-locale";
+/** The locale-stripped request path, set by middleware for layouts to read. */
+export const PATHNAME_HEADER = "x-pathname";
 export const LOCALE_COOKIE = "kursia_locale";
 
 /**

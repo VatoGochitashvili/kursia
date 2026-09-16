@@ -636,6 +636,7 @@ export const en: Dictionary = {
   },
 
   circle: {
+    myCircles: "My circles",
     tabFeed: "Feed",
     tabClassroom: "Classroom",
     tabCalendar: "Calendar",

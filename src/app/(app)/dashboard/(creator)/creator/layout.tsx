@@ -1,8 +1,15 @@
+import { headers } from "next/headers";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth/session";
 import { getI18n, localePath } from "@/i18n";
 import { DashboardShell, type NavGroup } from "@/components/layout/DashboardShell";
+import { Card } from "@/components/ui/primitives";
+import { Icon } from "@/components/ui/Icon";
+import { getSettings } from "@/lib/settings";
+import { getPlanState } from "@/lib/creator-plan";
+import { PATHNAME_HEADER } from "@/i18n/config";
 
 /**
  * Creator studio chrome. Replaces the student sidebar for everything under
@@ -15,6 +22,14 @@ export default async function CreatorLayout({ children }: { children: React.Reac
   if (!user) redirect(p("/login?next=/dashboard/creator"));
   // A student who lands here is sent to the upgrade form rather than a 403.
   if (!user.creatorId) redirect(p("/dashboard/profile"));
+
+  // The studio is what the creator plan pays for. The plan page itself has to
+  // stay reachable without one, or somebody who let their plan lapse could
+  // never get back in to renew it.
+  const settings = await getSettings();
+  const plan = await getPlanState(user.creatorId, settings.creatorPlanPriceMinor);
+  const pathname = (await headers()).get(PATHNAME_HEADER) ?? "";
+  const onPlanPage = pathname.startsWith("/dashboard/creator/plan");
 
   const [draftCount, pendingPayouts] = await Promise.all([
     db.course.count({
@@ -62,14 +77,33 @@ export default async function CreatorLayout({ children }: { children: React.Reac
         },
       ],
     },
-    {
-      title: t.nav.myLearning,
-      items: [{ href: p("/dashboard"), label: t.dashboard.myCourses, icon: "book", exact: true }],
-    },
     ...(user.role === "ADMIN"
       ? [{ items: [{ href: p("/admin"), label: t.nav.admin, icon: "shield" as const }] }]
       : []),
   ];
+
+  if (!plan.active && !onPlanPage) {
+    return (
+      <DashboardShell title={t.creator.studio} groups={groups} mobileTabs={[]}>
+        <Card className="mx-auto max-w-lg p-8 text-center">
+          <span className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-warn-50 text-warn-700">
+            <Icon name="lock" size={24} />
+          </span>
+          <h1 className="mt-5 text-xl">{t.plan.inactive}</h1>
+          <p className="mx-auto mt-2 max-w-sm text-[15px] leading-relaxed text-ink-muted">
+            {t.plan.inactiveBody}
+          </p>
+          <Link
+            href={p("/dashboard/creator/plan")}
+            className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-brand-600 px-6 text-[15px] font-semibold text-white transition-colors hover:bg-brand-700"
+          >
+            {t.plan.subscribe}
+            <Icon name="arrowRight" size={17} />
+          </Link>
+        </Card>
+      </DashboardShell>
+    );
+  }
 
   return (
     <DashboardShell

@@ -1,5 +1,6 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { MyCirclesDock } from "@/components/circle/MyCirclesDock";
 
 /** Public marketplace chrome: header, main landmark, footer. */
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
@@ -10,6 +11,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
         {children}
       </main>
       <Footer />
+      <MyCirclesDock />
     </div>
   );
 }

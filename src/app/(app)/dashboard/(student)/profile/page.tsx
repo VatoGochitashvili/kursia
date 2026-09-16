@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getI18n, localePath } from "@/i18n";
 import { requireUser } from "@/lib/auth/rbac";
 import { formatDate } from "@/lib/format";
+import { listMyCircles } from "@/lib/my-circles";
 import { PageHeader } from "@/components/layout/DashboardShell";
 import { ProfileForm } from "@/components/dashboard/ProfileForm";
 import { ChangePasswordForm } from "@/components/dashboard/ChangePasswordForm";
@@ -33,6 +34,7 @@ export default async function ProfilePage() {
     },
   });
 
+  const circles = await listMyCircles(user.id, locale);
   const profile = record?.profile;
   const p = (path: string) => localePath(path, locale);
 
@@ -111,6 +113,53 @@ export default async function ProfilePage() {
         </div>
 
         <div className="space-y-5">
+          {/* What this account actually belongs to. It used to be nowhere on
+              the site: a member could pay every month and never see a list of
+              the rooms that bought them. */}
+          <Card className="p-5">
+            <h2 className="text-base">{t.circle.myCircles}</h2>
+            {circles.length === 0 ? (
+              <p className="mt-2 text-[13px] leading-relaxed text-ink-muted">
+                {t.communities.noneYetBody}
+              </p>
+            ) : (
+              <ul className="mt-3 grid gap-1.5">
+                {circles.map((circle) => (
+                  <li key={circle.creatorId}>
+                    <Link
+                      href={p(`/community/${circle.slug}`)}
+                      className="flex items-center gap-2.5 rounded-xl p-1.5 transition-colors hover:bg-surface-sunken"
+                    >
+                      <span className="h-9 w-12 shrink-0 overflow-hidden rounded-lg bg-surface-sunken">
+                        {circle.coverUrl && (
+                          // eslint-disable-next-line @next/next/no-img-element -- stored or user-configured host
+                          <img src={circle.coverUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
+                        )}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[13px] font-semibold text-ink">
+                          {circle.name}
+                        </span>
+                        {circle.role !== "MEMBER" && (
+                          <span className="text-[11px] text-ink-subtle">
+                            {circle.role === "OWNER" ? t.circle.owner : t.circle.admin}
+                          </span>
+                        )}
+                      </span>
+                      <Icon name="arrowRight" size={14} className="shrink-0 text-ink-subtle" />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <Link
+              href={p("/communities")}
+              className="mt-3 inline-flex text-[13px] font-semibold text-brand-600 hover:underline"
+            >
+              {t.communities.browse}
+            </Link>
+          </Card>
+
           {!record?.creatorProfile && (
             <Card className="p-5">
               <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-50 text-accent-700">

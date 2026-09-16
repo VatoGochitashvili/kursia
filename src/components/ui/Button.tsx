@@ -2,7 +2,15 @@ import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
-type Variant = "primary" | "secondary" | "outline" | "ghost" | "danger" | "success";
+type Variant =
+  | "primary"
+  | "secondary"
+  | "outline"
+  | "ghost"
+  | "danger"
+  | "success"
+  | "inverse"
+  | "ghostOnDark";
 type Size = "sm" | "md" | "lg" | "xl";
 
 const VARIANTS: Record<Variant, string> = {
@@ -16,6 +24,18 @@ const VARIANTS: Record<Variant, string> = {
   ghost: "text-ink-muted hover:bg-surface-sunken hover:text-ink disabled:opacity-50",
   danger: "bg-danger-500 text-white hover:bg-danger-700 disabled:opacity-50",
   success: "bg-success-500 text-white hover:bg-success-700 disabled:opacity-50",
+
+  // ── On a dark panel ──────────────────────────────────────────────────────
+  // These exist because `cn` is a plain joiner, not tailwind-merge: passing
+  // `className="bg-white text-ink"` to a primary button does not replace its
+  // `text-white`, it appends to it, and whichever rule Tailwind emits last
+  // wins. That is how a white button ended up with white text on it. A variant
+  // sets the colours once, so nothing has to be overridden.
+  inverse:
+    "bg-white text-ink shadow-sm hover:-translate-y-px hover:bg-white/90 hover:shadow-md " +
+    "active:translate-y-0 disabled:translate-y-0 disabled:bg-white/60",
+  ghostOnDark:
+    "border border-white/25 text-white hover:bg-white/10 hover:text-white disabled:opacity-50",
 };
 
 const SIZES: Record<Size, string> = {

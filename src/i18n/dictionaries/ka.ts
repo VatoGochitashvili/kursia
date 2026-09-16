@@ -844,6 +844,7 @@ export const ka = {
   },
 
   circle: {
+    myCircles: "ჩემი წრეები",
     tabFeed: "ფიდი",
     tabClassroom: "კურსები",
     tabCalendar: "კალენდარი",

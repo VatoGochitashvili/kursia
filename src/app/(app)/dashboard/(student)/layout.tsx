@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth/session";
 import { getI18n, localePath } from "@/i18n";
 import { DashboardShell, type NavGroup } from "@/components/layout/DashboardShell";
+import { getSettings } from "@/lib/settings";
+import { getPlanState } from "@/lib/creator-plan";
 
 /**
  * Student dashboard chrome. The creator studio nests under /dashboard/creator
@@ -17,31 +19,32 @@ export default async function DashboardLayout({
   const [{ locale, t }, user] = await Promise.all([getI18n(), getSessionUser()]);
   if (!user) redirect(localePath("/login?next=/dashboard", locale));
 
-  const [unread, wishlistCount] = await Promise.all([
+  const settings = await getSettings();
+  const [unread, wishlistCount, plan] = await Promise.all([
     db.notification.count({ where: { userId: user.id, readAt: null } }),
     db.wishlist.count({ where: { userId: user.id } }),
+    // The studio shortcut is only worth showing to somebody who can open it.
+    user.creatorId
+      ? getPlanState(user.creatorId, settings.creatorPlanPriceMinor)
+      : Promise.resolve(null),
   ]);
 
   const p = (path: string) => localePath(path, locale);
 
   const groups: NavGroup[] = [
+    // One list, no "my study" heading: this account is a person's own corner
+    // of the site, and their memberships live on the profile page now.
     {
-      title: t.nav.myLearning,
       items: [
         { href: p("/dashboard"), label: t.dashboard.myCourses, icon: "book", exact: true },
+        { href: p("/dashboard/profile"), label: t.nav.profile, icon: "user" },
+        { href: p("/dashboard/notifications"), label: t.nav.notifications, icon: "bell", badge: unread },
         { href: p("/dashboard/wishlist"), label: t.nav.wishlist, icon: "heart", badge: wishlistCount },
         { href: p("/dashboard/purchases"), label: t.nav.purchases, icon: "creditCard" },
       ],
     },
-    {
-      title: t.nav.settings,
-      items: [
-        { href: p("/dashboard/notifications"), label: t.nav.notifications, icon: "bell", badge: unread },
-        { href: p("/dashboard/profile"), label: t.nav.profile, icon: "user" },
-      ],
-    },
     // Creators get a direct route into the studio from the learning sidebar.
-    ...(user.creatorId
+    ...(user.creatorId && plan?.active
       ? [
           {
             title: t.creator.studio,

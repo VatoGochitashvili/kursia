@@ -44,20 +44,24 @@ export function CreatorCard({
   return (
     <article
       className={cn(
-        "group sheen relative flex flex-col items-center overflow-hidden rounded-2xl border border-line bg-surface text-center",
+        "group sheen relative isolate flex flex-col items-center overflow-hidden rounded-2xl border border-line bg-surface text-center",
         "transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:border-brand-200 hover:shadow-xl",
         className,
       )}
     >
       {/* A coloured band gives the grid rhythm and stops six near-identical
           white cards from reading as a spreadsheet. */}
+      {/* The band scales on hover. A transformed element paints above its
+          untransformed siblings, so without a stacking order of its own it
+          would slide over the avatar that overlaps it — which is exactly what
+          it did. `isolate` on the card plus `z-0` here keeps it underneath. */}
       <div
         aria-hidden="true"
-        className="h-16 w-full transition-transform duration-500 group-hover:scale-105"
+        className="z-0 h-16 w-full transition-transform duration-500 group-hover:scale-105"
         style={{ background: coverFor(creator.slug) }}
       />
 
-      <div className="-mt-9 flex w-full flex-1 flex-col items-center px-5 pb-5">
+      <div className="relative z-10 -mt-9 flex w-full flex-1 flex-col items-center px-5 pb-5">
         <span className="rounded-full bg-surface p-1 shadow-sm ring-1 ring-line">
           <Avatar src={creator.avatarUrl} name={creator.displayName} size={64} />
         </span>
