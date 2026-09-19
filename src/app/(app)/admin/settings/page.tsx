@@ -6,6 +6,7 @@ import { availableProviders } from "@/lib/payments";
 import { bpsToPercent, toMajor } from "@/lib/money";
 import { PageHeader } from "@/components/layout/DashboardShell";
 import { SettingsForm } from "@/components/admin/SettingsForm";
+import { EmailTestButton } from "@/components/admin/EmailTestButton";
 import { Alert } from "@/components/ui/primitives";
 import { env } from "@/lib/env";
 
@@ -54,6 +55,43 @@ export default async function AdminSettingsPage() {
             : "STORAGE_DRIVER არის \"local\", ამიტომ ავატარები, ქავერები და ვიდეოები იწერება ამ კონტეინერის დისკზე. ჰოსტინგების უმეტესობა — მათ შორის Render-ის უფასო გეგმა — ყოველ დეპლოიზე კონტეინერს ახალ ფაილურ სისტემას აძლევს, ასე რომ ეს ფაილები იკარგება, მონაცემთა ბაზა კი კვლავ მათზე მიუთითებს. დააყენეთ STORAGE_DRIVER=s3 და მიუთითეთ S3_ENDPOINT, S3_BUCKET, S3_ACCESS_KEY_ID და S3_SECRET_ACCESS_KEY (Cloudflare R2 და Backblaze B2 ორივე მუშაობს და უფასო ლიმიტი აქვს)."}
         </Alert>
       )}
+
+      {/* Email is configured entirely in environment variables, so this is
+          where the person who can fix it finds out that nothing is being
+          sent — and can prove it either way without waiting for a member to
+          need a password reset. */}
+      <Alert
+        tone={env.EMAIL_DRIVER === "log" ? "warn" : "brand"}
+        className="mb-5"
+        title={
+          env.EMAIL_DRIVER === "log"
+            ? locale === "en"
+              ? "No email is being delivered"
+              : "ელფოსტა არავის მიდის"
+            : locale === "en"
+              ? `Email driver: ${env.EMAIL_DRIVER}`
+              : `ელფოსტის გამგზავნი: ${env.EMAIL_DRIVER}`
+        }
+      >
+        <span className="block">
+          {env.EMAIL_DRIVER === "log"
+            ? locale === "en"
+              ? 'EMAIL_DRIVER is "log", so verification links, password resets and receipts are only printed to the server log. Set EMAIL_DRIVER=smtp with SMTP_HOST, SMTP_PORT, SMTP_USER and SMTP_PASSWORD (a Gmail app password works), or EMAIL_DRIVER=resend with RESEND_API_KEY.'
+              : 'EMAIL_DRIVER არის "log", ამიტომ დადასტურების ბმულები, პაროლის აღდგენა და ქვითრები მხოლოდ სერვერის ლოგში იწერება. დააყენეთ EMAIL_DRIVER=smtp და SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD (Gmail-ის აპლიკაციის პაროლიც გამოდგება), ან EMAIL_DRIVER=resend და RESEND_API_KEY.'
+            : locale === "en"
+              ? "Send yourself a test message to confirm the credentials work."
+              : "გაიგზავნეთ სატესტო წერილი საკუთარ თავს, რომ დარწმუნდეთ პარამეტრების სისწორეში."}
+        </span>
+        <span className="mt-3 block">
+          <EmailTestButton
+            labels={{
+              send: locale === "en" ? "Send a test email" : "სატესტო წერილის გაგზავნა",
+              sent: locale === "en" ? "Sent to" : "გაიგზავნა:",
+              failed: locale === "en" ? "Failed:" : "ვერ გაიგზავნა:",
+            }}
+          />
+        </span>
+      </Alert>
 
       <SettingsForm
         locale={locale}

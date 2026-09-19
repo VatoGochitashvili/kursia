@@ -16,6 +16,9 @@ const config: NextConfig = {
       .filter(Boolean)
       .map((hostname) => ({ protocol: "https" as const, hostname })),
   },
+  // Nodemailer resolves parts of itself at runtime, so it is kept out of the
+  // bundle and copied into the standalone output as a real package instead.
+  serverExternalPackages: ["nodemailer"],
   experimental: { optimizePackageImports: [] },
   async redirects() {
     // The course catalogue is gone — courses live inside a circle now. This

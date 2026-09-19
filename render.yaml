@@ -127,12 +127,24 @@ services:
 
       # ── Email ───────────────────────────────────────────────────────────
       # `log` only prints to the server log — verification emails and receipts
-      # will not reach anyone. Set `resend` and a key before launch.
+      # will not reach anyone. Before launch pick one:
+      #   smtp   — any mailbox, including Gmail with an app password (free)
+      #   resend — needs RESEND_API_KEY and a domain verified with Resend
+      # Admin -> Settings has a "send a test email" button that reports what
+      # the mail server answered.
       - key: EMAIL_DRIVER
         value: log
+      - key: EMAIL_FROM
+        sync: false
       - key: RESEND_API_KEY
         sync: false
-      - key: EMAIL_FROM
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
         sync: false
 
       # ── Commerce ────────────────────────────────────────────────────────
