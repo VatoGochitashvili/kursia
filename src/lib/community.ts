@@ -72,7 +72,7 @@ export async function getMembership(
   // notice would leave them posting for up to ten minutes after they stopped
   // paying.
   const now = new Date();
-  const [subscription, enrolment, role] = await Promise.all([
+  const [subscription, enrolment, role, ban] = await Promise.all([
     db.subscription.findUnique({
       where: { userId_scopeKey: { userId, scopeKey: communityScope(creatorId) } },
       select: { status: true, currentPeriodEnd: true },
@@ -89,7 +89,15 @@ export async function getMembership(
       where: { creatorId_userId: { creatorId, userId } },
       select: { role: true },
     }),
+    // Removed by the circle. Checked here rather than at the door only,
+    // because every way in — subscription, enrolment, an old admin row —
+    // has to end at the same "no".
+    db.communityBan.findUnique({
+      where: { creatorId_userId: { creatorId, userId } },
+      select: { id: true },
+    }),
   ]);
+  if (ban) return denied;
   const isCircleAdmin = role?.role === "ADMIN";
 
   // A CANCELLED subscription still grants access until its period ends —

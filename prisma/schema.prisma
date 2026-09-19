@@ -66,6 +66,7 @@ model User {
   courseViews           CourseView[]
   communityJoinRequests CommunityJoinRequest[]
   communityRoles        CommunityRole[]
+  communityBans         CommunityBan[]
   messagesSent          DirectMessage[]        @relation("messageSender")
   messagesReceived      DirectMessage[]        @relation("messageRecipient")
 
@@ -175,6 +176,7 @@ model CreatorProfile {
   pointEvents           PointEvent[]
   communityJoinRequests CommunityJoinRequest[]
   communityRoles        CommunityRole[]
+  communityBans         CommunityBan[]
 
   @@index([isFeatured, featuredRank])
   @@index([isVerified])
@@ -1417,4 +1419,25 @@ model DirectMessage {
 
   @@index([senderId, recipientId, createdAt])
   @@index([recipientId, readAt])
+}
+
+/// Somebody a circle removed.
+///
+/// Removal has to outlive the thing that made them a member: cancelling their
+/// subscription alone would let them pay again the same minute. The row is the
+/// standing "not here", and deleting it is how they are let back in.
+model CommunityBan {
+  id          String   @id @default(cuid())
+  creatorId   String
+  userId      String
+  /// Who removed them — an owner or one of their admins.
+  removedById String
+  reason      String?
+  createdAt   DateTime @default(now())
+
+  creator CreatorProfile @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([creatorId, userId])
+  @@index([creatorId, createdAt])
 }

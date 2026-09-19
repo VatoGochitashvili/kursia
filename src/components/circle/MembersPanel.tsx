@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api, errorMessage } from "@/lib/client/fetcher";
 import { Button } from "@/components/ui/Button";
-import { Avatar, Badge, Card } from "@/components/ui/primitives";
+import { Avatar, Badge, Card, Input } from "@/components/ui/primitives";
 import { useToast } from "@/components/ui/Toast";
 import { formatDate } from "@/lib/format";
 import { fill } from "@/i18n/config";
@@ -32,6 +32,7 @@ export function MembersPanel({
   creatorId,
   members,
   canAssign,
+  canRemove,
   profileBase,
   locale,
   t,
@@ -39,6 +40,8 @@ export function MembersPanel({
   creatorId: string;
   members: MemberRow[];
   canAssign: boolean;
+  /** Owners and admins may remove people; admins may not remove other admins. */
+  canRemove: boolean;
   /** The members page's own path; a member's profile is `${profileBase}/${userId}`. */
   profileBase: string;
   locale: Locale;
@@ -47,6 +50,27 @@ export function MembersPanel({
   const router = useRouter();
   const toast = useToast();
   const [pending, setPending] = useState<string | null>(null);
+  const [removing, setRemoving] = useState<string | null>(null);
+  const [reason, setReason] = useState("");
+
+  async function remove(userId: string) {
+    setPending(userId);
+    try {
+      await api.post("/api/communities/members", {
+        creatorId,
+        userId,
+        ...(reason.trim() ? { reason: reason.trim() } : {}),
+      });
+      toast.show(t.circle.memberRemoved, "success");
+      setRemoving(null);
+      setReason("");
+      router.refresh();
+    } catch (err) {
+      toast.show(errorMessage(err), "danger");
+    } finally {
+      setPending(null);
+    }
+  }
 
   async function setAdmin(userId: string, makeAdmin: boolean) {
     setPending(userId);
@@ -83,8 +107,9 @@ export function MembersPanel({
         {members.map((member) => (
           <li
             key={member.userId}
-            className="flex animate-fade-in items-center gap-3 border-b border-line px-4 py-3 last:border-b-0"
+            className="animate-fade-in border-b border-line last:border-b-0"
           >
+            <div className="flex items-center gap-3 px-4 py-3">
             <Link
               href={`${profileBase}/${member.userId}`}
               className="group flex min-w-0 flex-1 items-center gap-3"
@@ -113,6 +138,48 @@ export function MembersPanel({
               >
                 {member.role === "ADMIN" ? t.circle.removeAdmin : t.circle.makeAdmin}
               </Button>
+            )}
+
+            {/* Removing somebody ends their subscription, so it asks once
+                rather than acting on a single stray click. */}
+            {canRemove && member.role !== "OWNER" && (member.role !== "ADMIN" || canAssign) && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-danger-700"
+                onClick={() => {
+                  setRemoving(removing === member.userId ? null : member.userId);
+                  setReason("");
+                }}
+              >
+                {t.circle.removeMember}
+              </Button>
+            )}
+            </div>
+
+            {removing === member.userId && (
+              <div className="flex flex-wrap items-center gap-2 border-t border-line bg-danger-50/40 px-4 py-3">
+                <p className="w-full text-[13px] font-medium text-danger-700">
+                  {t.circle.removeConfirm}
+                </p>
+                <Input
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  placeholder={t.circle.removeReason}
+                  className="h-9 min-w-48 flex-1 text-[13px]"
+                />
+                <Button
+                  size="sm"
+                  variant="danger"
+                  loading={pending === member.userId}
+                  onClick={() => remove(member.userId)}
+                >
+                  {t.circle.removeMember}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setRemoving(null)}>
+                  {t.common.cancel}
+                </Button>
+              </div>
             )}
           </li>
         ))}

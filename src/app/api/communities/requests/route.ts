@@ -6,6 +6,7 @@ import { notify } from "@/lib/notifications";
 import { communityLabel } from "@/lib/membership";
 import { cuid } from "@/lib/validation";
 import { getMembership } from "@/lib/community";
+import { isRemoved } from "@/lib/join-requests";
 
 export const runtime = "nodejs";
 
@@ -33,6 +34,10 @@ export const POST = handler(async (request) => {
   if (creator.userId === user.id) throw new ApiError(409, "CONFLICT", "ეს შენი სივრცეა");
   if (!creator.communityRequiresApproval) {
     throw new ApiError(409, "CONFLICT", "ამ წრეში დადასტურება საჭირო არ არის");
+  }
+  // Somebody this circle removed does not get to queue up again.
+  if (await isRemoved(creator.id, user.id)) {
+    throw new ApiError(403, "FORBIDDEN", "ამ წრიდან მოშორებული ხარ");
   }
 
   const existing = await db.communityJoinRequest.findUnique({

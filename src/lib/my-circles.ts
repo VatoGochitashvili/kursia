@@ -36,6 +36,8 @@ export async function listMyCircles(
   const rows = await db.creatorProfile.findMany({
     where: {
       communityEnabled: true,
+      // A circle that removed you is not one of yours any more.
+      communityBans: { none: { userId } },
       OR: [
         { userId },
         { communityRoles: { some: { userId } } },

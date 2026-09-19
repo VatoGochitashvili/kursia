@@ -8,6 +8,7 @@ import { buildMetadata } from "@/lib/seo";
 import { CommunityGate } from "@/components/community/CommunityGate";
 import { JoinRequests } from "@/components/creator/JoinRequests";
 import { MembersPanel, type MemberRow } from "@/components/circle/MembersPanel";
+import { RemovedMembers, type RemovedRow } from "@/components/circle/RemovedMembers";
 
 export const dynamic = "force-dynamic";
 
@@ -73,6 +74,28 @@ export default async function CircleMembersPage({ params }: Props) {
     level: m.level,
   }));
 
+  const removed: RemovedRow[] = membership.canModerate
+    ? (
+        await db.communityBan.findMany({
+          where: { creatorId: creator.id },
+          orderBy: { createdAt: "desc" },
+          take: 50,
+          select: {
+            userId: true,
+            reason: true,
+            createdAt: true,
+            user: { select: { profile: { select: { fullName: true, avatarUrl: true } } } },
+          },
+        })
+      ).map((row) => ({
+        userId: row.userId,
+        name: row.user.profile?.fullName ?? "—",
+        avatarUrl: row.user.profile?.avatarUrl ?? null,
+        reason: row.reason,
+        removedAt: row.createdAt.toISOString(),
+      }))
+    : [];
+
   return (
     <div className="grid gap-5">
       {membership.canModerate && (
@@ -82,10 +105,14 @@ export default async function CircleMembersPage({ params }: Props) {
         creatorId={creator.id}
         members={members}
         canAssign={membership.isOwner || membership.isAdmin}
+        canRemove={membership.canModerate}
         profileBase={p(`/community/${creator.slug}/members`)}
         locale={locale}
         t={t}
       />
+      {membership.canModerate && (
+        <RemovedMembers creatorId={creator.id} rows={removed} locale={locale} t={t} />
+      )}
     </div>
   );
 }

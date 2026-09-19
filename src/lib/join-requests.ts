@@ -28,6 +28,10 @@ export async function getJoinGate(
   userId: string | null,
   requiresApproval: boolean,
 ): Promise<JoinGate> {
+  // A removed person is refused whether or not the circle reviews applicants.
+  if (await isRemoved(creatorId, userId)) {
+    return { required: true, status: "REJECTED", cleared: false, reviewNote: null };
+  }
   if (!requiresApproval) {
     return { required: false, status: "APPROVED", cleared: true, reviewNote: null };
   }
@@ -55,7 +59,19 @@ export async function getJoinGate(
  * Re-read here rather than trusted from the client: the join panel decides
  * which button to draw, and this decides whether the charge may happen.
  */
+export async function isRemoved(creatorId: string, userId: string | null): Promise<boolean> {
+  if (!userId) return false;
+  return Boolean(
+    await db.communityBan.findUnique({
+      where: { creatorId_userId: { creatorId, userId } },
+      select: { id: true },
+    }),
+  );
+}
+
 export async function canCheckout(creatorId: string, userId: string): Promise<boolean> {
+  // Somebody the circle removed cannot pay their way back in.
+  if (await isRemoved(creatorId, userId)) return false;
   const creator = await db.creatorProfile.findUnique({
     where: { id: creatorId },
     select: { communityRequiresApproval: true },

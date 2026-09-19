@@ -23,7 +23,7 @@ export interface CircleMember {
  */
 export async function listCircleMembers(creatorId: string, take = 300): Promise<CircleMember[]> {
   const now = new Date();
-  const [creator, subscriptions, enrolments, roles] = await Promise.all([
+  const [creator, subscriptions, enrolments, roles, bans] = await Promise.all([
     db.creatorProfile.findUnique({
       where: { id: creatorId },
       select: { userId: true, createdAt: true },
@@ -51,6 +51,7 @@ export async function listCircleMembers(creatorId: string, take = 300): Promise<
       where: { creatorId },
       select: { userId: true, role: true, createdAt: true },
     }),
+    db.communityBan.findMany({ where: { creatorId }, select: { userId: true } }),
   ]);
 
   const joined = new Map<string, Date>();
@@ -62,6 +63,9 @@ export async function listCircleMembers(creatorId: string, take = 300): Promise<
   enrolments.forEach((e) => note(e.userId, e.createdAt));
   roles.forEach((r) => note(r.userId, r.createdAt));
   if (creator) note(creator.userId, creator.createdAt);
+
+  // Removed people are gone from the room, whatever still grants them access.
+  for (const ban of bans) joined.delete(ban.userId);
 
   const ids = [...joined.keys()];
   if (ids.length === 0) return [];
