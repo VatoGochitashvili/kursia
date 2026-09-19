@@ -22,7 +22,7 @@ export const PUT = handler(async (request, context: Ctx) => {
     where: { id: lessonId },
     select: { id: true, courseId: true, quiz: { select: { id: true } } },
   });
-  if (!lesson) throw notFoundError("გაკვეთილი ვერ მოიძებნა");
+  if (!lesson) throw notFoundError("ვიდეო ვერ მოიძებნა");
 
   const { user } = await requireCourseOwner(lesson.courseId);
   await beginMutation("write", user.id);

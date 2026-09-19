@@ -77,7 +77,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${creator.displayName}${headline ? ` — ${headline}` : ""}`,
     description:
       toPlainText(creator.instructorBio ?? creator.user.profile?.bio, 160) ||
-      `${creator.displayName} — ${creator.courses.length} ონლაინ კურსი.`,
+      `${creator.displayName} — ${creator.courses.length} ონლაინ გაკვეთილი.`,
     path: `/creator/${creator.slug}`,
     locale,
     image: creator.user.profile?.avatarUrl,

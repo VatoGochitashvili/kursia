@@ -26,7 +26,7 @@ export const POST = handler(async (request) => {
 
   const enrolled = await isEnrolled(user.id, body.courseId);
   if (!enrolled) {
-    throw new ApiError(403, "NOT_ENROLLED", "შეფასების დაწერა შეუძლიათ მხოლოდ კურსის მფლობელებს");
+    throw new ApiError(403, "NOT_ENROLLED", "შეფასების დაწერა შეუძლიათ მხოლოდ გაკვეთილის მფლობელებს");
   }
 
   const existing = await db.review.findUnique({

@@ -12,7 +12,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Card, EmptyState } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
 
-export const metadata: Metadata = { title: "My courses", robots: { index: false } };
+export const metadata: Metadata = { title: "My lessons", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
 export default async function CreatorCoursesPage() {

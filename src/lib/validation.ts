@@ -203,7 +203,7 @@ export const moduleSchema = z
 export const lessonSchema = z
   .object({
     moduleId: cuid,
-    title: z.string().trim().min(2, "გაკვეთილის სათაური სავალდებულოა").max(180),
+    title: z.string().trim().min(2, "ვიდეოს სათაური სავალდებულოა").max(180),
     description: z.string().trim().max(4000).optional(),
     type: z.enum(LESSON_TYPES).default("VIDEO"),
     textContent: z.string().trim().max(100_000).optional(),

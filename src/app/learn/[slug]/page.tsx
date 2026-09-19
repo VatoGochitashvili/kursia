@@ -161,7 +161,7 @@ export default async function LearnPage({ params, searchParams }: Props) {
           <div className="space-y-5">
             {lesson?.description ? (
               <div
-                className="prose-course max-w-prose"
+                className="prose-lesson max-w-prose"
                 dangerouslySetInnerHTML={{ __html: paragraphsToHtml(lesson.description) }}
               />
             ) : (
@@ -239,7 +239,7 @@ export default async function LearnPage({ params, searchParams }: Props) {
         />
       ) : lesson?.type === "TEXT" && lesson.textContent ? (
         <article
-          className="prose-course max-w-prose"
+          className="prose-lesson max-w-prose"
           dangerouslySetInnerHTML={{ __html: paragraphsToHtml(lesson.textContent) }}
         />
       ) : lesson?.type === "QUIZ" && lesson.quiz ? (
@@ -282,7 +282,7 @@ export default async function LearnPage({ params, searchParams }: Props) {
         <Alert tone="warn">
           {locale === "en"
             ? "The instructor has not uploaded a video for this lesson yet."
-            : "ინსტრუქტორს ჯერ არ აუტვირთავს ვიდეო ამ გაკვეთილისთვის."}
+            : "ინსტრუქტორს ჯერ არ აუტვირთავს ვიდეო ამ ვიდეოსთვის."}
         </Alert>
       ) : null}
     </LearnShell>

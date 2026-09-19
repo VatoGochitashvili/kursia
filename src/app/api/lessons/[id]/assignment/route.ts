@@ -37,7 +37,7 @@ async function loadLesson(lessonId: string) {
     where: { id: lessonId },
     select: { id: true, courseId: true, type: true },
   });
-  if (!lesson) throw notFoundError("გაკვეთილი ვერ მოიძებნა");
+  if (!lesson) throw notFoundError("ვიდეო ვერ მოიძებნა");
   return { lesson, user };
 }
 
@@ -46,7 +46,7 @@ export const GET = handler(async (_request, context: Ctx) => {
   const { lesson, user } = await loadLesson(id);
 
   const access = await hasCourseAccess(user.id, lesson.courseId);
-  if (!access.canView) throw notFoundError("გაკვეთილი ვერ მოიძებნა");
+  if (!access.canView) throw notFoundError("ვიდეო ვერ მოიძებნა");
 
   const assignment = await db.assignment.findUnique({
     where: { lessonId: id },

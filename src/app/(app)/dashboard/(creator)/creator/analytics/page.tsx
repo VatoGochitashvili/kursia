@@ -100,7 +100,7 @@ export default async function CreatorAnalyticsPage({
           {selected && (
             <Card className="p-5">
               <h2 className="mb-1 text-base">
-                {locale === "en" ? "Lesson engagement" : "გაკვეთილების ჩართულობა"}
+                {locale === "en" ? "Lesson engagement" : "ვიდეოების ჩართულობა"}
               </h2>
               <p className="mb-4 text-[13px] text-ink-muted">{selected.title}</p>
 

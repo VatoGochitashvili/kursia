@@ -133,7 +133,7 @@ export default async function EarningsPage() {
       <div className="mb-6 grid gap-4 lg:grid-cols-2">
         <Card className="p-5">
           <RankedBars
-            title={locale === "en" ? "Earnings by course" : "შემოსავალი კურსების მიხედვით"}
+            title={locale === "en" ? "Earnings by lesson" : "შემოსავალი გაკვეთილების მიხედვით"}
             currency={balance.currency}
             locale={locale}
             emptyLabel={t.common.empty}

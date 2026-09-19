@@ -26,7 +26,7 @@ export const POST = handler(async (request, context: { params: Promise<{ id: str
   if (!quiz) throw notFoundError("ქვიზი ვერ მოიძებნა");
 
   const access = await hasCourseAccess(user.id, quiz.lesson.courseId);
-  if (!access.canView) throw new ApiError(403, "FORBIDDEN", "კურსზე წვდომა არ გაქვთ");
+  if (!access.canView) throw new ApiError(403, "FORBIDDEN", "გაკვეთილზე წვდომა არ გაქვთ");
 
   // Attempt limits are enforced server-side.
   const previousAttempts = await db.quizAttempt.count({

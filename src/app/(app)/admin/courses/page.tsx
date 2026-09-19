@@ -13,7 +13,7 @@ import { Avatar, Card, EmptyState } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
 
-export const metadata: Metadata = { title: "Course moderation", robots: { index: false } };
+export const metadata: Metadata = { title: "Lesson moderation", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
 export default async function AdminCoursesPage({

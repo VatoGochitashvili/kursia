@@ -32,7 +32,7 @@ async function authorizeLesson(lessonId: string) {
     where: { id: lessonId },
     select: { id: true, courseId: true },
   });
-  if (!lesson) throw notFoundError("გაკვეთილი ვერ მოიძებნა");
+  if (!lesson) throw notFoundError("ვიდეო ვერ მოიძებნა");
   const { user } = await requireCourseOwner(lesson.courseId);
   return { lesson, user };
 }

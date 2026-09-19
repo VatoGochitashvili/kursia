@@ -78,11 +78,11 @@ export function renderTemplate(
         lines: [
           t(
             locale,
-            "თქვენი ანგარიში მზადაა. აღმოაჩინეთ კურსები და დაიწყეთ სწავლა დღესვე.",
-            "Your account is ready. Discover courses and start learning today.",
+            "თქვენი ანგარიში მზადაა. აღმოაჩინეთ გაკვეთილები და დაიწყეთ სწავლა დღესვე.",
+            "Your account is ready. Discover lessons and start learning today.",
           ),
         ],
-        cta: { label: t(locale, "კურსების დათვალიერება", "Browse courses"), url: s("url") },
+        cta: { label: t(locale, "გაკვეთილების დათვალიერება", "Browse lessons"), url: s("url") },
       };
 
     case "purchaseReceipt":
@@ -90,10 +90,10 @@ export function renderTemplate(
         subject: t(locale, `შენაძენი დადასტურდა — ${s("courseTitle")}`, `Purchase confirmed — ${s("courseTitle")}`),
         heading: t(locale, "გადახდა მიღებულია", "Payment received"),
         lines: [
-          t(locale, `კურსი: ${s("courseTitle")}`, `Course: ${s("courseTitle")}`),
+          t(locale, `გაკვეთილი: ${s("courseTitle")}`, `Course: ${s("courseTitle")}`),
           t(locale, `თანხა: ${s("amount")}`, `Amount: ${s("amount")}`),
           t(locale, `შეკვეთის ნომერი: ${s("reference")}`, `Order reference: ${s("reference")}`),
-          t(locale, "კურსზე წვდომა გახსნილია.", "Your course access is now open."),
+          t(locale, "გაკვეთილზე წვდომა გახსნილია.", "Your lesson access is now open."),
         ],
         cta: { label: t(locale, "სწავლის დაწყება", "Start learning"), url: s("url") },
       };
@@ -103,7 +103,7 @@ export function renderTemplate(
         subject: t(locale, `ახალი გაყიდვა — ${s("courseTitle")}`, `New sale — ${s("courseTitle")}`),
         heading: t(locale, "გილოცავთ, ახალი გაყიდვა!", "Congratulations, a new sale!"),
         lines: [
-          t(locale, `კურსი: ${s("courseTitle")}`, `Course: ${s("courseTitle")}`),
+          t(locale, `გაკვეთილი: ${s("courseTitle")}`, `Course: ${s("courseTitle")}`),
           t(locale, `გაყიდვის თანხა: ${s("amount")}`, `Sale amount: ${s("amount")}`),
           t(locale, `თქვენი შემოსავალი: ${s("earnings")}`, `Your earnings: ${s("earnings")}`),
         ],
@@ -112,8 +112,8 @@ export function renderTemplate(
 
     case "courseApproved":
       return {
-        subject: t(locale, `კურსი დამტკიცდა — ${s("courseTitle")}`, `Course approved — ${s("courseTitle")}`),
-        heading: t(locale, "კურსი დამტკიცებულია", "Your course was approved"),
+        subject: t(locale, `გაკვეთილი დამტკიცდა — ${s("courseTitle")}`, `Course approved — ${s("courseTitle")}`),
+        heading: t(locale, "გაკვეთილი დამტკიცებულია", "Your lesson was approved"),
         lines: [
           t(
             locale,
@@ -121,15 +121,15 @@ export function renderTemplate(
             `"${s("courseTitle")}" is published and available to students.`,
           ),
         ],
-        cta: { label: t(locale, "კურსის ნახვა", "View course"), url: s("url") },
+        cta: { label: t(locale, "გაკვეთილის ნახვა", "View lesson"), url: s("url") },
       };
 
     case "courseRejected":
       return {
-        subject: t(locale, `კურსი საჭიროებს ცვლილებებს — ${s("courseTitle")}`, `Changes needed — ${s("courseTitle")}`),
-        heading: t(locale, "კურსი ვერ დამტკიცდა", "Your course needs changes"),
+        subject: t(locale, `გაკვეთილი საჭიროებს ცვლილებებს — ${s("courseTitle")}`, `Changes needed — ${s("courseTitle")}`),
+        heading: t(locale, "გაკვეთილი ვერ დამტკიცდა", "Your lesson needs changes"),
         lines: [
-          t(locale, `კურსი: ${s("courseTitle")}`, `Course: ${s("courseTitle")}`),
+          t(locale, `გაკვეთილი: ${s("courseTitle")}`, `Course: ${s("courseTitle")}`),
           t(locale, `მიზეზი: ${s("reason")}`, `Reason: ${s("reason")}`),
           t(
             locale,
@@ -137,7 +137,7 @@ export function renderTemplate(
             "Make the changes and resubmit for review.",
           ),
         ],
-        cta: { label: t(locale, "კურსის რედაქტირება", "Edit course"), url: s("url") },
+        cta: { label: t(locale, "გაკვეთილის რედაქტირება", "Edit lesson"), url: s("url") },
       };
 
     case "payoutStatus":

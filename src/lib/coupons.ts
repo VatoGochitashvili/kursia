@@ -65,7 +65,7 @@ export async function evaluateCoupon(input: {
   });
 
   // A code belonging to another creator is reported as not found rather than
-  // as "wrong course": whether a rival's code exists is not this buyer's
+  // as "wrong lesson": whether a rival's code exists is not this buyer's
   // business, and saying so would turn the endpoint into a code oracle.
   if (!coupon || coupon.creatorId !== input.creatorId) return miss("NOT_FOUND");
   if (!coupon.isActive) return miss("INACTIVE");
@@ -145,5 +145,5 @@ export const COUPON_MESSAGES: Record<CouponProblem, { ka: string; en: string }> 
   EXPIRED: { ka: "კოდს ვადა გაუვიდა", en: "This code has expired" },
   EXHAUSTED: { ka: "კოდი ამოიწურა", en: "This code has been fully used" },
   ALREADY_USED: { ka: "ეს კოდი უკვე გამოიყენე", en: "You have already used this code" },
-  WRONG_COURSE: { ka: "კოდი ამ კურსზე არ ვრცელდება", en: "This code does not apply to this course" },
+  WRONG_COURSE: { ka: "კოდი ამ გაკვეთილზე არ ვრცელდება", en: "This code does not apply to this lesson" },
 };

@@ -59,7 +59,7 @@ export const POST = handler(async (request) => {
   if (kind === "submission") {
     if (!courseId) throw badRequest("courseId სავალდებულოა ამ ტიპისთვის");
     const access = await hasCourseAccess(user.id, courseId);
-    if (!access.canView) throw new ApiError(403, "FORBIDDEN", "კურსზე წვდომა არ გაქვთ");
+    if (!access.canView) throw new ApiError(403, "FORBIDDEN", "გაკვეთილზე წვდომა არ გაქვთ");
   } else if (courseId) {
     await requireCourseOwner(courseId);
   } else if (kind === "cover") {
@@ -90,7 +90,7 @@ export const POST = handler(async (request) => {
       select: { id: true, courseId: true },
     });
     if (!lesson || (courseId && lesson.courseId !== courseId)) {
-      throw badRequest("გაკვეთილი ვერ მოიძებნა");
+      throw badRequest("ვიდეო ვერ მოიძებნა");
     }
     await requireCourseOwner(lesson.courseId);
 

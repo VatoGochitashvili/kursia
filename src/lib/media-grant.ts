@@ -10,7 +10,7 @@ import { readSignedPayload, signPayload } from "@/lib/crypto";
  * grant copied out of devtools and pasted elsewhere still only works while
  * that user's session is the one presenting it (see /api/media route).
  *
- * This is what makes "casual sharing of course video URLs" ineffective: the
+ * This is what makes "casual sharing of lesson video URLs" ineffective: the
  * URL a student can see expires in minutes and is bound to their account.
  */
 

@@ -93,7 +93,7 @@ export function AssignmentPanel({
             {data.assignment.maxPoints} {t.learn.points}
           </Badge>
         </div>
-        <p className="prose-course mt-3 max-w-prose whitespace-pre-line">
+        <p className="prose-lesson mt-3 max-w-prose whitespace-pre-line">
           {data.assignment.instructions}
         </p>
       </Card>

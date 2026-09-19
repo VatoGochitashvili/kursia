@@ -8,7 +8,7 @@ import { parseStringArray } from "@/lib/json";
 import { toMajor } from "@/lib/money";
 import { CourseBuilder } from "@/components/creator/CourseBuilder";
 
-export const metadata: Metadata = { title: "Course builder", robots: { index: false } };
+export const metadata: Metadata = { title: "Lesson builder", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
 export default async function CourseBuilderPage({

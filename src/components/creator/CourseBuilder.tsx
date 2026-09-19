@@ -269,8 +269,8 @@ export function CourseBuilder({
                 label={locale === "en" ? "Subtitle" : "ქვესათაური"}
                 hint={
                   locale === "en"
-                    ? "One line that sells the course. Shown in search results."
-                    : "ერთი წინადადება, რომელიც ყიდის კურსს. ჩანს ძიების შედეგებში."
+                    ? "One line that sells the lesson. Shown in search results."
+                    : "ერთი წინადადება, რომელიც ყიდის გაკვეთილს. ჩანს ძიების შედეგებში."
                 }
                 error={fieldError(error, "subtitle")}
               >
@@ -399,7 +399,7 @@ export function CourseBuilder({
           <div className="space-y-5">
             <Card className="p-5">
               <h2 className="mb-3 text-base">
-                {locale === "en" ? "Course image" : "კურსის ფოტო"}
+                {locale === "en" ? "Lesson image" : "გაკვეთილის ფოტო"}
               </h2>
               <div className="relative mb-3 aspect-video overflow-hidden rounded-xl bg-surface-sunken ring-1 ring-line">
                 {values.thumbnailUrl ? (
@@ -455,12 +455,12 @@ export function CourseBuilder({
 
             <Card className="p-5">
               <h2 className="mb-1 text-base">
-                {locale === "en" ? "Course trailer" : "კურსის ტრეილერი"}
+                {locale === "en" ? "Lesson trailer" : "გაკვეთილის ტრეილერი"}
               </h2>
               <p className="mb-3 text-[12px] leading-relaxed text-ink-subtle">
                 {locale === "en"
-                  ? "A short video on the public course page. Visitors can watch it without signing in, so keep it to a minute or two."
-                  : "მოკლე ვიდეო კურსის საჯარო გვერდზე. მას ნახავს ისიც, ვინც არ არის შესული — ამიტომ ერთი-ორი წუთი სავსებით საკმარისია."}
+                  ? "A short video on the public lesson page. Visitors can watch it without signing in, so keep it to a minute or two."
+                  : "მოკლე ვიდეო გაკვეთილის საჯარო გვერდზე. მას ნახავს ისიც, ვინც არ არის შესული — ამიტომ ერთი-ორი წუთი სავსებით საკმარისია."}
               </p>
 
               {values.previewVideoUrl && (
@@ -552,9 +552,9 @@ export function CourseBuilder({
             lessonTitle: t.creator.lessonTitle,
             lessonType: t.creator.lessonType,
             lessonDescription: t.courses.description,
-            textContent: locale === "en" ? "Lesson text" : "გაკვეთილის ტექსტი",
-            newLesson: locale === "en" ? "New lesson" : "ახალი გაკვეთილი",
-            noLessons: locale === "en" ? "No lessons yet" : "გაკვეთილები ჯერ არ არის",
+            textContent: locale === "en" ? "Lesson text" : "ვიდეოს ტექსტი",
+            newLesson: locale === "en" ? "New lesson" : "ახალი ვიდეო",
+            noLessons: locale === "en" ? "No lessons yet" : "ვიდეოები ჯერ არ არის",
             noModules: locale === "en" ? "No modules yet" : "მოდულები ჯერ არ არის",
             noContent: locale === "en" ? "No content" : "შიგთავსი არ არის",
             freePreview: t.creator.freePreview,
@@ -577,9 +577,9 @@ export function CourseBuilder({
             confirmDeleteModule:
               locale === "en"
                 ? "Delete this module and all its lessons?"
-                : "წავშალოთ მოდული და მისი ყველა გაკვეთილი?",
+                : "წავშალოთ მოდული და მისი ყველა ვიდეო?",
             confirmDeleteLesson:
-              locale === "en" ? "Delete this lesson?" : "წავშალოთ ეს გაკვეთილი?",
+              locale === "en" ? "Delete this lesson?" : "წავშალოთ ეს ვიდეო?",
           }}
         />
       )}
@@ -592,7 +592,7 @@ export function CourseBuilder({
           <div className="grid gap-4 sm:grid-cols-2">
             <Field
               label={`${t.courses.filterPrice} (${values.currency})`}
-              hint={locale === "en" ? "0 = free course" : "0 = უფასო კურსი"}
+              hint={locale === "en" ? "0 = free lesson" : "0 = უფასო გაკვეთილი"}
               error={fieldError(error, "price")}
             >
               <Input
@@ -751,8 +751,8 @@ export function CourseBuilder({
               {readiness.length === 0 ? (
                 <Alert tone="success">
                   {locale === "en"
-                    ? "Everything looks good — this course is ready to submit."
-                    : "ყველაფერი მზადაა — კურსი შეგიძლიათ გააგზავნოთ განხილვაზე."}
+                    ? "Everything looks good — this lesson is ready to submit."
+                    : "ყველაფერი მზადაა — გაკვეთილი შეგიძლიათ გააგზავნოთ განხილვაზე."}
                 </Alert>
               ) : (
                 <ul className="space-y-2">

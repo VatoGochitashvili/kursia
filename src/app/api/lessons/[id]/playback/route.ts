@@ -28,11 +28,11 @@ export const GET = handler(async (_request, context: { params: Promise<{ id: str
       resources: { select: { id: true, title: true, assetKey: true, sizeBytes: true, mimeType: true } },
     },
   });
-  if (!lesson || !lesson.isPublished) throw notFoundError("გაკვეთილი ვერ მოიძებნა");
+  if (!lesson || !lesson.isPublished) throw notFoundError("ვიდეო ვერ მოიძებნა");
 
   const access = await hasCourseAccess(user.id, lesson.courseId);
   if (!access.canView && !lesson.isFreePreview) {
-    throw new ApiError(403, "FORBIDDEN", "კურსზე წვდომა არ გაქვთ");
+    throw new ApiError(403, "FORBIDDEN", "გაკვეთილზე წვდომა არ გაქვთ");
   }
 
   const source =

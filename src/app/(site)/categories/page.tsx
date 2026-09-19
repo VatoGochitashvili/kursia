@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: t.nav.categories,
     description:
       locale === "en"
-        ? "Browse every course category — business, programming, design, marketing, finance and more."
+        ? "Browse every lesson category — business, programming, design, marketing, finance and more."
         : "დაათვალიერე ყველა კატეგორია — ბიზნესი, პროგრამირება, დიზაინი, მარკეტინგი, ფინანსები და სხვა.",
     path: "/categories",
     locale,

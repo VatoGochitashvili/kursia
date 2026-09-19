@@ -28,13 +28,13 @@ export const POST = handler(async (request) => {
       course: { select: { creatorId: true } },
     },
   });
-  if (!lesson || !lesson.isPublished) throw notFoundError("გაკვეთილი ვერ მოიძებნა");
+  if (!lesson || !lesson.isPublished) throw notFoundError("ვიდეო ვერ მოიძებნა");
 
   const access = await hasCourseAccess(user.id, lesson.courseId);
   // Free previews are watchable, but they do not accumulate course progress —
   // otherwise a non-buyer could "complete" a course.
   if (!access.enrolled) {
-    if (!access.canView) throw new ApiError(403, "FORBIDDEN", "კურსზე წვდომა არ გაქვთ");
+    if (!access.canView) throw new ApiError(403, "FORBIDDEN", "გაკვეთილზე წვდომა არ გაქვთ");
     return jsonOk({ tracked: false });
   }
 

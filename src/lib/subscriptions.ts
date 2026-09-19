@@ -142,7 +142,7 @@ export async function runSubscriptionMaintenance(): Promise<{
     // A lapsed membership is one fewer member on the directory card. Guarded
     // above zero so a double run cannot drive the count negative.
     //
-    // Keyed on the KIND, not on "courseId is null". A creator's own plan also
+    // Keyed on the KIND, not on "lessonId is null". A creator's own plan also
     // has no course and names their own profile as the creator, so testing for
     // a missing course would decrement a creator's member count every time
     // their plan lapsed — subtracting a member who never existed.

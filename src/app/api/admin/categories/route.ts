@@ -142,7 +142,7 @@ export const DELETE = handler(async (request) => {
     throw new ApiError(
       409,
       "CATEGORY_IN_USE",
-      `${inUse} კურსი იყენებს ამ კატეგორიას. გამორთეთ ის წაშლის ნაცვლად.`,
+      `${inUse} გაკვეთილი იყენებს ამ კატეგორიას. გამორთეთ ის წაშლის ნაცვლად.`,
     );
   }
   if (category._count.children > 0) {

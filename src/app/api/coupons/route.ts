@@ -69,7 +69,7 @@ export const POST = handler(async (request) => {
         priceMinor: true, discountPriceMinor: true,
       },
     });
-    if (!course) throw notFoundError("კურსი ვერ მოიძებნა");
+    if (!course) throw notFoundError("გაკვეთილი ვერ მოიძებნა");
 
     const result = await evaluateCoupon({
       code: body.code,
@@ -99,7 +99,7 @@ export const POST = handler(async (request) => {
     const owned = await db.course.count({
       where: { id: body.courseId, creatorId: creator.creatorId },
     });
-    if (owned === 0) throw notFoundError("კურსი ვერ მოიძებნა");
+    if (owned === 0) throw notFoundError("გაკვეთილი ვერ მოიძებნა");
   }
 
   const code = normaliseCode(body.code);

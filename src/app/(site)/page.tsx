@@ -644,30 +644,30 @@ function HomeFaq({
   const en = locale === "en";
   const faqs = [
     {
-      q: en ? "How do I pay for a course?" : "როგორ ვიხდი კურსში?",
+      q: en ? "How do I pay for a lesson?" : "როგორ ვიხდი გაკვეთილში?",
       a: en
         ? "With a Georgian card, in GEL. Bank of Georgia and TBC payment systems are supported, as well as bank transfer. Access opens only once the bank confirms the payment."
-        : "გადახდა ხდება ქართული ბარათით, ლარში. მხარდაჭერილია საქართველოს ბანკისა და თიბისის საგადახდო სისტემები, ასევე საბანკო გადარიცხვა. კურსზე წვდომა იხსნება მხოლოდ ბანკის მიერ გადახდის დადასტურების შემდეგ.",
+        : "გადახდა ხდება ქართული ბარათით, ლარში. მხარდაჭერილია საქართველოს ბანკისა და თიბისის საგადახდო სისტემები, ასევე საბანკო გადარიცხვა. გაკვეთილზე წვდომა იხსნება მხოლოდ ბანკის მიერ გადახდის დადასტურების შემდეგ.",
     },
     {
       q: en ? "How long do I have access?" : "რამდენ ხანს მაქვს წვდომა?",
       a: en
-        ? "Forever. Once bought, the course and every future update to it stay in your account."
-        : "სამუდამოდ. ერთხელ შეძენილი კურსი და მისი ყველა მომავალი განახლება თქვენს ანგარიშში რჩება.",
+        ? "Forever. Once bought, the lesson and every future update to it stay in your account."
+        : "სამუდამოდ. ერთხელ შეძენილი გაკვეთილი და მისი ყველა მომავალი განახლება თქვენს ანგარიშში რჩება.",
     },
     {
       q: en ? "Can I get a refund?" : "შემიძლია თანხის დაბრუნება?",
       a: en
         ? `Yes. If a course is not what you expected, you can request a refund within ${settings.refundWindowDays} days of purchase.`
-        : `დიახ. თუ კურსი არ დაგაკმაყოფილათ, თანხის დაბრუნება შესაძლებელია შეძენიდან ${settings.refundWindowDays} დღის განმავლობაში.`,
+        : `დიახ. თუ გაკვეთილი არ დაგაკმაყოფილათ, თანხის დაბრუნება შესაძლებელია შეძენიდან ${settings.refundWindowDays} დღის განმავლობაში.`,
     },
     {
       q: en
-        ? "Can I follow a course on my phone?"
-        : "შემიძლია კურსის გავლა ტელეფონიდან?",
+        ? "Can I follow a lesson on my phone?"
+        : "შემიძლია გაკვეთილის გავლა ტელეფონიდან?",
       a: en
         ? "Yes. The whole platform works on a phone, which is where most people actually train. Your progress syncs, so you can start a lesson on a laptop and finish it at the gym."
-        : "დიახ. პლატფორმა სრულად მუშაობს ტელეფონზე — სწორედ იქიდან ვარჯიშობს ხალხის უმეტესობა. პროგრესი ინახება, ასე რომ გაკვეთილი კომპიუტერზე დაიწყე და დარბაზში დაასრულე.",
+        : "დიახ. პლატფორმა სრულად მუშაობს ტელეფონზე — სწორედ იქიდან ვარჯიშობს ხალხის უმეტესობა. პროგრესი ინახება, ასე რომ ვიდეო კომპიუტერზე დაიწყე და დარბაზში დაასრულე.",
     },
     {
       q: en
@@ -680,8 +680,8 @@ function HomeFaq({
     {
       q: en ? "How do I become a creator?" : "როგორ გავხდე კრეატორი?",
       a: en
-        ? "Sign up as a creator, build a course in the builder and submit it for review. Once approved it is published and can sell. Commission is charged only on an actual sale."
-        : "დარეგისტრირდი კრეატორად, შექმენი კურსი კონსტრუქტორში და გააგზავნე განხილვაზე. დამტკიცების შემდეგ ის გამოქვეყნდება და გაყიდვები დაიწყება. საკომისიო იჭრება მხოლოდ რეალური გაყიდვისას.",
+        ? "Sign up as a creator, build a lesson in the builder and submit it for review. Once approved it is published and can sell. Commission is charged only on an actual sale."
+        : "დარეგისტრირდი კრეატორად, შექმენი გაკვეთილი კონსტრუქტორში და გააგზავნე განხილვაზე. დამტკიცების შემდეგ ის გამოქვეყნდება და გაყიდვები დაიწყება. საკომისიო იჭრება მხოლოდ რეალური გაყიდვისას.",
     },
     {
       q: en

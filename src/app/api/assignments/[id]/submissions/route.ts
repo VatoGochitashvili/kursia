@@ -58,7 +58,7 @@ export const POST = handler(async (request, context: Ctx) => {
   await beginMutation("write", user.id);
 
   const access = await hasCourseAccess(user.id, assignment.lesson.courseId);
-  if (!access.enrolled) throw new ApiError(403, "FORBIDDEN", "კურსზე წვდომა არ გაქვთ");
+  if (!access.enrolled) throw new ApiError(403, "FORBIDDEN", "გაკვეთილზე წვდომა არ გაქვთ");
 
   const body = await readJson(request, submitSchema);
   if (body.assetKey && !assignment.allowFileUpload) {

@@ -62,8 +62,8 @@ export default async function AdminCategoriesPage() {
             locale === "en" ? "Delete this category?" : "წავშალოთ ეს კატეგორია?",
           inUse:
             locale === "en"
-              ? "Categories with courses cannot be deleted."
-              : "კატეგორია, რომელსაც კურსები იყენებს, ვერ წაიშლება.",
+              ? "Categories with lessons cannot be deleted."
+              : "კატეგორია, რომელსაც გაკვეთილები იყენებს, ვერ წაიშლება.",
         }}
       />
     </>

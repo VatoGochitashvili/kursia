@@ -20,7 +20,7 @@ import { Spotlight } from "@/components/ui/Spotlight";
  * Category hub — /category/[slug].
  *
  * These are the pages that win category-level search traffic ("პროგრამირების
- * კურსები"), so each one is server-rendered with its own title, description,
+ * გაკვეთილები"), so each one is server-rendered with its own title, description,
  * breadcrumb trail and an ItemList of the courses it contains.
  */
 export const revalidate = 600;
@@ -61,12 +61,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = locale === "en" ? category.descriptionEn : category.descriptionKa;
 
   return buildMetadata({
-    title: locale === "en" ? `${name} courses` : `${name} — ონლაინ კურსები`,
+    title: locale === "en" ? `${name} courses` : `${name} — ონლაინ გაკვეთილები`,
     description:
       description ??
       (locale === "en"
         ? `Online ${name} courses from Georgian and international instructors.`
-        : `${name} — ონლაინ კურსები ქართველი და საერთაშორისო ინსტრუქტორებისგან. ისწავლე შენი ტემპით.`),
+        : `${name} — ონლაინ გაკვეთილები ქართველი და საერთაშორისო ინსტრუქტორებისგან. ისწავლე შენი ტემპით.`),
     path: `/category/${category.slug}`,
     locale,
   });

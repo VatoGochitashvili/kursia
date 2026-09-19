@@ -108,7 +108,7 @@ export const POST = handler(async (request) => {
     const owned = await db.course.count({
       where: { id: body.courseId, creatorId: body.creatorId },
     });
-    if (owned === 0) throw notFoundError("კურსი ვერ მოიძებნა");
+    if (owned === 0) throw notFoundError("გაკვეთილი ვერ მოიძებნა");
   }
 
   const event = await db.event.create({

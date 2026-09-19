@@ -33,7 +33,7 @@ export default async function DashboardLayout({
   const p = (path: string) => localePath(path, locale);
 
   const groups: NavGroup[] = [
-    // No "my courses": courses live inside circles now, and the profile is
+    // No "my lessons": courses live inside circles now, and the profile is
     // where somebody's circles are listed.
     {
       items: [

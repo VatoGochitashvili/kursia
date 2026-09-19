@@ -64,7 +64,7 @@ export default async function RegisterPage({
             {[
               locale === "en"
                 ? `${formatCount(stats.courses, locale)} courses across ${formatCount(stats.creators, locale)} instructors`
-                : `${formatCount(stats.courses, locale)} კურსი, ${formatCount(stats.creators, locale)} ინსტრუქტორი`,
+                : `${formatCount(stats.courses, locale)} გაკვეთილი, ${formatCount(stats.creators, locale)} ინსტრუქტორი`,
               locale === "en" ? "Pay in GEL with a Georgian card" : "გადახდა ლარში, ქართული ბარათით",
               locale === "en" ? "Lifetime access, on every device" : "სამუდამო წვდომა ყველა მოწყობილობაზე",
               locale === "en" ? "Learn on any device" : "ისწავლე ნებისმიერ მოწყობილობაზე",

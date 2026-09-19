@@ -24,7 +24,7 @@ export class ManualPaymentProvider implements PaymentProvider {
       labelKa: "საბანკო გადარიცხვა",
       labelEn: "Bank transfer",
       descriptionKa:
-        "მიიღებთ გადარიცხვის ინსტრუქციას. კურსზე წვდომა გაიხსნება თანხის დადასტურების შემდეგ.",
+        "მიიღებთ გადარიცხვის ინსტრუქციას. გაკვეთილზე წვდომა გაიხსნება თანხის დადასტურების შემდეგ.",
       descriptionEn:
         "You will receive transfer instructions. Access opens once the payment is confirmed.",
       icon: "🏦",

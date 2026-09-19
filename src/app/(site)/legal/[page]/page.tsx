@@ -70,19 +70,19 @@ function buildContent(
                 ? "ანგარიშის შესაქმნელად უნდა იყოთ 18 წლის ან მეტის, ან გქონდეთ მშობლის თანხმობა. თქვენ პასუხისმგებელი ხართ თქვენი პაროლის დაცვაზე და ანგარიშიდან განხორციელებულ ქმედებებზე."
                 : "You must be 18 or older, or have a parent's consent, to create an account. You are responsible for keeping your password safe and for activity carried out from your account.",
               ka
-                ? "ერთი ანგარიში ეკუთვნის ერთ ადამიანს. ანგარიშის გაზიარება ან შეძენილ კურსზე წვდომის გადაცემა სხვისთვის იკრძალება."
-                : "One account belongs to one person. Sharing an account, or passing purchased course access to someone else, is not permitted.",
+                ? "ერთი ანგარიში ეკუთვნის ერთ ადამიანს. ანგარიშის გაზიარება ან შეძენილ გაკვეთილზე წვდომის გადაცემა სხვისთვის იკრძალება."
+                : "One account belongs to one person. Sharing an account, or passing purchased lesson access to someone else, is not permitted.",
             ],
           },
           {
-            heading: ka ? "2. კურსების შეძენა" : "2. Buying courses",
+            heading: ka ? "2. გაკვეთილების შეძენა" : "2. Buying lessons",
             body: [
               ka
-                ? "კურსზე წვდომა იხსნება მხოლოდ გადახდის დადასტურების შემდეგ. ფასები მითითებულია ლარში და მოიცავს კანონით გათვალისწინებულ გადასახადებს."
-                : "Course access opens only after payment is confirmed. Prices are shown in GEL and include applicable taxes.",
+                ? "გაკვეთილზე წვდომა იხსნება მხოლოდ გადახდის დადასტურების შემდეგ. ფასები მითითებულია ლარში და მოიცავს კანონით გათვალისწინებულ გადასახადებს."
+                : "Lesson access opens only after payment is confirmed. Prices are shown in GEL and include applicable taxes.",
               ka
-                ? "შეძენილი კურსი ხელმისაწვდომია უვადოდ, გარდა იმ შემთხვევისა, როცა კურსი კანონის ან უფლების დარღვევის გამო იშლება პლატფორმიდან."
-                : "A purchased course remains available indefinitely, unless it must be removed for legal or rights reasons.",
+                ? "შეძენილი გაკვეთილი ხელმისაწვდომია უვადოდ, გარდა იმ შემთხვევისა, როცა გაკვეთილი კანონის ან უფლების დარღვევის გამო იშლება პლატფორმიდან."
+                : "A purchased lesson remains available indefinitely, unless it must be removed for legal or rights reasons.",
             ],
           },
           {
@@ -100,8 +100,8 @@ function buildContent(
             heading: ka ? "4. აკრძალული ქმედებები" : "4. Prohibited conduct",
             body: [
               ka
-                ? "იკრძალება კურსის ჩაწერა, გადმოწერა ან გავრცელება; სხვისი ანგარიშით სარგებლობა; პლატფორმის ტექნიკური დაცვის გვერდის ავლის მცდელობა; შეურაცხმყოფელი ან უკანონო კონტენტის განთავსება."
-                : "Recording, downloading or redistributing course content; using someone else's account; attempting to bypass technical protections; and posting abusive or unlawful content are all prohibited.",
+                ? "იკრძალება გაკვეთილის ჩაწერა, გადმოწერა ან გავრცელება; სხვისი ანგარიშით სარგებლობა; პლატფორმის ტექნიკური დაცვის გვერდის ავლის მცდელობა; შეურაცხმყოფელი ან უკანონო კონტენტის განთავსება."
+                : "Recording, downloading or redistributing lesson content; using someone else's account; attempting to bypass technical protections; and posting abusive or unlawful content are all prohibited.",
             ],
           },
           {
@@ -141,8 +141,8 @@ function buildContent(
             heading: ka ? "ანალიტიკა" : "Analytics",
             body: [
               ka
-                ? "კურსის ნახვების დათვლისას ვინახავთ მხოლოდ ჰეშირებულ, არაიდენტიფიცირებად მნიშვნელობას — არა IP მისამართს ან ბრაუზერის სრულ მონაცემებს."
-                : "When counting course views we store only a hashed, non-identifying value — not your IP address or full browser fingerprint.",
+                ? "გაკვეთილის ნახვების დათვლისას ვინახავთ მხოლოდ ჰეშირებულ, არაიდენტიფიცირებად მნიშვნელობას — არა IP მისამართს ან ბრაუზერის სრულ მონაცემებს."
+                : "When counting lesson views we store only a hashed, non-identifying value — not your IP address or full browser fingerprint.",
             ],
           },
           {
@@ -160,22 +160,22 @@ function buildContent(
       return {
         title: ka ? "თანხის დაბრუნების პოლიტიკა" : "Refund Policy",
         intro: ka
-          ? `თუ კურსი არ დაგაკმაყოფილათ, თანხის დაბრუნება შესაძლებელია შეძენიდან ${settings.refundWindowDays} დღის განმავლობაში.`
+          ? `თუ გაკვეთილი არ დაგაკმაყოფილათ, თანხის დაბრუნება შესაძლებელია შეძენიდან ${settings.refundWindowDays} დღის განმავლობაში.`
           : `If a course is not what you expected, you can request a refund within ${settings.refundWindowDays} days of purchase.`,
         sections: [
           {
             heading: ka ? "როგორ მოვითხოვო" : "How to request",
             body: [
               ka
-                ? "გადადით „შენაძენებში“, აირჩიეთ კურსი და დააჭირეთ „თანხის დაბრუნებას“. მიუთითეთ მიზეზი — ეს გვეხმარება კურსების ხარისხის გაუმჯობესებაში."
-                : "Go to Purchases, choose the course and click Request a refund. Tell us why — it helps us improve course quality.",
+                ? "გადადით „შენაძენებში“, აირჩიეთ გაკვეთილი და დააჭირეთ „თანხის დაბრუნებას“. მიუთითეთ მიზეზი — ეს გვეხმარება გაკვეთილების ხარისხის გაუმჯობესებაში."
+                : "Go to Purchases, choose the lesson and click Request a refund. Tell us why — it helps us improve lesson quality.",
             ],
           },
           {
             heading: ka ? "როდის შეიძლება უარი" : "When a refund may be declined",
             body: [
               ka
-                ? `თუ ${settings.refundWindowDays} დღე გასულია, ან თუ კურსი თითქმის სრულად არის დასრულებული და მასალა ჩამოტვირთულია, მოთხოვნა შეიძლება არ დაკმაყოფილდეს.`
+                ? `თუ ${settings.refundWindowDays} დღე გასულია, ან თუ გაკვეთილი თითქმის სრულად არის დასრულებული და მასალა ჩამოტვირთულია, მოთხოვნა შეიძლება არ დაკმაყოფილდეს.`
                 : `If the ${settings.refundWindowDays}-day window has passed, or the course is almost fully completed and its materials downloaded, the request may be declined.`,
             ],
           },
@@ -202,15 +202,15 @@ function buildContent(
       return {
         title: ka ? "ჩვენ შესახებ" : "About",
         intro: ka
-          ? `${brand} არის ქართული ონლაინ სასწავლო პლატფორმა — ადგილი, სადაც ქართველი და საერთაშორისო ექსპერტები ყიდიან კურსებს, ხოლო სტუდენტები სწავლობენ მშობლიურ ენაზე.`
+          ? `${brand} არის ქართული ონლაინ სასწავლო პლატფორმა — ადგილი, სადაც ქართველი და საერთაშორისო ექსპერტები ყიდიან გაკვეთილებს, ხოლო სტუდენტები სწავლობენ მშობლიურ ენაზე.`
           : `${brand} is a Georgian online learning marketplace — a place where Georgian and international experts sell courses, and students learn in their own language.`,
         sections: [
           {
             heading: ka ? "რატომ" : "Why",
             body: [
               ka
-                ? "ქართულენოვანი ხარისხიანი სასწავლო კონტენტი მიმოფანტულია და ხშირად სისტემურობას მოკლებული. ჩვენი მიზანია ერთი სანდო ადგილი, სადაც კურსს იპოვი, შეიძენ ლარით და ბოლომდე მიიყვან."
-                : "Quality Georgian-language learning content is scattered and often unstructured. We want one trustworthy place to find a course, buy it in GEL, and actually finish it.",
+                ? "ქართულენოვანი ხარისხიანი სასწავლო კონტენტი მიმოფანტულია და ხშირად სისტემურობას მოკლებული. ჩვენი მიზანია ერთი სანდო ადგილი, სადაც გაკვეთილს იპოვი, შეიძენ ლარით და ბოლომდე მიიყვან."
+                : "Quality Georgian-language learning content is scattered and often unstructured. We want one trustworthy place to find a lesson, buy it in GEL, and actually finish it.",
             ],
           },
           {
@@ -239,8 +239,8 @@ function buildContent(
             heading: ka ? "ინსტრუქტორებისთვის" : "For instructors",
             body: [
               ka
-                ? "კურსის განხილვასთან, გატანასთან ან საკომისიოსთან დაკავშირებული კითხვები — მოგვწერეთ იმავე მისამართზე და მიუთითეთ თქვენი ინსტრუქტორის სახელი."
-                : "For questions about course review, payouts or commission, write to the same address and include your instructor name.",
+                ? "გაკვეთილის განხილვასთან, გატანასთან ან საკომისიოსთან დაკავშირებული კითხვები — მოგვწერეთ იმავე მისამართზე და მიუთითეთ თქვენი ინსტრუქტორის სახელი."
+                : "For questions about lesson review, payouts or commission, write to the same address and include your instructor name.",
             ],
           },
         ],
@@ -254,11 +254,11 @@ function buildContent(
           : "Frequently asked questions and short guides.",
         sections: [
           {
-            heading: ka ? "ვერ ვხსნი შეძენილ კურსს" : "I can't open a course I bought",
+            heading: ka ? "ვერ ვხსნი შეძენილ გაკვეთილს" : "I can't open a lesson I bought",
             body: [
               ka
-                ? "შეამოწმეთ „შენაძენებში“ შეკვეთის სტატუსი. თუ ის „მოლოდინშია“, გადახდა ჯერ არ დაუდასტურებია ბანკს. თუ „გადახდილია“, მაგრამ კურსი არ იხსნება — მოგვწერეთ და მიუთითეთ შეკვეთის ნომერი."
-                : "Check the order status under Purchases. If it says Pending, the bank has not confirmed the payment yet. If it says Paid but the course will not open, write to us with the order reference.",
+                ? "შეამოწმეთ „შენაძენებში“ შეკვეთის სტატუსი. თუ ის „მოლოდინშია“, გადახდა ჯერ არ დაუდასტურებია ბანკს. თუ „გადახდილია“, მაგრამ გაკვეთილი არ იხსნება — მოგვწერეთ და მიუთითეთ შეკვეთის ნომერი."
+                : "Check the order status under Purchases. If it says Pending, the bank has not confirmed the payment yet. If it says Paid but the lesson will not open, write to us with the order reference.",
             ],
           },
           {
@@ -273,7 +273,7 @@ function buildContent(
             heading: ka ? "პროგრესი არ განახლდა" : "My progress hasn't updated",
             body: [
               ka
-                ? "პროგრესი ითვლება მხოლოდ გამოქვეყნებული გაკვეთილებიდან და ინახება ავტომატურად. თუ რიცხვი არ შეიცვალა, განაახლეთ გვერდი — და შეამოწმეთ, გაკვეთილი მონიშნულია თუ არა დასრულებულად."
+                ? "პროგრესი ითვლება მხოლოდ გამოქვეყნებული ვიდეოებიდან და ინახება ავტომატურად. თუ რიცხვი არ შეიცვალა, განაახლეთ გვერდი — და შეამოწმეთ, ვიდეო მონიშნულია თუ არა დასრულებულად."
                 : "Progress counts only published lessons and saves automatically. If the number has not moved, refresh the page — and check the lesson is actually marked complete.",
             ],
           },

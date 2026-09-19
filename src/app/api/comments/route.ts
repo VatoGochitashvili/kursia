@@ -18,7 +18,7 @@ export const POST = handler(async (request) => {
   const body = await readJson(request, commentSchema);
 
   const access = await hasCourseAccess(user.id, body.courseId);
-  if (!access.canView) throw new ApiError(403, "FORBIDDEN", "კურსზე წვდომა არ გაქვთ");
+  if (!access.canView) throw new ApiError(403, "FORBIDDEN", "გაკვეთილზე წვდომა არ გაქვთ");
 
   // A reply must belong to the same course as its parent.
   if (body.parentId) {
@@ -68,7 +68,7 @@ export const POST = handler(async (request) => {
       await notify({
         userId: course.creator.userId,
         type: "NEW_COMMENT",
-        title: body.isQuestion ? "ახალი კითხვა კურსზე" : "ახალი კომენტარი კურსზე",
+        title: body.isQuestion ? "ახალი კითხვა გაკვეთილზე" : "ახალი კომენტარი გაკვეთილზე",
         body: `${course.title}: ${body.body.slice(0, 100)}`,
         linkUrl: `/learn/${course.slug}${body.lessonId ? `?lesson=${body.lessonId}` : ""}`,
       });

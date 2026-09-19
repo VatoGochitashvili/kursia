@@ -79,7 +79,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description:
       course.metaDescription ||
       toPlainText(course.subtitle || course.description, 160) ||
-      `${course.title} — ონლაინ კურსი ${course.creator.displayName}-სგან.`,
+      `${course.title} — ონლაინ გაკვეთილი ${course.creator.displayName}-სგან.`,
     path: `/courses/${course.slug}`,
     locale,
     image: course.thumbnailUrl,
@@ -178,8 +178,8 @@ export default async function CoursePage({ params }: Props) {
         <div className="container-page pt-4">
           <Alert tone="warn" title={t.creator[`status${course.status}` as keyof typeof t.creator] as string}>
             {locale === "en"
-              ? "Only you and administrators can see this page while the course is not published."
-              : "სანამ კურსი გამოქვეყნებული არ არის, ამ გვერდს მხოლოდ თქვენ და ადმინისტრატორები ხედავთ."}
+              ? "Only you and administrators can see this page while the lesson is not published."
+              : "სანამ გაკვეთილი გამოქვეყნებული არ არის, ამ გვერდს მხოლოდ თქვენ და ადმინისტრატორები ხედავთ."}
           </Alert>
         </div>
       )}
@@ -433,7 +433,7 @@ export default async function CoursePage({ params }: Props) {
             {course.description && (
               <Section title={t.courses.description}>
                 <div
-                  className="prose-course max-w-prose"
+                  className="prose-lesson max-w-prose"
                   // Creator-authored copy. Plain text from the builder is
                   // escaped and converted to paragraphs; no raw HTML is trusted.
                   dangerouslySetInnerHTML={{ __html: paragraphsToHtml(course.description) }}

@@ -106,7 +106,7 @@ export default async function AdminRefundsPage() {
                             reject: t.admin.reject,
                             amount: locale === "en" ? "Refund amount" : "დასაბრუნებელი თანხა",
                             revokeAccess:
-                              locale === "en" ? "Revoke course access" : "წვდომის გაუქმება",
+                              locale === "en" ? "Revoke lesson access" : "წვდომის გაუქმება",
                             note: t.admin.reason,
                             submit: t.common.confirm,
                             cancel: t.common.cancel,

@@ -19,7 +19,7 @@ export const POST = handler(async (request) => {
   if (!lesson) throw notFoundError();
 
   const access = await hasCourseAccess(user.id, lesson.courseId);
-  if (!access.canView) throw new ApiError(403, "FORBIDDEN", "კურსზე წვდომა არ გაქვთ");
+  if (!access.canView) throw new ApiError(403, "FORBIDDEN", "გაკვეთილზე წვდომა არ გაქვთ");
 
   const note = await db.lessonNote.create({
     data: {

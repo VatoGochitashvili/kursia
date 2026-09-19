@@ -55,7 +55,7 @@ export async function requireCourseOwner(courseId: string) {
     where: { id: courseId },
     select: { id: true, creatorId: true, status: true, slug: true, title: true },
   });
-  if (!course) throw notFound("კურსი ვერ მოიძებნა");
+  if (!course) throw notFound("გაკვეთილი ვერ მოიძებნა");
   if (user.role === "ADMIN") return { user, course };
   if (!user.creatorId || course.creatorId !== user.creatorId) throw forbidden();
   return { user, course };

@@ -74,13 +74,13 @@ export async function startCheckout(input: {
     }),
   ]);
 
-  if (!course) throw notFoundError("კურსი ვერ მოიძებნა");
+  if (!course) throw notFoundError("გაკვეთილი ვერ მოიძებნა");
   if (!user || user.status !== "ACTIVE") throw new ApiError(403, "FORBIDDEN", "ანგარიში არააქტიურია");
   if (course.status !== "PUBLISHED") {
-    throw new ApiError(409, "NOT_PURCHASABLE", "კურსი ამჟამად არ იყიდება");
+    throw new ApiError(409, "NOT_PURCHASABLE", "გაკვეთილი ამჟამად არ იყიდება");
   }
   if (course.creator.userId === input.userId) {
-    throw conflict("საკუთარი კურსის შეძენა შეუძლებელია");
+    throw conflict("საკუთარი გაკვეთილის შეძენა შეუძლებელია");
   }
 
   // What the buyer asked for, checked against what this course actually
@@ -91,10 +91,10 @@ export async function startCheckout(input: {
     input.kind === "SUBSCRIPTION" || course.pricingModel === "SUBSCRIPTION";
 
   if (wantsSubscription && course.pricingModel === "ONE_TIME") {
-    throw conflict("ეს კურსი მხოლოდ ერთჯერადად იყიდება");
+    throw conflict("ეს გაკვეთილი მხოლოდ ერთჯერადად იყიდება");
   }
   if (!wantsSubscription && course.pricingModel === "SUBSCRIPTION") {
-    throw conflict("ეს კურსი მხოლოდ თვიური წვდომითაა ხელმისაწვდომი");
+    throw conflict("ეს გაკვეთილი მხოლოდ თვიური წვდომითაა ხელმისაწვდომი");
   }
   if (wantsSubscription && !course.subscriptionPriceMinor) {
     throw conflict("თვიური ფასი დაყენებული არ არის");
@@ -111,7 +111,7 @@ export async function startCheckout(input: {
     existing &&
     !existing.revokedAt &&
     (!existing.accessExpiresAt || existing.accessExpiresAt.getTime() > Date.now());
-  if (stillHasAccess && !wantsSubscription) throw conflict("კურსი უკვე შეძენილია");
+  if (stillHasAccess && !wantsSubscription) throw conflict("გაკვეთილი უკვე შეძენილია");
 
   // Price comes from the database — never from the request body.
   const listMinor = wantsSubscription
@@ -891,7 +891,7 @@ export async function fulfillPurchase(input: FulfillInput): Promise<{ settled: b
   await notify({
     userId: p.userId,
     type: p.course ? "COURSE_PURCHASED" : "MEMBERSHIP_STARTED",
-    title: p.course ? "კურსი წარმატებით შეიძინეთ" : "წრეში შემოგვიერთდი",
+    title: p.course ? "გაკვეთილი წარმატებით შეიძინეთ" : "წრეში შემოგვიერთდი",
     body: label,
     linkUrl: destination,
     data: { courseId: p.courseId, purchaseId: p.id },

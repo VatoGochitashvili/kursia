@@ -78,7 +78,7 @@ export async function updateCourse(courseId: string, input: UpdateCourseInput) {
     where: { id: courseId },
     select: { id: true, title: true, slug: true, currency: true, status: true },
   });
-  if (!existing) throw notFoundError("კურსი ვერ მოიძებნა");
+  if (!existing) throw notFoundError("გაკვეთილი ვერ მოიძებნა");
 
   // Re-slug on a title change, but only while the course has never been
   // public — changing a live URL would break inbound links and rankings.
@@ -178,7 +178,7 @@ export async function checkPublishReadiness(courseId: string): Promise<Readiness
       },
     },
   });
-  if (!course) throw notFoundError("კურსი ვერ მოიძებნა");
+  if (!course) throw notFoundError("გაკვეთილი ვერ მოიძებნა");
 
   const issues: ReadinessIssue[] = [];
   const push = (field: string, message: string) => issues.push({ field, message });
@@ -187,7 +187,7 @@ export async function checkPublishReadiness(courseId: string): Promise<Readiness
   if ((course.description ?? "").trim().length < 100) {
     push("description", "აღწერა უნდა იყოს მინიმუმ 100 სიმბოლო");
   }
-  if (!course.thumbnailUrl) push("thumbnailUrl", "ატვირთეთ კურსის ფოტო");
+  if (!course.thumbnailUrl) push("thumbnailUrl", "ატვირთეთ გაკვეთილის ფოტო");
   if (!course.categoryId) push("categoryId", "აირჩიეთ კატეგორია");
 
   const outcomes = course.learningOutcomes ? JSON.parse(course.learningOutcomes) : [];
@@ -196,7 +196,7 @@ export async function checkPublishReadiness(courseId: string): Promise<Readiness
   }
 
   const lessons = course.modules.flatMap((m) => m.lessons);
-  if (lessons.length < 3) push("curriculum", "დაამატეთ მინიმუმ 3 გაკვეთილი");
+  if (lessons.length < 3) push("curriculum", "დაამატეთ მინიმუმ 3 ვიდეო");
 
   // A lesson with no content at all would be a dead end for a paying student.
   const emptyLessons = lessons.filter(
@@ -206,7 +206,7 @@ export async function checkPublishReadiness(courseId: string): Promise<Readiness
       ((l.type === "PDF" || l.type === "FILE") && !l.assetKey),
   );
   if (emptyLessons.length > 0) {
-    push("curriculum", `${emptyLessons.length} გაკვეთილს არ აქვს შიგთავსი`);
+    push("curriculum", `${emptyLessons.length} ვიდეოს არ აქვს შიგთავსი`);
   }
 
   return issues;
@@ -232,7 +232,7 @@ export async function transitionCourse(input: {
       creator: { select: { id: true, userId: true } },
     },
   });
-  if (!course) throw notFoundError("კურსი ვერ მოიძებნა");
+  if (!course) throw notFoundError("გაკვეთილი ვერ მოიძებნა");
 
   const from = course.status as CourseStatus;
   const isAdmin = input.actorRole === "ADMIN";
@@ -249,7 +249,7 @@ export async function transitionCourse(input: {
     throw new ApiError(
       403,
       "APPROVAL_REQUIRED",
-      "კურსის გამოქვეყნება შესაძლებელია მხოლოდ ადმინის დამტკიცების შემდეგ",
+      "გაკვეთილის გამოქვეყნება შესაძლებელია მხოლოდ ადმინის დამტკიცების შემდეგ",
     );
   }
 
@@ -262,7 +262,7 @@ export async function transitionCourse(input: {
     const issues = await checkPublishReadiness(course.id);
     if (issues.length > 0) {
       throw badRequest(
-        "კურსი ჯერ არ არის მზად განხილვისთვის",
+        "გაკვეთილი ჯერ არ არის მზად განხილვისთვის",
         Object.fromEntries(issues.map((i) => [i.field, [i.message]])),
       );
     }
@@ -344,7 +344,7 @@ async function notifyTransition(input: {
           notify({
             userId: admin.id,
             type: "COURSE_SUBMITTED",
-            title: "ახალი კურსი განსახილველად",
+            title: "ახალი გაკვეთილი განსახილველად",
             body: input.course.title,
             linkUrl: `/admin/courses?status=SUBMITTED`,
           }),
@@ -356,7 +356,7 @@ async function notifyTransition(input: {
       await notify({
         userId: input.creatorUserId,
         type: "COURSE_PUBLISHED",
-        title: "კურსი გამოქვეყნებულია",
+        title: "გაკვეთილი გამოქვეყნებულია",
         body: input.course.title,
         linkUrl: `/courses/${input.course.slug}`,
         email: {
@@ -390,7 +390,7 @@ async function notifyTransition(input: {
           notify({
             userId: follow.followerId,
             type: "NEW_COURSE_FROM_CREATOR",
-            title: "ახალი კურსი ავტორისგან, რომელსაც მიჰყვები",
+            title: "ახალი გაკვეთილი ავტორისგან, რომელსაც მიჰყვები",
             body: input.course.title,
             linkUrl: `/courses/${input.course.slug}`,
           }).catch(() => undefined),
@@ -402,7 +402,7 @@ async function notifyTransition(input: {
       await notify({
         userId: input.creatorUserId,
         type: "COURSE_APPROVED",
-        title: "კურსი დამტკიცდა",
+        title: "გაკვეთილი დამტკიცდა",
         body: input.course.title,
         linkUrl: courseUrl,
       });
@@ -413,7 +413,7 @@ async function notifyTransition(input: {
         userId: input.creatorUserId,
         type: input.to === "REJECTED" ? "COURSE_REJECTED" : "COURSE_CHANGES_REQUESTED",
         title:
-          input.to === "REJECTED" ? "კურსი უარყოფილია" : "კურსი საჭიროებს ცვლილებებს",
+          input.to === "REJECTED" ? "გაკვეთილი უარყოფილია" : "გაკვეთილი საჭიროებს ცვლილებებს",
         body: input.note ?? "",
         linkUrl: courseUrl,
         email: {
