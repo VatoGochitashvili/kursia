@@ -21,11 +21,14 @@ export function CommunityHeader({
   creator,
   community,
   isMember,
+  showPrice = true,
   t,
 }: {
   creator: { displayName: string; avatarUrl: string | null };
   community: CommunityView;
   isMember: boolean;
+  /** Off for signed-out visitors: they are shown the way in, not the terms. */
+  showPrice?: boolean;
   t: Dictionary;
 }) {
   const free = community.priceMinor === 0;
@@ -61,6 +64,7 @@ export function CommunityHeader({
           className="mt-4 flex animate-fade-up flex-wrap items-center gap-x-4 gap-y-2 text-[13px] text-ink-muted"
           style={{ animationDelay: "120ms" }}
         >
+          {showPrice && (
           <span className="inline-flex items-center gap-1.5 font-semibold text-ink">
             {free ? (
               <>
@@ -75,6 +79,7 @@ export function CommunityHeader({
               </>
             )}
           </span>
+          )}
 
           <span className="inline-flex items-center gap-1.5">
             <Icon name="users" size={14} />

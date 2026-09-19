@@ -13,21 +13,15 @@ export interface HeaderUser {
   avatarUrl: string | null;
   role: "STUDENT" | "CREATOR" | "ADMIN";
   unreadNotifications: number;
-}
-
-export interface NavCategory {
-  slug: string;
-  name: string;
-  icon: IconName;
-  courseCount: number;
-  children: { slug: string; name: string }[];
+  unreadMessages: number;
 }
 
 interface Props {
   user: HeaderUser | null;
   /** True only when the creator's plan is paid; the studio is locked without it. */
   showCreatorStudio?: boolean;
-  categories: NavCategory[];
+  /** Where "create your circle" leads; null hides it (the plan is already paid). */
+  createCircleHref: string | null;
   labels: Record<string, string>;
   localeSwitch: { href: string; label: string };
 }
@@ -39,13 +33,13 @@ interface Props {
  */
 export function HeaderClient({
   user,
-  categories,
+  createCircleHref,
   labels,
   localeSwitch,
   showCreatorStudio,
 }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [menu, setMenu] = useState<"none" | "categories" | "user">("none");
+  const [menu, setMenu] = useState<"none" | "user">("none");
   const pathname = usePathname();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -92,49 +86,21 @@ export function HeaderClient({
 
   return (
     <div ref={containerRef} className="flex items-center gap-1">
-      {/* Categories dropdown — desktop */}
-      <div className="relative hidden lg:block">
-        <button
-          type="button"
-          onClick={() => setMenu(menu === "categories" ? "none" : "categories")}
-          aria-expanded={menu === "categories"}
-          aria-haspopup="true"
-          className="inline-flex h-10 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink"
-        >
-          {labels.categories}
-          <Icon name="chevronDown" size={15} className={cn("transition-transform", menu === "categories" && "rotate-180")} />
-        </button>
-
-        {menu === "categories" && (
-          <div className="absolute left-0 top-full z-50 mt-2 w-[min(46rem,90vw)] animate-scale-in rounded-2xl border border-line bg-surface p-3 shadow-xl">
-            <div className="grid grid-cols-2 gap-1">
-              {categories.map((c) => (
-                <Link
-                  key={c.slug}
-                  href={`/communities?category=${c.slug}`}
-                  className="group flex items-start gap-3 rounded-xl p-3 transition-colors hover:bg-surface-muted"
-                >
-                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
-                    <Icon name={c.icon} size={17} />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-semibold text-ink group-hover:text-brand-700">
-                      {c.name}
-                    </span>
-                    <span className="block text-xs text-ink-subtle">
-                      {c.courseCount} {labels.coursesShort}
-                    </span>
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
       {/* Authenticated actions */}
       {user ? (
         <>
+          <Link
+            href="/dashboard/messages"
+            aria-label={labels.messages}
+            className="relative hidden h-10 w-10 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink sm:inline-flex"
+          >
+            <Icon name="message" size={19} />
+            {user.unreadMessages > 0 && (
+              <span className="absolute right-1.5 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent-500 px-1 text-[10px] font-bold text-white">
+                {user.unreadMessages > 9 ? "9+" : user.unreadMessages}
+              </span>
+            )}
+          </Link>
           <Link
             href="/dashboard/notifications"
             aria-label={labels.notifications}
@@ -175,6 +141,7 @@ export function HeaderClient({
                   {user.role === "ADMIN" && (
                     <MenuLink href="/admin" icon="shield" label={labels.admin} />
                   )}
+                  <MenuLink href="/dashboard/messages" icon="message" label={labels.messages} />
                   <MenuLink href="/dashboard/wishlist" icon="heart" label={labels.wishlist} />
                   <MenuLink href="/dashboard/profile" icon="settings" label={labels.settings} />
                 </nav>
@@ -258,17 +225,18 @@ export function HeaderClient({
                 </div>
               )}
 
-              <MenuLink href="/communities" icon="users" label={labels.communities} mobile />
+              {createCircleHref && (
+                <Link
+                  href={createCircleHref}
+                  className="mb-3 flex h-12 items-center justify-center gap-2 rounded-xl border-2 border-brand-600 text-[15px] font-bold text-brand-700"
+                >
+                  <Icon name="plus" size={18} />
+                  {labels.createCircle}
+                </Link>
+              )}
               {user && <MenuLink href={dashboardHref} icon="grid" label={labels.dashboard} mobile />}
+              {user && <MenuLink href="/dashboard/messages" icon="message" label={labels.messages} mobile />}
               {user && <MenuLink href="/dashboard/notifications" icon="bell" label={labels.notifications} mobile />}
-              {!user && <MenuLink href="/become-instructor" icon="sparkles" label={labels.becomeCreator} mobile />}
-
-              <p className="mb-1 mt-5 px-3 text-[11px] font-semibold tracking-wide text-ink-subtle">
-                {labels.categories}
-              </p>
-              {categories.map((c) => (
-                <MenuLink key={c.slug} href={`/communities?category=${c.slug}`} icon={c.icon} label={c.name} mobile />
-              ))}
             </nav>
 
             <div className="border-t border-line p-3 safe-b">

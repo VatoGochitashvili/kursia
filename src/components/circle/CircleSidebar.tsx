@@ -27,6 +27,7 @@ export function CircleSidebar({
   cancelled,
   settingsHref,
   showCover,
+  showPrice = true,
   locale,
   t,
 }: {
@@ -42,6 +43,8 @@ export function CircleSidebar({
    * the same photo twice, side by side, reads as a layout mistake.
    */
   showCover: boolean;
+  /** Off for signed-out visitors, who see the join button before any price. */
+  showPrice?: boolean;
   locale: Locale;
   t: Dictionary;
 }) {
@@ -67,7 +70,9 @@ export function CircleSidebar({
             <p className="mt-1 text-[13px] leading-relaxed text-ink-muted">{community.tagline}</p>
           )}
 
-          <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-line pt-4 text-center">
+          <dl
+            className={`mt-4 grid gap-3 border-t border-line pt-4 text-center ${showPrice ? "grid-cols-2" : "grid-cols-1"}`}
+          >
             <div>
               <dt className="text-[11px] font-semibold uppercase tracking-[0.06em] text-ink-subtle">
                 {t.circle.members}
@@ -76,6 +81,7 @@ export function CircleSidebar({
                 {formatNumber(community.memberCount)}
               </dd>
             </div>
+            {showPrice && (
             <div>
               <dt className="text-[11px] font-semibold uppercase tracking-[0.06em] text-ink-subtle">
                 {t.circle.price}
@@ -84,6 +90,7 @@ export function CircleSidebar({
                 {free ? t.membership.free : formatMoney(community.priceMinor, community.currency)}
               </dd>
             </div>
+            )}
           </dl>
 
           <div className="mt-4 grid gap-1.5 border-t border-line pt-4 text-[13px]">

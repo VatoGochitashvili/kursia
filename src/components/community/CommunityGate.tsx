@@ -1,5 +1,7 @@
 import { JoinCommunityCard, type CommunityView } from "@/components/community/JoinCommunityCard";
+import Link from "next/link";
 import { ButtonLink } from "@/components/ui/Button";
+import { localePath } from "@/i18n";
 import { Card } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
 import type { Dictionary } from "@/i18n";
@@ -20,6 +22,7 @@ export function CommunityGate({
   isOwner,
   gate,
   loginHref,
+  registerHref,
   coursesHref,
   locale,
   t,
@@ -35,10 +38,37 @@ export function CommunityGate({
     reviewNote: string | null;
   };
   loginHref: string;
+  /** Where "join" sends a visitor with no account. Defaults to sign-up, back to this circle. */
+  registerHref?: string;
   coursesHref: string;
   locale: Locale;
   t: Dictionary;
 }) {
+  // A visitor with no account sees one button and no price. The price and
+  // the plan come after they sign in, when they can act on them — a wall of
+  // terms in front of somebody who has not even registered only turns them away.
+  if (community.enabled && !isAuthenticated) {
+    const signUp =
+      registerHref ?? localePath(`/register?next=/community/${creatorSlug}`, locale);
+    return (
+      <Card className="p-6 text-center sm:p-8">
+        <h2 className="text-xl">{community.name}</h2>
+        <p className="mx-auto mt-2 max-w-md text-[14.5px] leading-relaxed text-ink-muted">
+          {t.circle.joinHint}
+        </p>
+        <ButtonLink className="mt-6 min-w-48" href={signUp} size="lg">
+          {t.circle.join}
+        </ButtonLink>
+        <p className="mt-4 text-[13px] text-ink-muted">
+          {t.auth.hasAccount}{" "}
+          <Link href={loginHref} className="font-semibold text-brand-600 hover:underline">
+            {t.nav.login}
+          </Link>
+        </p>
+      </Card>
+    );
+  }
+
   if (community.enabled) {
     return (
       <JoinCommunityCard

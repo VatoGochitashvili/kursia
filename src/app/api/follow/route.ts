@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { beginMutation, conflict, handler, jsonOk, notFoundError, readJson } from "@/lib/api";
-import { requireUser } from "@/lib/auth/rbac";
+import { forbidden, requireUser } from "@/lib/auth/rbac";
+import { sharedCircleIds } from "@/lib/social";
 import { cuid } from "@/lib/validation";
 
 export const runtime = "nodejs";
@@ -13,12 +14,32 @@ export const runtime = "nodejs";
  * because that is what a notification is addressed to — and a creator who is
  * also a student is one person either way.
  *
- * Callers pass the creator profile id, which is what a public page has, and
- * this resolves it. Accepting a raw user id here would let anyone follow any
- * account on the platform, including students, which is not a relationship
- * this product has.
+ * Callers pass either the creator profile id, which is what a public page
+ * has, or — for members — a user id. A member can be followed only by someone
+ * who shares a circle with them: a circle is where people meet here, and it
+ * keeps a stranger from collecting followers across the whole platform.
  */
-const bodySchema = z.object({ creatorId: cuid }).strict();
+const bodySchema = z
+  .object({ creatorId: cuid.optional(), userId: cuid.optional() })
+  .strict()
+  .refine((b) => Boolean(b.creatorId) !== Boolean(b.userId), "creatorId ან userId");
+
+async function resolveTarget(
+  followerId: string,
+  target: { creatorId?: string | null; userId?: string | null },
+): Promise<string> {
+  if (target.creatorId) return resolveCreatorUserId(target.creatorId);
+  const userId = target.userId ?? "";
+  const exists = await db.user.findFirst({
+    where: { id: userId, status: "ACTIVE" },
+    select: { id: true },
+  });
+  if (!exists) throw notFoundError("მომხმარებელი ვერ მოიძებნა");
+  if (userId !== followerId && (await sharedCircleIds(followerId, userId)).length === 0) {
+    throw forbidden("გამოწერა შეგიძლია მხოლოდ შენი წრის წევრების");
+  }
+  return userId;
+}
 
 async function resolveCreatorUserId(creatorId: string): Promise<string> {
   const creator = await db.creatorProfile.findUnique({
@@ -32,9 +53,9 @@ async function resolveCreatorUserId(creatorId: string): Promise<string> {
 export const POST = handler(async (request) => {
   const user = await requireUser();
   await beginMutation("write", user.id);
-  const { creatorId } = await readJson(request, bodySchema);
+  const target = await readJson(request, bodySchema);
 
-  const followedUserId = await resolveCreatorUserId(creatorId);
+  const followedUserId = await resolveTarget(user.id, target);
   if (followedUserId === user.id) throw conflict("საკუთარ თავზე გამოწერა შეუძლებელია");
 
   await db.follow
@@ -50,8 +71,12 @@ export const DELETE = handler(async (request) => {
   const user = await requireUser();
   await beginMutation("write", user.id);
 
-  const creatorId = new URL(request.url).searchParams.get("creatorId") ?? "";
-  const followedUserId = await resolveCreatorUserId(creatorId);
+  const params = new URL(request.url).searchParams;
+  const creatorId = params.get("creatorId");
+  // Unfollowing needs no shared circle: anyone may stop following anyone.
+  const followedUserId = creatorId
+    ? await resolveCreatorUserId(creatorId)
+    : (params.get("userId") ?? "");
 
   await db.follow.deleteMany({ where: { followerId: user.id, followedUserId } });
 

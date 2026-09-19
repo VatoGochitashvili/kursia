@@ -75,6 +75,7 @@ export default async function CircleLayout({
           cancelled={cancelled}
           settingsHref={localePath("/dashboard/creator/community", locale)}
           showCover={membership.isMember}
+          showPrice={Boolean(viewer)}
           locale={locale}
           t={t}
         />

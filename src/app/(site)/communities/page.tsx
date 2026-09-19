@@ -142,7 +142,7 @@ export default async function CommunitiesPage({ searchParams }: Props) {
                 {t.communities.all}
               </ButtonLink>
             )}
-            <ButtonLink href={p("/become-instructor")}>{t.communities.startYours}</ButtonLink>
+            <ButtonLink href={p("/start")}>{t.communities.startYours}</ButtonLink>
           </div>
         </Card>
       ) : (

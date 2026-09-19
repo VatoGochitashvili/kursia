@@ -75,10 +75,16 @@ export default async function HomePage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <ButtonLink href={p("/start")} size="md">
+            {/* The one thing on this page for somebody who wants to run a
+                circle rather than join one — outlined heavily and large, so it
+                is found without competing with the circles themselves. */}
+            <Link
+              href={p("/start")}
+              className="inline-flex h-12 items-center gap-2 rounded-xl border-2 border-brand-600 bg-brand-50 px-5 text-[15px] font-bold text-brand-700 shadow-sm transition-colors hover:bg-brand-600 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 sm:h-14 sm:px-6 sm:text-base"
+            >
+              <Icon name="plus" size={18} />
               {t.start.title}
-              <Icon name="arrowRight" size={16} />
-            </ButtonLink>
+            </Link>
             <SeeAllLink href={p("/communities")} label={t.common.seeAll} />
           </div>
         </div>
@@ -182,7 +188,7 @@ export default async function HomePage() {
         t={t}
         share={creatorShare}
         href={p("/start")}
-        secondaryHref={p("/become-instructor")}
+        secondaryHref={p("/start")}
       />
 
       {/* ── How it works ─────────────────────────────────────────────────── */}
@@ -305,7 +311,7 @@ export default async function HomePage() {
                 {t.home.creatorCtaButton}
                 <Icon name="arrowRight" size={17} />
               </ButtonLink>
-              <ButtonLink href={p("/become-instructor")} size="lg" variant="ghostOnDark">
+              <ButtonLink href={p("/start")} size="lg" variant="ghostOnDark">
                 {t.common.showMore}
               </ButtonLink>
             </div>

@@ -92,7 +92,7 @@ export const en: Dictionary = {
     earningsPoint2Body: "GEL, Georgian cards, Bank of Georgia and TBC.",
     earningsPoint3Title: "Everything in one place",
     earningsPoint3Body: "Course, video, quizzes, progress, analytics and payouts.",
-    earningsCta: "Open a creator account",
+    earningsCta: "Create your circle",
 
     studentBenefitsTitle: "Why students choose us",
     studentBenefit1Title: "In Georgian",
@@ -120,7 +120,7 @@ export const en: Dictionary = {
     faqSubtitle: "Can't find an answer? Get in touch",
     creatorCtaTitle: "What you know is worth something",
     creatorCtaBody: "Build a course, set your price and earn from every sale. Starting is free.",
-    creatorCtaButton: "Start building",
+    creatorCtaButton: "Create your circle",
     creatorCtaNote: "Commission is only charged on a sale",
   },
 
@@ -617,7 +617,7 @@ export const en: Dictionary = {
   },
 
   start: {
-    title: "Start your circle",
+    title: "Create your circle",
     subtitle: "Pick a plan, open your circle, and start earning monthly.",
     monthly: "Monthly",
     yearly: "Yearly",
@@ -682,6 +682,35 @@ export const en: Dictionary = {
     invite: "Copy link",
     copied: "Link copied",
     manage: "Circle settings",
+    follow: "Follow",
+    following: "Following",
+    message: "Message",
+    followers: "Followers",
+    followingCount: "Following",
+    points: "Points",
+    posts: "Posts",
+    replies: "Replies",
+    likesReceived: "Likes received",
+    eventsAttended: "Events",
+    contributionsTitle: "Contributions in this circle",
+    contributionsEmpty: "Nothing posted in this circle yet",
+    membershipsTitle: "Memberships",
+    memberSince: "On the platform since {date}",
+    you: "You",
+    memberRole: "Member",
+    backToMembers: "Members",
+    join: "Join",
+    joinHint: "Log in or sign up to see the membership options and price.",
+  },
+
+  messages: {
+    title: "Messages",
+    empty: "No conversations yet. You can message a circle member from their profile.",
+    placeholder: "Write a message…",
+    send: "Send",
+    you: "You:",
+    threadEmpty: "Start the conversation",
+    back: "All messages",
   },
 
   footer: {

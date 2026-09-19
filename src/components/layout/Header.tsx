@@ -3,11 +3,11 @@ import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth/session";
 import { getSettings } from "@/lib/settings";
 import { getPlanState } from "@/lib/creator-plan";
-import { getCategoryTree } from "@/lib/courses";
 import { getI18n, localePath } from "@/i18n";
-import { categoryIcon } from "@/components/ui/Icon";
+import { Icon } from "@/components/ui/Icon";
+import { unreadMessageCount } from "@/lib/social";
 import { SearchBar } from "./SearchBar";
-import { HeaderClient, type HeaderUser, type NavCategory } from "./HeaderClient";
+import { HeaderClient, type HeaderUser } from "./HeaderClient";
 import { Logo } from "./Logo";
 import { StickyHeader } from "./StickyHeader";
 import { MobileHeaderSearch } from "./MobileHeaderSearch";
@@ -17,16 +17,18 @@ import { MobileHeaderSearch } from "./MobileHeaderSearch";
  * in the HTML, so navigation is crawlable and usable before hydration.
  */
 export async function Header() {
-  const [{ locale, t }, settings, sessionUser, categories] = await Promise.all([
+  const [{ locale, t }, settings, sessionUser] = await Promise.all([
     getI18n(),
     getSettings(),
     getSessionUser(),
-    getCategoryTree(),
   ]);
 
-  const unread = sessionUser
-    ? await db.notification.count({ where: { userId: sessionUser.id, readAt: null } })
-    : 0;
+  const [unread, unreadMessages] = sessionUser
+    ? await Promise.all([
+        db.notification.count({ where: { userId: sessionUser.id, readAt: null } }),
+        unreadMessageCount(sessionUser.id),
+      ])
+    : [0, 0];
 
   // The studio link is shown only to a creator whose plan is paid — the menu
   // should not offer a door that opens onto a locked room.
@@ -41,19 +43,9 @@ export async function Header() {
         avatarUrl: sessionUser.avatarUrl,
         role: sessionUser.role,
         unreadNotifications: unread,
+        unreadMessages,
       }
     : null;
-
-  const navCategories: NavCategory[] = categories.slice(0, 10).map((c) => ({
-    slug: c.slug,
-    name: locale === "en" ? c.nameEn : c.nameKa,
-    icon: categoryIcon(c.icon),
-    courseCount: c.courseCount,
-    children: c.children.map((child) => ({
-      slug: child.slug,
-      name: locale === "en" ? child.nameEn : child.nameKa,
-    })),
-  }));
 
   const brand = locale === "en" ? settings.platformName : settings.platformNameKa;
   const otherLocale = locale === "ka" ? "en" : "ka";
@@ -72,23 +64,6 @@ export async function Header() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-0.5 lg:flex" aria-label={t.communities.title}>
-          {/* Communities first: the membership is the product, and a course is
-              something you find once you are inside one. */}
-          <Link
-            href={localePath("/communities", locale)}
-            className="inline-flex h-10 items-center rounded-lg px-3 text-sm font-semibold text-ink transition-colors hover:bg-surface-sunken"
-          >
-            {t.communities.title}
-          </Link>
-          <Link
-            href={localePath("/instructors", locale)}
-            className="inline-flex h-10 items-center rounded-lg px-3 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink"
-          >
-            {t.nav.creators}
-          </Link>
-        </nav>
-
         <div className="mx-auto hidden w-full max-w-md md:block">
           <SearchBar
             placeholder={t.communities.searchPlaceholder}
@@ -97,27 +72,29 @@ export async function Header() {
         </div>
 
         <div className="ms-auto flex items-center gap-1 md:ms-0">
-          {!user && (
+          {/* The one call to action in the bar, outlined so it reads as a
+              button and not as another link. Gone once the plan is paid —
+              that person has a circle already. */}
+          {!studioOpen && (
             <Link
-              href={localePath("/become-instructor", locale)}
-              className="hidden h-10 items-center rounded-lg px-3 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink xl:inline-flex"
+              href={localePath("/start", locale)}
+              className="me-1 hidden h-10 items-center gap-1.5 whitespace-nowrap rounded-xl border-2 border-brand-600 px-4 text-sm font-bold text-brand-700 transition-colors hover:bg-brand-600 hover:text-white md:inline-flex"
             >
-              {t.nav.becomeCreator}
+              <Icon name="plus" size={16} />
+              {t.start.title}
             </Link>
           )}
           <HeaderClient
             user={user}
             showCreatorStudio={studioOpen}
-            categories={navCategories}
+            createCircleHref={studioOpen ? null : localePath("/start", locale)}
             localeSwitch={{
               href: localePath("/", otherLocale),
               label: otherLocale === "en" ? "English" : "ქართული",
             }}
             labels={{
-              categories: t.nav.categories,
-              communities: t.communities.title,
-              coursesShort: t.nav.courses,
-              courses: t.nav.courses,
+              createCircle: t.start.title,
+              messages: t.messages.title,
               notifications: t.nav.notifications,
               profile: t.nav.profile,
               dashboard: t.nav.dashboard,
@@ -128,7 +105,6 @@ export async function Header() {
               logout: t.nav.logout,
               login: t.nav.login,
               register: t.nav.register,
-              becomeCreator: t.nav.becomeCreator,
               menu: t.nav.menu,
               close: t.common.close,
             }}

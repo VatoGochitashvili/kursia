@@ -18,15 +18,12 @@ export async function Footer() {
     {
       title: t.footer.learn,
       links: [
-        { label: t.nav.courses, href: p("/courses") },
-        { label: t.nav.categories, href: p("/categories") },
-        { label: t.nav.creators, href: p("/instructors") },
+        { label: t.communities.title, href: p("/communities") },
       ],
     },
     {
       title: t.footer.teach,
       links: [
-        { label: t.nav.becomeCreator, href: p("/become-instructor") },
         // Not the studio: most people reading the footer have no plan, and a
         // link that opens onto a locked room is the one thing they should not see.
         { label: t.start.title, href: p("/start") },

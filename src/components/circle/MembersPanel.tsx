@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api, errorMessage } from "@/lib/client/fetcher";
 import { Button } from "@/components/ui/Button";
@@ -31,12 +32,15 @@ export function MembersPanel({
   creatorId,
   members,
   canAssign,
+  profileBase,
   locale,
   t,
 }: {
   creatorId: string;
   members: MemberRow[];
   canAssign: boolean;
+  /** The members page's own path; a member's profile is `${profileBase}/${userId}`. */
+  profileBase: string;
   locale: Locale;
   t: Dictionary;
 }) {
@@ -81,10 +85,14 @@ export function MembersPanel({
             key={member.userId}
             className="flex animate-fade-in items-center gap-3 border-b border-line px-4 py-3 last:border-b-0"
           >
+            <Link
+              href={`${profileBase}/${member.userId}`}
+              className="group flex min-w-0 flex-1 items-center gap-3"
+            >
             <Avatar src={member.avatarUrl} name={member.name} size={40} />
             <div className="min-w-0 flex-1">
               <p className="flex flex-wrap items-center gap-1.5 text-[14px] font-semibold">
-                <span className="truncate">{member.name}</span>
+                <span className="truncate group-hover:underline">{member.name}</span>
                 {member.role === "OWNER" && <Badge tone="brand">{t.circle.owner}</Badge>}
                 {member.role === "ADMIN" && <Badge tone="success">{t.circle.admin}</Badge>}
               </p>
@@ -93,6 +101,7 @@ export function MembersPanel({
                 {fill(t.circle.joined, { date: formatDate(member.joinedAt, locale) })}
               </p>
             </div>
+            </Link>
 
             {canAssign && member.role !== "OWNER" && (
               <Button

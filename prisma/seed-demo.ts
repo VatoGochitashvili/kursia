@@ -896,6 +896,70 @@ async function addDemo() {
 
 // ── Entry point ─────────────────────────────────────────────────────────────
 
+/**
+ * Two known accounts in one known circle, so the product can be tried from
+ * both sides without guessing which demo student happened to be picked:
+ *
+ *   STUDENTS[0] — a plain member of the first circle
+ *   STUDENTS[1] — a member of the same circle whom its owner made an admin
+ *
+ * The owner is CREATORS[CIRCLE_SPECS[0].index]. Runs every deploy, so the
+ * memberships never lapse into a locked room.
+ */
+async function ensureTestAccounts() {
+  const spec = CIRCLE_SPECS[0]!;
+  const ownerEmail = CREATORS[spec.index]!.email;
+  const owner = await db.user.findUnique({
+    where: { email: ownerEmail },
+    select: { id: true, creatorProfile: { select: { id: true, communityPriceMinor: true } } },
+  });
+  const circle = owner?.creatorProfile;
+  if (!owner || !circle) return;
+
+  const until = new Date(Date.now() + 30 * 864e5);
+  for (const [i, student] of STUDENTS.slice(0, 2).entries()) {
+    const user = await db.user.findUnique({ where: { email: student.email }, select: { id: true } });
+    if (!user) continue;
+    const scopeKey = `community:${circle.id}`;
+    await db.subscription.upsert({
+      where: { userId_scopeKey: { userId: user.id, scopeKey } },
+      update: { status: "ACTIVE", currentPeriodEnd: until },
+      create: {
+        userId: user.id,
+        courseId: null,
+        creatorId: circle.id,
+        kind: "COMMUNITY",
+        scopeKey,
+        status: "ACTIVE",
+        priceMinor: circle.communityPriceMinor,
+        currency: CURRENCY,
+        currentPeriodStart: daysAgo(10),
+        currentPeriodEnd: until,
+      },
+    });
+    if (i === 1) {
+      await db.communityRole.upsert({
+        where: { creatorId_userId: { creatorId: circle.id, userId: user.id } },
+        update: { role: "ADMIN" },
+        create: { creatorId: circle.id, userId: user.id, role: "ADMIN", assignedById: owner.id },
+      });
+    }
+  }
+
+  const live = await db.subscription.count({
+    where: {
+      creatorId: circle.id,
+      kind: "COMMUNITY",
+      status: { in: ["ACTIVE", "CANCELLED"] },
+      currentPeriodEnd: { gt: new Date() },
+    },
+  });
+  await db.creatorProfile.update({ where: { id: circle.id }, data: { communityMemberCount: live } });
+  console.log(
+    `  ✓ test accounts: member ${STUDENTS[0]!.email}, admin ${STUDENTS[1]!.email}, owner ${ownerEmail}`,
+  );
+}
+
 async function main() {
   const mode = (process.env.SEED_DEMO_DATA ?? "").toLowerCase();
 
@@ -916,6 +980,7 @@ async function main() {
     "🎭 adding demo content (fabricated instructors, courses and reviews)",
   );
   await addDemo();
+  await ensureTestAccounts();
 
   const [users, courses] = await Promise.all([
     db.user.count(),

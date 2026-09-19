@@ -159,7 +159,7 @@ export const ka = {
     earningsPoint2Body: "ლარი, ქართული ბარათი, საქართველოს ბანკი და თიბისი.",
     earningsPoint3Title: "ყველაფერი ერთ ადგილას",
     earningsPoint3Body: "კურსი, ვიდეო, ქვიზი, პროგრესი, ანალიტიკა და გატანა.",
-    earningsCta: "გახსენი კრეატორის ანგარიში",
+    earningsCta: "შექმენი საკუთარი წრე",
 
     studentBenefitsTitle: "რატომ სტუდენტებისთვის",
     studentBenefit1Title: "ქართულად",
@@ -190,7 +190,7 @@ export const ka = {
     creatorCtaTitle: "შენი ცოდნა ღირს",
     creatorCtaBody:
       "შექმენი კურსი, დააწესე ფასი და გამოიმუშავე ყოველი გაყიდვიდან. დაწყება უფასოა.",
-    creatorCtaButton: "დაიწყე შექმნა",
+    creatorCtaButton: "შექმენი საკუთარი წრე",
     creatorCtaNote: "საკომისიო იჭრება მხოლოდ გაყიდვისას",
   },
 
@@ -825,7 +825,7 @@ export const ka = {
   },
 
   start: {
-    title: "შექმენი შენი წრე",
+    title: "შექმენი საკუთარი წრე",
     subtitle: "აირჩიე გეგმა, გახსენი წრე და დაიწყე თვიური შემოსავალი.",
     monthly: "თვიური",
     yearly: "წლიური",
@@ -890,6 +890,35 @@ export const ka = {
     invite: "ბმულის კოპირება",
     copied: "ბმული კოპირებულია",
     manage: "წრის პარამეტრები",
+    follow: "გამოწერა",
+    following: "გამოწერილია",
+    message: "მიწერა",
+    followers: "გამომწერი",
+    followingCount: "გამოწერილი",
+    points: "ქულა",
+    posts: "პოსტი",
+    replies: "პასუხი",
+    likesReceived: "მოწონება",
+    eventsAttended: "შეხვედრა",
+    contributionsTitle: "წვლილი ამ წრეში",
+    contributionsEmpty: "ამ წრეში ჯერ არაფერი დაუწერია",
+    membershipsTitle: "წევრობები",
+    memberSince: "პლატფორმაზე {date}-დან",
+    you: "შენ",
+    memberRole: "წევრი",
+    backToMembers: "წევრები",
+    join: "გაწევრიანდი",
+    joinHint: "შედი ან დარეგისტრირდი და ნახავ წევრობის პირობებსა და ფასს.",
+  },
+
+  messages: {
+    title: "შეტყობინებები",
+    empty: "ჯერ მიმოწერა არ გაქვს. წრის წევრს შეგიძლია მისწერო მისი პროფილიდან.",
+    placeholder: "დაწერე შეტყობინება…",
+    send: "გაგზავნა",
+    you: "შენ:",
+    threadEmpty: "დაიწყე საუბარი",
+    back: "ყველა მიმოწერა",
   },
 
   footer: {

@@ -82,6 +82,7 @@ export default async function CircleMembersPage({ params }: Props) {
         creatorId={creator.id}
         members={members}
         canAssign={membership.isOwner || membership.isAdmin}
+        profileBase={p(`/community/${creator.slug}/members`)}
         locale={locale}
         t={t}
       />

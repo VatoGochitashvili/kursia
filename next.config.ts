@@ -32,6 +32,12 @@ const config: NextConfig = {
       { source: "/en/courses", destination: "/en/communities", permanent: false },
       { source: "/categories", destination: "/communities", permanent: false },
       { source: "/en/categories", destination: "/en/communities", permanent: false },
+      // No separate creators directory for now: a creator is found through
+      // their circle. "Become a creator" is the same thing as starting one.
+      { source: "/instructors", destination: "/", permanent: false },
+      { source: "/en/instructors", destination: "/en", permanent: false },
+      { source: "/become-instructor", destination: "/start", permanent: false },
+      { source: "/en/become-instructor", destination: "/en/start", permanent: false },
     ];
   },
   async rewrites() {

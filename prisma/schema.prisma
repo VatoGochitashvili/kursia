@@ -66,6 +66,8 @@ model User {
   courseViews           CourseView[]
   communityJoinRequests CommunityJoinRequest[]
   communityRoles        CommunityRole[]
+  messagesSent          DirectMessage[]        @relation("messageSender")
+  messagesReceived      DirectMessage[]        @relation("messageRecipient")
 
   @@index([role, status])
   @@index([createdAt])
@@ -1395,4 +1397,24 @@ model CommunityRole {
 
   @@unique([creatorId, userId])
   @@index([userId])
+}
+
+/// One private message between two people who share a circle.
+///
+/// There is no conversation table: a conversation is the pair of user ids, and
+/// both directions are read together. Unread is simply readAt IS NULL on the
+/// recipient's side.
+model DirectMessage {
+  id          String    @id @default(cuid())
+  senderId    String
+  recipientId String
+  body        String
+  readAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  sender    User @relation("messageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  recipient User @relation("messageRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([senderId, recipientId, createdAt])
+  @@index([recipientId, readAt])
 }

@@ -5,6 +5,7 @@ import { getI18n, localePath } from "@/i18n";
 import { DashboardShell, type NavGroup } from "@/components/layout/DashboardShell";
 import { getSettings } from "@/lib/settings";
 import { getPlanState } from "@/lib/creator-plan";
+import { unreadMessageCount } from "@/lib/social";
 
 /**
  * Student dashboard chrome. The creator studio nests under /dashboard/creator
@@ -20,13 +21,14 @@ export default async function DashboardLayout({
   if (!user) redirect(localePath("/login?next=/dashboard", locale));
 
   const settings = await getSettings();
-  const [unread, wishlistCount, plan] = await Promise.all([
+  const [unread, wishlistCount, plan, unreadMessages] = await Promise.all([
     db.notification.count({ where: { userId: user.id, readAt: null } }),
     db.wishlist.count({ where: { userId: user.id } }),
     // The studio shortcut is only worth showing to somebody who can open it.
     user.creatorId
       ? getPlanState(user.creatorId, settings.creatorPlanPriceMinor)
       : Promise.resolve(null),
+    unreadMessageCount(user.id),
   ]);
 
   const p = (path: string) => localePath(path, locale);
@@ -38,6 +40,7 @@ export default async function DashboardLayout({
       items: [
         { href: p("/dashboard"), label: t.dashboard.myCourses, icon: "book", exact: true },
         { href: p("/dashboard/profile"), label: t.nav.profile, icon: "user" },
+        { href: p("/dashboard/messages"), label: t.messages.title, icon: "message", badge: unreadMessages },
         { href: p("/dashboard/notifications"), label: t.nav.notifications, icon: "bell", badge: unread },
         { href: p("/dashboard/wishlist"), label: t.nav.wishlist, icon: "heart", badge: wishlistCount },
         { href: p("/dashboard/purchases"), label: t.nav.purchases, icon: "creditCard" },
@@ -66,7 +69,7 @@ export default async function DashboardLayout({
       groups={groups}
       mobileTabs={[
         { href: p("/dashboard"), label: t.dashboard.myCourses, icon: "book", exact: true },
-        { href: p("/dashboard/wishlist"), label: t.nav.wishlist, icon: "heart" },
+        { href: p("/dashboard/messages"), label: t.messages.title, icon: "message", badge: unreadMessages },
         { href: p("/dashboard/notifications"), label: t.nav.notifications, icon: "bell", badge: unread },
       ]}
     >

@@ -46,7 +46,7 @@ export default async function CircleAboutPage({ params }: Props) {
 
   return (
     <div className="grid gap-5">
-      <CommunityHeader creator={creator} community={community} isMember={membership.isMember} t={t} />
+      <CommunityHeader creator={creator} community={community} isMember={membership.isMember} showPrice={Boolean(viewer)} t={t} />
       {!membership.isMember && (
         <CommunityGate
           community={community}

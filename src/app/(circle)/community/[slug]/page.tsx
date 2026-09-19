@@ -53,7 +53,7 @@ export default async function CircleFeedPage({ params }: Props) {
   if (!membership.isMember) {
     return (
       <div className="grid gap-5">
-        <CommunityHeader creator={creator} community={community} isMember={false} t={t} />
+        <CommunityHeader creator={creator} community={community} isMember={false} showPrice={Boolean(viewer)} t={t} />
         <CommunityGate
           community={community}
           creatorSlug={creator.slug}

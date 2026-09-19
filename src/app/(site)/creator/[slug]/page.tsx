@@ -132,7 +132,7 @@ export default async function CreatorPage({ params }: Props) {
 
   const breadcrumbs = [
     { name: locale === "en" ? "Home" : "მთავარი", path: "/" },
-    { name: t.nav.creators, path: "/instructors" },
+    { name: t.communities.title, path: "/communities" },
     { name: creator.displayName, path: `/creator/${creator.slug}` },
   ];
 

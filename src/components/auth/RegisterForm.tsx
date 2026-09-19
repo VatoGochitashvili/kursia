@@ -42,7 +42,9 @@ export function RegisterForm({
         locale,
         acceptTerms: form.get("acceptTerms") === "on",
       });
-      router.push(result.redirectTo);
+      // ?next= brings somebody who signed up from a circle straight back to it.
+      const next = params.get("next");
+      router.push(next && next.startsWith("/") && !next.startsWith("//") ? next : result.redirectTo);
       router.refresh();
     } catch (err) {
       setError(err);

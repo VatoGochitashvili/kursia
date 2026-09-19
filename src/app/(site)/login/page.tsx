@@ -22,7 +22,11 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
   const [{ locale, t }, settings, user] = await Promise.all([
     getI18n(),
     getSettings(),
@@ -32,6 +36,8 @@ export default async function LoginPage() {
   if (user) redirect(localePath("/dashboard", locale));
 
   const p = (path: string) => localePath(path, locale);
+  const rawNext = (await searchParams).next;
+  const nextQuery = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : null;
 
   return (
     <AuthShell
@@ -42,7 +48,7 @@ export default async function LoginPage() {
       footer={
         <>
           {t.auth.noAccount}{" "}
-          <Link href={p("/register")} className="font-semibold text-brand-600 hover:underline">
+          <Link href={p(nextQuery ? `/register?next=${encodeURIComponent(nextQuery)}` : "/register")} className="font-semibold text-brand-600 hover:underline">
             {t.auth.createAccount}
           </Link>
         </>
