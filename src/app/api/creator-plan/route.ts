@@ -1,5 +1,6 @@
+import { z } from "zod";
 import { db } from "@/lib/db";
-import { ApiError, beginMutation, handler, jsonOk, notFoundError } from "@/lib/api";
+import { ApiError, beginMutation, handler, jsonOk, notFoundError, readJson } from "@/lib/api";
 import { requireUser } from "@/lib/auth/rbac";
 import { startCreatorPlanCheckout } from "@/lib/payments/fulfillment";
 import { cancelSubscription } from "@/lib/subscriptions";
@@ -16,12 +17,21 @@ export const runtime = "nodejs";
  * there is no id here to tamper with, so nobody can start or cancel somebody
  * else's plan.
  */
-export const POST = handler(async () => {
+const startSchema = z
+  .object({ interval: z.enum(["MONTHLY", "YEARLY"]).optional() })
+  .strict();
+
+export const POST = handler(async (request) => {
   const user = await requireUser();
   await beginMutation("checkout", user.id);
 
+  // An empty body is a plain monthly start, so the existing plan page keeps
+  // working without sending anything new.
+  const body = await readJson(request, startSchema).catch(() => ({ interval: undefined }));
+
   const result = await startCreatorPlanCheckout({
     userId: user.id,
+    interval: body.interval,
     locale: await getLocale(),
   });
 

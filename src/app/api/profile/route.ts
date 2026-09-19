@@ -1,8 +1,7 @@
 import { db } from "@/lib/db";
 import { beginMutation, conflict, handler, jsonOk, readJson } from "@/lib/api";
-import { updateProfileSchema, updateCreatorProfileSchema, becomeCreatorSchema } from "@/lib/validation";
+import { updateProfileSchema, updateCreatorProfileSchema } from "@/lib/validation";
 import { requireUser, requireCreator } from "@/lib/auth/rbac";
-import { becomeCreator } from "@/lib/auth/accounts";
 import { serializeStringArray } from "@/lib/json";
 
 export const runtime = "nodejs";
@@ -51,21 +50,15 @@ export const PATCH = handler(async (request) => {
   return jsonOk(profile);
 });
 
-/** Upgrade a student account to a creator account. */
-export const POST = handler(async (request) => {
-  const user = await requireUser();
-  await beginMutation("write", user.id);
-  const body = await readJson(request, becomeCreatorSchema);
-
-  const result = await becomeCreator({
-    userId: user.id,
-    displayName: body.displayName,
-    instructorBio: body.instructorBio,
-    expertise: body.expertise,
-  });
-
-  return jsonOk({ ok: true, slug: result.slug, redirectTo: "/dashboard/creator" });
-});
+/*
+ * There is no free upgrade to a creator account any more.
+ *
+ * This endpoint used to mint a creator profile on request, which is how an
+ * account that had never paid ended up with an instructor studio in its
+ * sidebar. Becoming a creator is now the act of buying a plan, and the profile
+ * is created by that checkout — see startCreatorPlanCheckout. The profile page
+ * links to /start instead of posting here.
+ */
 
 /** Update creator-specific public fields. */
 export const PUT = handler(async (request) => {

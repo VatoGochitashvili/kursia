@@ -127,13 +127,6 @@ export const updateCreatorProfileSchema = z
   })
   .strict();
 
-export const becomeCreatorSchema = z
-  .object({
-    displayName: z.string().trim().min(2, "მიუთითეთ საჯარო სახელი").max(120),
-    instructorBio: z.string().trim().max(4000).optional(),
-    expertise: z.array(z.string().trim().min(1).max(40)).max(12).optional(),
-  })
-  .strict();
 
 // ── Courses ────────────────────────────────────────────────────────────────
 

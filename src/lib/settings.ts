@@ -31,6 +31,8 @@ export interface PlatformSettings {
    * admin makes rather than something baked into the code.
    */
   creatorPlanPriceMinor: number;
+  /** The same plan paid a year at a time, usually at a discount. */
+  creatorPlanYearlyPriceMinor: number;
   /** When true, a circle needs an admin's approval before it is listed. */
   communityApprovalRequired: boolean;
   registrationOpen: boolean;
@@ -58,6 +60,7 @@ export const SETTING_DEFAULTS: PlatformSettings = {
   payoutClearingDays: env.PAYOUT_CLEARING_DAYS,
   payoutMinimumMinor: env.PAYOUT_MINIMUM_MINOR,
   creatorPlanPriceMinor: env.CREATOR_PLAN_PRICE_MINOR,
+  creatorPlanYearlyPriceMinor: env.CREATOR_PLAN_YEARLY_PRICE_MINOR,
   communityApprovalRequired: true,
   refundWindowDays: env.REFUND_WINDOW_DAYS,
   courseApprovalRequired: true,
@@ -97,6 +100,7 @@ const VALUE_TYPES: Record<Key, "string" | "number" | "boolean" | "json"> = {
   currency: "string", commissionBps: "number", payoutClearingDays: "number",
   payoutMinimumMinor: "number", refundWindowDays: "number",
   courseApprovalRequired: "boolean", creatorPlanPriceMinor: "number",
+  creatorPlanYearlyPriceMinor: "number",
   communityApprovalRequired: "boolean", registrationOpen: "boolean",
   creatorRegistrationOpen: "boolean", creatorAutoApprove: "boolean",
   homepageSections: "json", featuredCourseIds: "json", featuredCreatorIds: "json",
@@ -110,7 +114,8 @@ const GROUPS: Record<Key, string> = {
   currency: "commerce", commissionBps: "commerce", payoutClearingDays: "commerce",
   payoutMinimumMinor: "commerce", refundWindowDays: "commerce",
   courseApprovalRequired: "moderation", communityApprovalRequired: "moderation",
-  creatorPlanPriceMinor: "commerce", registrationOpen: "access",
+  creatorPlanPriceMinor: "commerce", creatorPlanYearlyPriceMinor: "commerce",
+  registrationOpen: "access",
   creatorRegistrationOpen: "access", creatorAutoApprove: "access",
   homepageSections: "homepage", featuredCourseIds: "homepage",
   featuredCreatorIds: "homepage", paymentProviders: "payments",

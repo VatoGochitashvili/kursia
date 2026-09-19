@@ -42,7 +42,7 @@ export default async function BecomeInstructorPage() {
     ? user.creatorId
       ? p("/dashboard/creator")
       : p("/dashboard/profile")
-    : `${p("/register")}?type=creator`;
+    : p("/start");
 
   const steps: { icon: IconName; title: string; body: string }[] = [
     {

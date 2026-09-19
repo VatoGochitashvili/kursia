@@ -5,8 +5,6 @@ import { useState, type FormEvent } from "react";
 import { api, errorMessage, fieldError } from "@/lib/client/fetcher";
 import { Button } from "@/components/ui/Button";
 import { Alert, Checkbox, Field, Input } from "@/components/ui/primitives";
-import { Icon } from "@/components/ui/Icon";
-import { cn } from "@/lib/cn";
 
 export function RegisterForm({
   labels,
@@ -18,9 +16,11 @@ export function RegisterForm({
   const router = useRouter();
   const params = useSearchParams();
   // ?type=creator lets the "become an instructor" CTAs land on the right choice.
-  const [accountType, setAccountType] = useState<"STUDENT" | "CREATOR">(
-    params.get("type") === "creator" ? "CREATOR" : "STUDENT",
-  );
+  // There is one kind of account. The flag survives only to decide where
+  // somebody lands after signing up: a person who arrived from "start your
+  // circle" goes on to the plans instead of the dashboard.
+  const accountType: "STUDENT" | "CREATOR" =
+    params.get("type") === "creator" ? "CREATOR" : "STUDENT";
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<unknown>(null);
 
@@ -53,28 +53,6 @@ export function RegisterForm({
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
       {error != null && <Alert tone="danger">{errorMessage(error)}</Alert>}
-
-      <fieldset>
-        <legend className="mb-2 block text-[13px] font-semibold text-ink">
-          {labels.accountType}
-        </legend>
-        <div className="grid grid-cols-2 gap-2.5">
-          <TypeOption
-            selected={accountType === "STUDENT"}
-            onSelect={() => setAccountType("STUDENT")}
-            icon="book"
-            title={labels.asStudent}
-            hint={labels.asStudentHint}
-          />
-          <TypeOption
-            selected={accountType === "CREATOR"}
-            onSelect={() => setAccountType("CREATOR")}
-            icon="sparkles"
-            title={labels.asCreator}
-            hint={labels.asCreatorHint}
-          />
-        </div>
-      </fieldset>
 
       <Field label={labels.fullName} error={fieldError(error, "fullName")} required>
         <Input name="fullName" autoComplete="name" required placeholder="გიორგი ხუციშვილი" />
@@ -125,38 +103,3 @@ export function RegisterForm({
   );
 }
 
-function TypeOption({
-  selected,
-  onSelect,
-  icon,
-  title,
-  hint,
-}: {
-  selected: boolean;
-  onSelect: () => void;
-  icon: "book" | "sparkles";
-  title: string;
-  hint: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      aria-pressed={selected}
-      className={cn(
-        "flex flex-col items-start gap-1.5 rounded-xl border p-3.5 text-left transition-all",
-        selected
-          ? "border-brand-500 bg-brand-50 ring-2 ring-brand-500/20"
-          : "border-line-strong bg-surface hover:border-brand-200 hover:bg-surface-muted",
-      )}
-    >
-      <span className={cn("inline-flex", selected ? "text-brand-600" : "text-ink-subtle")}>
-        <Icon name={icon} size={19} />
-      </span>
-      <span className={cn("text-sm font-semibold", selected ? "text-brand-800" : "text-ink")}>
-        {title}
-      </span>
-      <span className="text-[11px] leading-tight text-ink-subtle">{hint}</span>
-    </button>
-  );
-}

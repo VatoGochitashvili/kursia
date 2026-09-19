@@ -9,6 +9,7 @@ import {
 } from "@/lib/membership";
 import { COUPON_MESSAGES, evaluateCoupon, recordRedemption } from "@/lib/coupons";
 import { canCheckout } from "@/lib/join-requests";
+import { becomeCreator } from "@/lib/auth/accounts";
 import { notify, absoluteUrl } from "@/lib/notifications";
 import { audit, AUDIT_ACTIONS } from "@/lib/audit";
 import { ApiError, conflict, notFoundError } from "@/lib/api";
@@ -471,10 +472,12 @@ export async function startCommunityCheckout(input: {
  */
 export async function startCreatorPlanCheckout(input: {
   userId: string;
+  /** "MONTHLY" | "YEARLY" — the two plans, and nothing else. */
+  interval?: string;
   providerId?: string;
   locale: string;
 }): Promise<CheckoutResult> {
-  const [settings, creator, user] = await Promise.all([
+  const [settings, existing, user] = await Promise.all([
     getSettings(),
     db.creatorProfile.findUnique({
       where: { userId: input.userId },
@@ -486,17 +489,36 @@ export async function startCreatorPlanCheckout(input: {
     }),
   ]);
 
-  if (!creator) throw new ApiError(403, "FORBIDDEN", "ავტორის პროფილი არ გაქვთ");
   if (!user || user.status !== "ACTIVE") {
     throw new ApiError(403, "FORBIDDEN", "ანგარიში არააქტიურია");
   }
 
-  const amountMinor = Math.max(0, settings.creatorPlanPriceMinor);
+  // Paying IS becoming a creator. The profile used to be handed out for free
+  // from a form on the profile page, which is how someone who had never paid
+  // ended up with a studio in their sidebar. Now it is created here, at the
+  // moment somebody commits to a plan, and nowhere else outside the admin.
+  let creator = existing;
+  if (!creator) {
+    const made = await becomeCreator({
+      userId: input.userId,
+      displayName: user.profile?.fullName?.trim() || user.email.split("@")[0]!,
+    });
+    creator = await db.creatorProfile.findUniqueOrThrow({
+      where: { slug: made.slug },
+      select: { id: true, displayName: true },
+    });
+  }
+
+  const yearly = input.interval === "YEARLY";
+  const amountMinor = Math.max(
+    0,
+    yearly ? settings.creatorPlanYearlyPriceMinor : settings.creatorPlanPriceMinor,
+  );
   if (amountMinor === 0) throw conflict("გეგმა უფასოა — გადახდა საჭირო არ არის");
 
   const currency = settings.currency;
   const scopeKey = planScope(creator.id);
-  const label = "ავტორის გეგმა";
+  const label = yearly ? "ავტორის გეგმა — წლიური" : "ავტორის გეგმა";
 
   const subscription = await db.subscription.upsert({
     where: { userId_scopeKey: { userId: input.userId, scopeKey } },
@@ -509,10 +531,12 @@ export async function startCreatorPlanCheckout(input: {
       status: "ACTIVE",
       priceMinor: amountMinor,
       currency,
+      interval: yearly ? "YEARLY" : "MONTHLY",
       // Not yet paid for; fulfilment writes the real period.
       currentPeriodEnd: new Date(),
     },
-    update: { priceMinor: amountMinor },
+    // Switching between the two plans takes effect from the next payment.
+    update: { priceMinor: amountMinor, interval: yearly ? "YEARLY" : "MONTHLY" },
     select: { id: true },
   });
 
@@ -679,7 +703,12 @@ export async function fulfillPurchase(input: FulfillInput): Promise<{ settled: b
     if (isRecurring(purchase.kind) && purchase.subscriptionId) {
       const subscription = await tx.subscription.findUnique({
         where: { id: purchase.subscriptionId },
-        select: { currentPeriodEnd: true, currentPeriodStart: true, status: true },
+        select: {
+          currentPeriodEnd: true,
+          currentPeriodStart: true,
+          status: true,
+          interval: true,
+        },
       });
       // A brand-new row still carries the placeholder period written at
       // checkout, so "never had a paid period" is the test for a first join
@@ -692,7 +721,9 @@ export async function fulfillPurchase(input: FulfillInput): Promise<{ settled: b
         subscription && subscription.currentPeriodEnd.getTime() > Date.now()
           ? subscription.currentPeriodEnd
           : new Date();
-      accessExpiresAt = addMonths(from, 1);
+      // A year is twelve months of the same clamping arithmetic, so 29 February
+      // plus a year lands on 28 February rather than rolling into March.
+      accessExpiresAt = addMonths(from, subscription?.interval === "YEARLY" ? 12 : 1);
 
       await tx.subscription.update({
         where: { id: purchase.subscriptionId },

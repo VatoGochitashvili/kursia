@@ -74,7 +74,13 @@ export default async function HomePage() {
               {t.communities.subtitle}
             </p>
           </div>
-          <SeeAllLink href={p("/communities")} label={t.common.seeAll} />
+          <div className="flex items-center gap-3">
+            <ButtonLink href={p("/start")} size="md">
+              {t.start.title}
+              <Icon name="arrowRight" size={16} />
+            </ButtonLink>
+            <SeeAllLink href={p("/communities")} label={t.common.seeAll} />
+          </div>
         </div>
 
         {communityCategories.length > 0 && (
@@ -175,7 +181,7 @@ export default async function HomePage() {
       <EarningsBand
         t={t}
         share={creatorShare}
-        href={p("/register?type=creator")}
+        href={p("/start")}
         secondaryHref={p("/become-instructor")}
       />
 
@@ -295,7 +301,7 @@ export default async function HomePage() {
               {t.home.creatorCtaBody}
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <ButtonLink href={p("/register?type=creator")} size="lg" variant="inverse">
+              <ButtonLink href={p("/start")} size="lg" variant="inverse">
                 {t.home.creatorCtaButton}
                 <Icon name="arrowRight" size={17} />
               </ButtonLink>

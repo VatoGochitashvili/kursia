@@ -83,8 +83,15 @@ export default async function CreatorLayout({ children }: { children: React.Reac
   ];
 
   if (!plan.active && !onPlanPage) {
+    // Only the plan. Listing the studio's nine sections beside a lock screen
+    // advertises a room this account cannot enter, and every one of those
+    // links would bounce straight back here.
+    const lockedGroups: NavGroup[] = [
+      { items: [{ href: p("/dashboard/creator/plan"), label: t.plan.title, icon: "wallet" }] },
+    ];
+
     return (
-      <DashboardShell title={t.creator.studio} groups={groups} mobileTabs={[]}>
+      <DashboardShell title={t.creator.studio} groups={lockedGroups} mobileTabs={[]}>
         <Card className="mx-auto max-w-lg p-8 text-center">
           <span className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-warn-50 text-warn-700">
             <Icon name="lock" size={24} />

@@ -32,6 +32,8 @@ export const POST = handler(async (request) => {
 
   return jsonCreated({
     ok: true,
-    redirectTo: body.accountType === "CREATOR" ? "/dashboard/creator" : "/dashboard",
+    // A would-be creator goes to the plans, not to a studio they have not
+    // paid for and therefore cannot open.
+    redirectTo: body.accountType === "CREATOR" ? "/start" : "/dashboard",
   });
 });

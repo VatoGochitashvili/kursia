@@ -128,6 +128,8 @@ const schema = z.object({
   DEFAULT_COMMISSION_BPS: int(1000),
   /** Monthly creator plan, in minor units. 4900 = 49 GEL. */
   CREATOR_PLAN_PRICE_MINOR: z.coerce.number().int().min(0).default(4900),
+  /** The creator plan paid yearly. 49000 = 490 GEL, about two months free. */
+  CREATOR_PLAN_YEARLY_PRICE_MINOR: z.coerce.number().int().min(0).default(49000),
   PAYOUT_CLEARING_DAYS: int(14),
   PAYOUT_MINIMUM_MINOR: int(5000),
   REFUND_WINDOW_DAYS: int(14),

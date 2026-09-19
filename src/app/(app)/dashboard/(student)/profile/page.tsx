@@ -8,7 +8,6 @@ import { listMyCircles } from "@/lib/my-circles";
 import { PageHeader } from "@/components/layout/DashboardShell";
 import { ProfileForm } from "@/components/dashboard/ProfileForm";
 import { ChangePasswordForm } from "@/components/dashboard/ChangePasswordForm";
-import { BecomeCreatorForm } from "@/components/dashboard/BecomeCreatorForm";
 import { Alert, Card } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
 
@@ -165,20 +164,17 @@ export default async function ProfilePage() {
               <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-50 text-accent-700">
                 <Icon name="sparkles" size={19} />
               </span>
-              <h2 className="mt-3 text-base">{t.profile.becomeCreatorTitle}</h2>
+              <h2 className="mt-3 text-base">{t.start.title}</h2>
               <p className="mt-1 text-[13px] leading-relaxed text-ink-muted">
-                {t.profile.becomeCreatorBody}
+                {t.start.subtitle}
               </p>
-              <div className="mt-4">
-                <BecomeCreatorForm
-                  defaultName={profile?.fullName ?? ""}
-                  labels={{
-                    displayName: t.auth.displayName,
-                    bio: t.creator.overview,
-                    submit: t.nav.becomeCreator,
-                  }}
-                />
-              </div>
+              <Link
+                href={p("/start")}
+                className="mt-4 inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-brand-600 px-4 text-[14px] font-semibold text-white transition-colors hover:bg-brand-700"
+              >
+                {t.start.cta}
+                <Icon name="arrowRight" size={16} />
+              </Link>
             </Card>
           )}
 

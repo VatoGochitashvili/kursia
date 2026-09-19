@@ -616,6 +616,24 @@ export const en: Dictionary = {
     perkSupport: "Support and analytics",
   },
 
+  start: {
+    title: "Start your circle",
+    subtitle: "Pick a plan, open your circle, and start earning monthly.",
+    monthly: "Monthly",
+    yearly: "Yearly",
+    perMonth: "/month",
+    perYear: "/year",
+    save: "Save {amount}",
+    popular: "Popular",
+    cta: "Get started",
+    signInCta: "Sign in to start",
+    note: "Each payment is a one-off — nothing is charged automatically. At the end of the period you decide whether to continue.",
+    perk1: "Your own circle in the directory",
+    perk2: "Monthly payments from your members",
+    perk3: "Events, leaderboard and courses",
+    perk4: "Admins to help you moderate",
+  },
+
   communities: {
     title: "Circles",
     subtitle: "Join a circle where people learn together every day",

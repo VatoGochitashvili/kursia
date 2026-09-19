@@ -105,31 +105,18 @@ export async function registerAccount(input: RegisterInput): Promise<{ userId: s
     uniqueUsername(input.fullName || input.email.split("@")[0]!),
   ]);
 
-  const isCreator = input.accountType === "CREATOR";
-  const displayName = (input.displayName?.trim() || input.fullName).slice(0, 120);
-  const creatorSlug = isCreator ? await uniqueCreatorSlug(displayName) : null;
-
+  // Everyone registers as a student, including someone who arrived from a
+  // "start your circle" link. Becoming a creator is buying a plan, and the
+  // creator profile is created by that checkout — a signup form that handed
+  // out a studio is exactly how an account that had never paid ended up with
+  // one. `accountType` now only decides where they land next.
   const user = await db.user.create({
     data: {
       email: input.email,
       passwordHash,
-      role: isCreator ? "CREATOR" : "STUDENT",
+      role: "STUDENT",
       locale: input.locale,
       profile: { create: { fullName: input.fullName, username } },
-      ...(isCreator && creatorSlug
-        ? {
-            creatorProfile: {
-              create: {
-                slug: creatorSlug,
-                displayName,
-                // Verification is an editorial decision, never automatic.
-                isVerified: false,
-                approvedAt: settings.creatorAutoApprove ? new Date() : null,
-                balance: { create: { currency: settings.currency } },
-              },
-            },
-          }
-        : {}),
     },
     select: { id: true, email: true },
   });
