@@ -28,6 +28,9 @@ export function CircleSidebar({
   settingsHref,
   showCover,
   showPrice = true,
+  pendingRequests = 0,
+  eventsHref,
+  membersHref,
   locale,
   t,
 }: {
@@ -45,6 +48,10 @@ export function CircleSidebar({
   showCover: boolean;
   /** Off for signed-out visitors, who see the join button before any price. */
   showPrice?: boolean;
+  /** Applications waiting on a decision; only ever non-zero for a moderator. */
+  pendingRequests?: number;
+  eventsHref: string;
+  membersHref: string;
   locale: Locale;
   t: Dictionary;
 }) {
@@ -138,6 +145,47 @@ export function CircleSidebar({
           </div>
         </div>
       </Card>
+
+      {/* What running this circle actually gives you. Without it, an admin
+          sees exactly what a member sees and has no idea the approvals queue
+          is theirs. */}
+      {membership.canModerate && (
+        <Card className="p-4">
+          <h2 className="flex items-center gap-2 text-[14px] font-bold">
+            <Icon name="shield" size={16} className="text-brand-600" />
+            {t.circle.adminTools}
+          </h2>
+          <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-muted">
+            {membership.isOwner ? t.circle.ownerToolsHint : t.circle.adminToolsHint}
+          </p>
+          <div className="mt-3 grid gap-1.5">
+            <Link
+              href={membersHref}
+              className="flex items-center justify-between gap-2 rounded-lg border border-line px-3 py-2 text-[13px] font-semibold transition-colors hover:bg-surface-sunken"
+            >
+              <span className="inline-flex items-center gap-1.5">
+                <Icon name="user" size={14} />
+                {pendingRequests > 0 ? t.circle.pendingRequestsLink : t.circle.manageMembers}
+              </span>
+              {pendingRequests > 0 && (
+                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-600 px-1.5 text-[11px] font-bold text-white">
+                  {pendingRequests}
+                </span>
+              )}
+            </Link>
+            <Link
+              href={eventsHref}
+              className="flex items-center gap-1.5 rounded-lg border border-line px-3 py-2 text-[13px] font-semibold transition-colors hover:bg-surface-sunken"
+            >
+              <Icon name="calendar" size={14} />
+              {t.circle.scheduleEvent}
+            </Link>
+          </div>
+          <p className="mt-2.5 text-[12px] leading-relaxed text-ink-subtle">
+            {t.circle.moderateHint}
+          </p>
+        </Card>
+      )}
 
       {membership.isSubscriber && (
         <JoinCommunityCard

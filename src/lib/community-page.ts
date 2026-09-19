@@ -34,6 +34,8 @@ async function load(
   gate: JoinGate;
   /** The people who run the room, named in the sidebar. */
   admins: { userId: string; name: string }[];
+  /** Applications waiting on a decision. Only asked for someone who can decide. */
+  pendingRequests: number;
 }> {
   const creator = await db.creatorProfile.findUnique({
     where: { slug },
@@ -89,9 +91,14 @@ async function load(
     name: row.user.profile?.fullName ?? "—",
   }));
 
+  const pendingRequests = membership.canModerate
+    ? await db.communityJoinRequest.count({ where: { creatorId: creator.id, status: "PENDING" } })
+    : 0;
+
   return {
     gate,
     admins,
+    pendingRequests,
     creator: {
       id: creator.id,
       slug: creator.slug,

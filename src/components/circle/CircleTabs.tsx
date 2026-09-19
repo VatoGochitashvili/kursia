@@ -22,10 +22,13 @@ export function CircleTabs({
   slug,
   locale,
   labels,
+  pendingRequests = 0,
 }: {
   slug: string;
   locale: Locale;
   labels: Record<TabKey, string>;
+  /** Applications waiting on this viewer, badged on the members tab. */
+  pendingRequests?: number;
 }) {
   const pathname = usePathname() ?? "";
   const base = localePath(`/community/${slug}`, locale);
@@ -60,6 +63,11 @@ export function CircleTabs({
                 )}
               >
                 {labels[tab.key]}
+                {tab.key === "members" && pendingRequests > 0 && (
+                  <span className="ms-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-600 px-1.5 text-[11px] font-bold text-white">
+                    {pendingRequests}
+                  </span>
+                )}
                 <span
                   aria-hidden="true"
                   className={cn(

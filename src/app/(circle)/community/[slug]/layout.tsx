@@ -3,6 +3,7 @@ import { getSessionUser } from "@/lib/auth/session";
 import { loadCommunityPage } from "@/lib/community-page";
 import { CircleTabs } from "@/components/circle/CircleTabs";
 import { CircleSidebar } from "@/components/circle/CircleSidebar";
+import { Badge } from "@/components/ui/primitives";
 
 export const dynamic = "force-dynamic";
 
@@ -24,11 +25,8 @@ export default async function CircleLayout({
 }) {
   const { slug } = await params;
   const [{ locale, t }, viewer] = await Promise.all([getI18n(), getSessionUser()]);
-  const { creator, membership, community, cancelled, admins } = await loadCommunityPage(
-    slug,
-    viewer?.id ?? null,
-    locale,
-  );
+  const { creator, membership, community, cancelled, admins, pendingRequests } =
+    await loadCommunityPage(slug, viewer?.id ?? null, locale);
 
   return (
     <div className="container-page pb-16 pt-5 sm:pt-6">
@@ -40,8 +38,16 @@ export default async function CircleLayout({
           )}
         </div>
         <div className="min-w-0">
-          <h1 className="truncate text-[1.3rem]/[1.3] font-bold tracking-tight sm:text-[1.5rem]/[1.3]">
-            {community.name}
+          <h1 className="flex items-center gap-2 text-[1.3rem]/[1.3] font-bold tracking-tight sm:text-[1.5rem]/[1.3]">
+            <span className="truncate">{community.name}</span>
+            {/* Whether you run this room is the first thing you should be able
+                to see in it — the tools below mean nothing if you do not know
+                they are yours. */}
+            {membership.isOwner ? (
+              <Badge tone="brand">{t.circle.owner}</Badge>
+            ) : membership.isCircleAdmin ? (
+              <Badge tone="success">{t.circle.admin}</Badge>
+            ) : null}
           </h1>
           <p className="truncate text-[13px] text-ink-muted">
             {community.tagline || creator.displayName}
@@ -61,6 +67,7 @@ export default async function CircleLayout({
             leaderboard: t.circle.tabLeaderboard,
             about: t.circle.tabAbout,
           }}
+          pendingRequests={pendingRequests}
         />
       </div>
 
@@ -76,6 +83,9 @@ export default async function CircleLayout({
           settingsHref={localePath("/dashboard/creator/community", locale)}
           showCover={membership.isMember}
           showPrice={Boolean(viewer)}
+          pendingRequests={pendingRequests}
+          eventsHref={localePath(`/community/${creator.slug}/events`, locale)}
+          membersHref={localePath(`/community/${creator.slug}/members`, locale)}
           locale={locale}
           t={t}
         />
