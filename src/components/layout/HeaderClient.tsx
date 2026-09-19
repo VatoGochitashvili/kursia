@@ -81,9 +81,6 @@ export function HeaderClient({
     router.refresh();
   }
 
-  const dashboardHref =
-    user?.role === "ADMIN" ? "/admin" : user?.role === "CREATOR" ? "/dashboard/creator" : "/dashboard";
-
   return (
     <div ref={containerRef} className="flex items-center gap-1">
       {/* Authenticated actions */}
@@ -134,7 +131,7 @@ export function HeaderClient({
                   <p className="truncate text-xs text-ink-subtle">{user.email}</p>
                 </div>
                 <nav className="p-1.5">
-                  <MenuLink href={dashboardHref} icon="grid" label={labels.dashboard} />
+                  <MenuLink href="/dashboard/profile" icon="user" label={labels.profile} />
                   {user.role === "CREATOR" && showCreatorStudio && (
                     <MenuLink href="/dashboard/creator" icon="video" label={labels.creatorStudio} />
                   )}
@@ -142,8 +139,7 @@ export function HeaderClient({
                     <MenuLink href="/admin" icon="shield" label={labels.admin} />
                   )}
                   <MenuLink href="/dashboard/messages" icon="message" label={labels.messages} />
-                  <MenuLink href="/dashboard/wishlist" icon="heart" label={labels.wishlist} />
-                  <MenuLink href="/dashboard/profile" icon="settings" label={labels.settings} />
+                  <MenuLink href="/dashboard/settings" icon="settings" label={labels.settings} />
                 </nav>
                 <div className="border-t border-line p-1.5">
                   <button
@@ -234,7 +230,7 @@ export function HeaderClient({
                   {labels.createCircle}
                 </Link>
               )}
-              {user && <MenuLink href={dashboardHref} icon="grid" label={labels.dashboard} mobile />}
+              {user && <MenuLink href="/dashboard/profile" icon="user" label={labels.profile} mobile />}
               {user && <MenuLink href="/dashboard/messages" icon="message" label={labels.messages} mobile />}
               {user && <MenuLink href="/dashboard/notifications" icon="bell" label={labels.notifications} mobile />}
             </nav>

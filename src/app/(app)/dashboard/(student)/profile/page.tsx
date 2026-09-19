@@ -2,202 +2,147 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { db } from "@/lib/db";
 import { getI18n, localePath } from "@/i18n";
+import { fill } from "@/i18n/config";
 import { requireUser } from "@/lib/auth/rbac";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatNumber } from "@/lib/format";
 import { listMyCircles } from "@/lib/my-circles";
-import { PageHeader } from "@/components/layout/DashboardShell";
-import { ProfileForm } from "@/components/dashboard/ProfileForm";
-import { ChangePasswordForm } from "@/components/dashboard/ChangePasswordForm";
-import { Alert, Card } from "@/components/ui/primitives";
+import { levelFor } from "@/lib/points";
+import { Alert, Avatar, Badge, Card } from "@/components/ui/primitives";
+import { ButtonLink } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 
 export const metadata: Metadata = { title: "Profile", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
+/**
+ * A member's own page: who they are, the circles they belong to, and where
+ * they stand in each. Changing any of it happens in settings — this page only
+ * shows the result, the way other members see them.
+ */
 export default async function ProfilePage() {
   const { locale, t } = await getI18n();
   const user = await requireUser();
-
-  const record = await db.user.findUnique({
-    where: { id: user.id },
-    select: {
-      email: true, emailVerified: true, createdAt: true,
-      profile: {
-        select: {
-          fullName: true, username: true, headline: true, bio: true, city: true,
-          phone: true, avatarUrl: true, websiteUrl: true, facebookUrl: true,
-          youtubeUrl: true, linkedinUrl: true, instagramUrl: true,
-        },
-      },
-      creatorProfile: { select: { slug: true, displayName: true, isVerified: true } },
-    },
-  });
-
-  const circles = await listMyCircles(user.id, locale);
-  const profile = record?.profile;
   const p = (path: string) => localePath(path, locale);
 
-  return (
-    <>
-      <PageHeader
-        title={t.profile.title}
-        subtitle={
-          record ? `${t.profile.memberSince.replace("{date}", formatDate(record.createdAt, locale))}` : undefined
-        }
-        action={
-          record?.creatorProfile ? (
-            <Link
-              href={p(`/creator/${record.creatorProfile.slug}`)}
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:underline"
-            >
-              <Icon name="external" size={15} />
-              {t.profile.publicProfile}
-            </Link>
-          ) : undefined
-        }
-      />
+  const [record, circles, followers, following, points] = await Promise.all([
+    db.user.findUnique({
+      where: { id: user.id },
+      select: {
+        email: true,
+        emailVerified: true,
+        createdAt: true,
+        profile: {
+          select: { fullName: true, avatarUrl: true, headline: true, bio: true, city: true },
+        },
+      },
+    }),
+    listMyCircles(user.id, locale),
+    db.follow.count({ where: { followedUserId: user.id } }),
+    db.follow.count({ where: { followerId: user.id, followedUserId: { not: null } } }),
+    db.pointEvent.groupBy({
+      by: ["creatorId"],
+      where: { userId: user.id },
+      _sum: { points: true },
+    }),
+  ]);
 
+  const name = record?.profile?.fullName ?? user.fullName;
+  const pointsByCircle = new Map(points.map((row) => [row.creatorId, row._sum.points ?? 0]));
+
+  return (
+    <div className="grid gap-5">
       {record && !record.emailVerified && (
-        <Alert tone="warn" className="mb-5" title={t.auth.verifyEmailTitle}>
+        <Alert tone="warn" title={t.auth.verifyEmailTitle}>
           {t.auth.verifyEmailBody} — {record.email}
         </Alert>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
-        <div className="min-w-0">
-          <ProfileForm
-            initial={{
-              fullName: profile?.fullName ?? "",
-              username: profile?.username ?? "",
-              headline: profile?.headline ?? "",
-              bio: profile?.bio ?? "",
-              city: profile?.city ?? "",
-              phone: profile?.phone ?? "",
-              avatarUrl: profile?.avatarUrl ?? "",
-              websiteUrl: profile?.websiteUrl ?? "",
-              facebookUrl: profile?.facebookUrl ?? "",
-              youtubeUrl: profile?.youtubeUrl ?? "",
-              linkedinUrl: profile?.linkedinUrl ?? "",
-              instagramUrl: profile?.instagramUrl ?? "",
-            }}
-            labels={{
-              publicProfile: t.profile.publicProfile,
-              fullName: t.auth.fullName,
-              username: t.profile.username,
-              usernameHint:
-                locale === "en"
-                  ? "Latin letters, digits, dot and underscore"
-                  : "ლათინური ასოები, ციფრები, წერტილი და ქვედა ტირე",
-              headline: t.profile.headline,
-              bio: t.profile.bio,
-              city: t.profile.city,
-              phone: t.profile.phone,
-              socialLinks: t.profile.socialLinks,
-              currentPhoto: locale === "en" ? "Profile photo" : "პროფილის ფოტო",
-              save: t.common.save,
-              saved: t.common.saved,
-            }}
-            uploaderLabels={{
-              drop: t.upload.dropImage,
-              browse: t.upload.browse,
-              uploading: t.upload.uploading,
-              replace: t.upload.replace,
-              remove: t.upload.remove,
-              cancel: t.upload.cancel,
-              tooLarge: t.upload.tooLarge,
-              wrongType: t.upload.wrongType,
-              hint: t.upload.avatarHint,
-            }}
-          />
-        </div>
-
-        <div className="space-y-5">
-          {/* What this account actually belongs to. It used to be nowhere on
-              the site: a member could pay every month and never see a list of
-              the rooms that bought them. */}
-          <Card className="p-5">
-            <h2 className="text-base">{t.circle.myCircles}</h2>
-            {circles.length === 0 ? (
-              <p className="mt-2 text-[13px] leading-relaxed text-ink-muted">
-                {t.communities.noneYetBody}
+      <Card className="p-5 sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+          <Avatar src={record?.profile?.avatarUrl} name={name} size={88} />
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h1 className="text-[1.45rem] font-bold tracking-tight">{name}</h1>
+                {record?.profile?.headline && (
+                  <p className="mt-0.5 text-[14px] text-ink-muted">{record.profile.headline}</p>
+                )}
+              </div>
+              <ButtonLink href={p("/dashboard/settings")} variant="outline" size="sm">
+                <Icon name="settings" size={15} />
+                {t.nav.settings}
+              </ButtonLink>
+            </div>
+            {record?.profile?.bio && (
+              <p className="mt-3 max-w-prose whitespace-pre-line text-[14px] leading-relaxed">
+                {record.profile.bio}
               </p>
-            ) : (
-              <ul className="mt-3 grid gap-1.5">
-                {circles.map((circle) => (
-                  <li key={circle.creatorId}>
-                    <Link
-                      href={p(`/community/${circle.slug}`)}
-                      className="flex items-center gap-2.5 rounded-xl p-1.5 transition-colors hover:bg-surface-sunken"
-                    >
-                      <span className="h-9 w-12 shrink-0 overflow-hidden rounded-lg bg-surface-sunken">
-                        {circle.coverUrl && (
-                          // eslint-disable-next-line @next/next/no-img-element -- stored or user-configured host
-                          <img src={circle.coverUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
-                        )}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[13px] font-semibold text-ink">
-                          {circle.name}
-                        </span>
-                        {circle.role !== "MEMBER" && (
-                          <span className="text-[11px] text-ink-subtle">
-                            {circle.role === "OWNER" ? t.circle.owner : t.circle.admin}
-                          </span>
-                        )}
-                      </span>
-                      <Icon name="arrowRight" size={14} className="shrink-0 text-ink-subtle" />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
             )}
+            <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-ink-muted">
+              <span>
+                <span className="font-semibold tabular-nums text-ink">{followers}</span>{" "}
+                {t.circle.followers}
+              </span>
+              <span>
+                <span className="font-semibold tabular-nums text-ink">{following}</span>{" "}
+                {t.circle.followingCount}
+              </span>
+              {record?.profile?.city && <span>{record.profile.city}</span>}
+              {record && (
+                <span>{fill(t.circle.memberSince, { date: formatDate(record.createdAt, locale) })}</span>
+              )}
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      <Card className="p-5">
+        <h2 className="text-[15px] font-bold">{t.circle.membershipsTitle}</h2>
+        {circles.length === 0 ? (
+          <div className="mt-2">
+            <p className="text-[13.5px] leading-relaxed text-ink-muted">{t.communities.noneYetBody}</p>
             <Link
-              href={p("/communities")}
+              href={p("/")}
               className="mt-3 inline-flex text-[13px] font-semibold text-brand-600 hover:underline"
             >
               {t.communities.browse}
             </Link>
-          </Card>
-
-          {!record?.creatorProfile && (
-            <Card className="p-5">
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-50 text-accent-700">
-                <Icon name="sparkles" size={19} />
-              </span>
-              <h2 className="mt-3 text-base">{t.start.title}</h2>
-              <p className="mt-1 text-[13px] leading-relaxed text-ink-muted">
-                {t.start.subtitle}
-              </p>
-              <Link
-                href={p("/start")}
-                className="mt-4 inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-brand-600 px-4 text-[14px] font-semibold text-white transition-colors hover:bg-brand-700"
-              >
-                {t.start.cta}
-                <Icon name="arrowRight" size={16} />
-              </Link>
-            </Card>
-          )}
-
-          <Card className="p-5">
-            <h2 className="text-base">{t.profile.security}</h2>
-            <p className="mt-1 text-[13px] text-ink-muted">{record?.email}</p>
-            <div className="mt-4">
-              <ChangePasswordForm
-                labels={{
-                  current: t.auth.currentPassword,
-                  next: t.auth.newPassword,
-                  submit: t.profile.changePassword,
-                  changed: t.auth.passwordChanged,
-                  hint:
-                    locale === "en"
-                      ? "At least 10 characters, including a digit"
-                      : "მინიმუმ 10 სიმბოლო, ერთი ციფრის ჩათვლით",
-                }}
-              />
-            </div>
-          </Card>
-        </div>
-      </div>
-    </>
+          </div>
+        ) : (
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+            {circles.map((circle) => {
+              const total = pointsByCircle.get(circle.creatorId) ?? 0;
+              return (
+                <li key={circle.creatorId}>
+                  <Link
+                    href={p(`/community/${circle.slug}`)}
+                    className="flex items-center gap-3 rounded-xl border border-line p-2.5 transition-colors hover:bg-surface-sunken/60"
+                  >
+                    <span className="h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-surface-sunken">
+                      {circle.coverUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element -- stored or user-configured host
+                        <img src={circle.coverUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
+                      )}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="flex items-center gap-1.5">
+                        <span className="truncate text-[13.5px] font-semibold">{circle.name}</span>
+                        {circle.role === "OWNER" && <Badge tone="brand">{t.circle.owner}</Badge>}
+                        {circle.role === "ADMIN" && <Badge tone="success">{t.circle.admin}</Badge>}
+                      </span>
+                      <span className="mt-0.5 block text-[12px] text-ink-subtle">
+                        {fill(t.circle.level, { n: String(levelFor(total).level) })} ·{" "}
+                        {formatNumber(total)} {t.circle.points}
+                      </span>
+                    </span>
+                    <Icon name="arrowRight" size={14} className="shrink-0 text-ink-subtle" />
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Card>
+    </div>
   );
 }

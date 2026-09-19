@@ -535,7 +535,7 @@ export const en: Dictionary = {
     coverRemove: "Remove photo",
     requiresApproval: "Approve members",
     requiresApprovalHint: "New members apply first, and you decide.",
-    requestToJoin: "Request to join",
+    requestToJoin: "Join",
     requestMessage: "Say briefly why you'd like to join (optional)",
     requestSent: "Request sent",
     requestPending: "Request under review",

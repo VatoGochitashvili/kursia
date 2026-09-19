@@ -18,12 +18,11 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [{ locale, t }, user] = await Promise.all([getI18n(), getSessionUser()]);
-  if (!user) redirect(localePath("/login?next=/dashboard", locale));
+  if (!user) redirect(localePath("/login?next=/dashboard/profile", locale));
 
   const settings = await getSettings();
-  const [unread, wishlistCount, plan, unreadMessages] = await Promise.all([
+  const [unread, plan, unreadMessages] = await Promise.all([
     db.notification.count({ where: { userId: user.id, readAt: null } }),
-    db.wishlist.count({ where: { userId: user.id } }),
     // The studio shortcut is only worth showing to somebody who can open it.
     user.creatorId
       ? getPlanState(user.creatorId, settings.creatorPlanPriceMinor)
@@ -34,16 +33,15 @@ export default async function DashboardLayout({
   const p = (path: string) => localePath(path, locale);
 
   const groups: NavGroup[] = [
-    // One list, no "my study" heading: this account is a person's own corner
-    // of the site, and their memberships live on the profile page now.
+    // No "my courses": courses live inside circles now, and the profile is
+    // where somebody's circles are listed.
     {
       items: [
-        { href: p("/dashboard"), label: t.dashboard.myCourses, icon: "book", exact: true },
         { href: p("/dashboard/profile"), label: t.nav.profile, icon: "user" },
         { href: p("/dashboard/messages"), label: t.messages.title, icon: "message", badge: unreadMessages },
         { href: p("/dashboard/notifications"), label: t.nav.notifications, icon: "bell", badge: unread },
-        { href: p("/dashboard/wishlist"), label: t.nav.wishlist, icon: "heart", badge: wishlistCount },
         { href: p("/dashboard/purchases"), label: t.nav.purchases, icon: "creditCard" },
+        { href: p("/dashboard/settings"), label: t.nav.settings, icon: "settings" },
       ],
     },
     // Creators get a direct route into the studio from the learning sidebar.
@@ -65,10 +63,10 @@ export default async function DashboardLayout({
 
   return (
     <DashboardShell
-      title={t.nav.dashboard}
+      title={t.nav.profile}
       groups={groups}
       mobileTabs={[
-        { href: p("/dashboard"), label: t.dashboard.myCourses, icon: "book", exact: true },
+        { href: p("/dashboard/profile"), label: t.nav.profile, icon: "user" },
         { href: p("/dashboard/messages"), label: t.messages.title, icon: "message", badge: unreadMessages },
         { href: p("/dashboard/notifications"), label: t.nav.notifications, icon: "bell", badge: unread },
       ]}

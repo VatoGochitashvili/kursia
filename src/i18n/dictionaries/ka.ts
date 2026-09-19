@@ -743,7 +743,7 @@ export const ka = {
     coverRemove: "ფოტოს წაშლა",
     requiresApproval: "დადასტურება საჭიროა",
     requiresApprovalHint: "ახალი წევრები ჯერ განაცხადს გამოგზავნიან, შენ კი დაამტკიცებ.",
-    requestToJoin: "განაცხადის გაგზავნა",
+    requestToJoin: "გაწევრიანდი",
     requestMessage: "მოკლედ დაწერე, რატომ გინდა შემოერთება (არასავალდებულო)",
     requestSent: "განაცხადი გაიგზავნა",
     requestPending: "განაცხადი განხილვაშია",

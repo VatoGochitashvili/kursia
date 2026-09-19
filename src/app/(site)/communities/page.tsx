@@ -142,7 +142,6 @@ export default async function CommunitiesPage({ searchParams }: Props) {
                 {t.communities.all}
               </ButtonLink>
             )}
-            <ButtonLink href={p("/start")}>{t.communities.startYours}</ButtonLink>
           </div>
         </Card>
       ) : (

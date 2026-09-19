@@ -75,16 +75,6 @@ export default async function HomePage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {/* The one thing on this page for somebody who wants to run a
-                circle rather than join one — outlined heavily and large, so it
-                is found without competing with the circles themselves. */}
-            <Link
-              href={p("/start")}
-              className="inline-flex h-12 items-center gap-2 rounded-xl border-2 border-brand-600 bg-brand-50 px-5 text-[15px] font-bold text-brand-700 shadow-sm transition-colors hover:bg-brand-600 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 sm:h-14 sm:px-6 sm:text-base"
-            >
-              <Icon name="plus" size={18} />
-              {t.start.title}
-            </Link>
             <SeeAllLink href={p("/communities")} label={t.common.seeAll} />
           </div>
         </div>
@@ -187,8 +177,6 @@ export default async function HomePage() {
       <EarningsBand
         t={t}
         share={creatorShare}
-        href={p("/start")}
-        secondaryHref={p("/start")}
       />
 
       {/* ── How it works ─────────────────────────────────────────────────── */}
@@ -286,41 +274,6 @@ export default async function HomePage() {
         t={t}
         settings={{ refundWindowDays: settings.refundWindowDays }}
       />
-
-      {/* ── Creator CTA ──────────────────────────────────────────────────── */}
-      <section className="container-page pb-20">
-        <div className="relative overflow-hidden rounded-3xl bg-ink px-6 py-14 text-center sm:px-14 sm:py-20">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(40rem 22rem at 20% 0%, rgb(53 89 240 / 0.45), transparent 60%)," +
-                "radial-gradient(34rem 20rem at 85% 100%, rgb(255 87 16 / 0.32), transparent 62%)",
-            }}
-          />
-          <div className="relative mx-auto max-w-2xl">
-            <h2 className="text-balance text-3xl text-white sm:text-4xl">
-              {t.home.creatorCtaTitle}
-            </h2>
-            <p className="mt-4 text-pretty text-[15px] leading-relaxed text-white/70 sm:text-base">
-              {t.home.creatorCtaBody}
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <ButtonLink href={p("/start")} size="lg" variant="inverse">
-                {t.home.creatorCtaButton}
-                <Icon name="arrowRight" size={17} />
-              </ButtonLink>
-              <ButtonLink href={p("/start")} size="lg" variant="ghostOnDark">
-                {t.common.showMore}
-              </ButtonLink>
-            </div>
-            <p className="mt-5 text-[13px] text-white/50">
-              {t.home.creatorCtaNote}
-            </p>
-          </div>
-        </div>
-      </section>
 
       <JsonLd
         data={itemListSchema(
@@ -480,13 +433,9 @@ function AudienceCard({
 function EarningsBand({
   t,
   share,
-  href,
-  secondaryHref,
 }: {
   t: Parameters<typeof CourseCard>[0]["t"];
   share: string;
-  href: string;
-  secondaryHref: string;
 }) {
   const points = [
     {
@@ -553,15 +502,6 @@ function EarningsBand({
                 {fill(t.home.earningsBody, { share })}
               </p>
 
-              <div className="mt-8 flex flex-wrap gap-3">
-                <ButtonLink href={href} size="lg" variant="inverse">
-                  {t.home.earningsCta}
-                  <Icon name="arrowRight" size={17} />
-                </ButtonLink>
-                <ButtonLink href={secondaryHref} size="lg" variant="ghostOnDark">
-                  {t.common.showMore}
-                </ButtonLink>
-              </div>
             </div>
 
             <div>
