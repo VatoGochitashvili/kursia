@@ -96,53 +96,73 @@ export default async function ProfilePage() {
         </div>
       </Card>
 
-      <Card className="p-5">
-        <h2 className="text-[15px] font-bold">{t.circle.membershipsTitle}</h2>
-        {circles.length === 0 ? (
-          <div className="mt-2">
-            <p className="text-[13.5px] leading-relaxed text-ink-muted">{t.communities.noneYetBody}</p>
-            <Link
-              href={p("/")}
-              className="mt-3 inline-flex text-[13px] font-semibold text-brand-600 hover:underline"
-            >
-              {t.communities.browse}
-            </Link>
-          </div>
-        ) : (
-          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-            {circles.map((circle) => {
-              const total = pointsByCircle.get(circle.creatorId) ?? 0;
-              return (
-                <li key={circle.creatorId}>
-                  <Link
-                    href={p(`/community/${circle.slug}`)}
-                    className="flex items-center gap-3 rounded-xl border border-line p-2.5 transition-colors hover:bg-surface-sunken/60"
-                  >
-                    <span className="h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-surface-sunken">
-                      {circle.coverUrl && (
-                        // eslint-disable-next-line @next/next/no-img-element -- stored or user-configured host
-                        <img src={circle.coverUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
+      {[
+        { key: "run", label: t.circle.youRun, rows: circles.filter((c) => c.role !== "MEMBER") },
+        { key: "in", label: t.circle.youAreIn, rows: circles.filter((c) => c.role === "MEMBER") },
+      ]
+        .filter((group) => group.rows.length > 0)
+        .map((group) => (
+          <Card key={group.key} className="p-5">
+            {/* The circles someone runs are a different kind of thing from the
+                ones they joined — an owner opening this page is looking for
+                work waiting on them, not for a room to read. */}
+            <h2 className="text-[15px] font-bold">
+              {circles.some((c) => c.role !== "MEMBER") ? group.label : t.circle.membershipsTitle}
+            </h2>
+            <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+              {group.rows.map((circle) => {
+                const total = pointsByCircle.get(circle.creatorId) ?? 0;
+                return (
+                  <li key={circle.creatorId}>
+                    <Link
+                      href={p(`/community/${circle.slug}`)}
+                      className="flex items-center gap-3 rounded-xl border border-line p-2.5 transition-colors hover:bg-surface-sunken/60"
+                    >
+                      <span className="h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-surface-sunken">
+                        {circle.coverUrl && (
+                          // eslint-disable-next-line @next/next/no-img-element -- stored or user-configured host
+                          <img src={circle.coverUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
+                        )}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center gap-1.5">
+                          <span className="truncate text-[13.5px] font-semibold">{circle.name}</span>
+                          {circle.role === "OWNER" && <Badge tone="brand">{t.circle.owner}</Badge>}
+                          {circle.role === "ADMIN" && <Badge tone="success">{t.circle.admin}</Badge>}
+                        </span>
+                        <span className="mt-0.5 block text-[12px] text-ink-subtle">
+                          {circle.pendingRequests > 0
+                            ? `${circle.pendingRequests} ${t.circle.waiting}`
+                            : `${fill(t.circle.level, { n: String(levelFor(total).level) })} · ${formatNumber(total)} ${t.circle.points}`}
+                        </span>
+                      </span>
+                      {circle.pendingRequests > 0 ? (
+                        <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-600 px-1.5 text-[11px] font-bold text-white">
+                          {circle.pendingRequests}
+                        </span>
+                      ) : (
+                        <Icon name="arrowRight" size={14} className="shrink-0 text-ink-subtle" />
                       )}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="flex items-center gap-1.5">
-                        <span className="truncate text-[13.5px] font-semibold">{circle.name}</span>
-                        {circle.role === "OWNER" && <Badge tone="brand">{t.circle.owner}</Badge>}
-                        {circle.role === "ADMIN" && <Badge tone="success">{t.circle.admin}</Badge>}
-                      </span>
-                      <span className="mt-0.5 block text-[12px] text-ink-subtle">
-                        {fill(t.circle.level, { n: String(levelFor(total).level) })} ·{" "}
-                        {formatNumber(total)} {t.circle.points}
-                      </span>
-                    </span>
-                    <Icon name="arrowRight" size={14} className="shrink-0 text-ink-subtle" />
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </Card>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </Card>
+        ))}
+
+      {circles.length === 0 && (
+        <Card className="p-5">
+          <h2 className="text-[15px] font-bold">{t.circle.membershipsTitle}</h2>
+          <p className="mt-2 text-[13.5px] leading-relaxed text-ink-muted">{t.communities.noneYetBody}</p>
+          <Link
+            href={p("/")}
+            className="mt-3 inline-flex text-[13px] font-semibold text-brand-600 hover:underline"
+          >
+            {t.communities.browse}
+          </Link>
+        </Card>
+      )}
     </div>
   );
 }

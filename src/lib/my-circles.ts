@@ -10,6 +10,8 @@ export interface MyCircle {
   memberCount: number;
   /** How this person is in it, which decides the badge beside the name. */
   role: "OWNER" | "ADMIN" | "MEMBER";
+  /** Applications waiting on them here. Always 0 for a plain member. */
+  pendingRequests: number;
 }
 
 /**
@@ -76,7 +78,7 @@ export async function listMyCircles(
     },
   });
 
-  return rows.map((row) => ({
+  const circles = rows.map((row) => ({
     creatorId: row.id,
     slug: row.slug,
     name: communityLabel(
@@ -91,5 +93,21 @@ export async function listMyCircles(
         : row.communityRoles[0]?.role === "ADMIN"
           ? ("ADMIN" as const)
           : ("MEMBER" as const),
+    pendingRequests: 0,
   }));
+
+  // The work waiting in the rooms this person runs, counted in one grouped
+  // query rather than one per circle.
+  const moderated = circles.filter((c) => c.role !== "MEMBER").map((c) => c.creatorId);
+  if (moderated.length > 0) {
+    const pending = await db.communityJoinRequest.groupBy({
+      by: ["creatorId"],
+      where: { creatorId: { in: moderated }, status: "PENDING" },
+      _count: { _all: true },
+    });
+    const byCircle = new Map(pending.map((row) => [row.creatorId, row._count._all]));
+    for (const circle of circles) circle.pendingRequests = byCircle.get(circle.creatorId) ?? 0;
+  }
+
+  return circles;
 }

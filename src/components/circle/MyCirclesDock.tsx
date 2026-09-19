@@ -26,6 +26,8 @@ export async function MyCirclesDock() {
         owner: t.circle.owner,
         admin: t.circle.admin,
         browse: t.circle.allCircles,
+        youRun: t.circle.youRun,
+        youAreIn: t.circle.youAreIn,
       }}
     />
   );
