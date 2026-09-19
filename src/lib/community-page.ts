@@ -25,6 +25,8 @@ async function load(
     slug: string;
     displayName: string;
     avatarUrl: string | null;
+    headline: string | null;
+    userId: string;
   };
   membership: Membership;
   community: CommunityView;
@@ -32,8 +34,8 @@ async function load(
   cancelled: boolean;
   /** Whether this circle reviews applicants, and where this viewer stands. */
   gate: JoinGate;
-  /** The people who run the room, named in the sidebar. */
-  admins: { userId: string; name: string }[];
+  /** The people who run the room, shown with their faces in the sidebar. */
+  admins: { userId: string; name: string; avatarUrl: string | null; headline: string | null }[];
   /** Applications waiting on a decision. Only asked for someone who can decide. */
   pendingRequests: number;
 }> {
@@ -42,6 +44,7 @@ async function load(
     select: {
       id: true,
       slug: true,
+      userId: true,
       displayName: true,
       communityEnabled: true,
       communityName: true,
@@ -53,7 +56,9 @@ async function load(
       communityMemberCount: true,
       communityRequiresApproval: true,
       communityCategory: { select: { slug: true, nameKa: true, nameEn: true } },
-      user: { select: { profile: { select: { avatarUrl: true } } } },
+      user: {
+        select: { profile: { select: { avatarUrl: true, fullName: true, headline: true } } },
+      },
       _count: { select: { courses: { where: { includedInMembership: true, status: "PUBLISHED" } } } },
     },
   });
@@ -83,12 +88,16 @@ async function load(
     orderBy: { createdAt: "asc" },
     select: {
       userId: true,
-      user: { select: { profile: { select: { fullName: true } } } },
+      user: {
+        select: { profile: { select: { fullName: true, avatarUrl: true, headline: true } } },
+      },
     },
   });
   const admins = adminRows.map((row) => ({
     userId: row.userId,
     name: row.user.profile?.fullName ?? "—",
+    avatarUrl: row.user.profile?.avatarUrl ?? null,
+    headline: row.user.profile?.headline ?? null,
   }));
 
   const pendingRequests = membership.canModerate
@@ -104,6 +113,8 @@ async function load(
       slug: creator.slug,
       displayName: creator.displayName,
       avatarUrl: creator.user.profile?.avatarUrl ?? null,
+      headline: creator.user.profile?.headline ?? null,
+      userId: creator.userId,
     },
     membership,
     community: {

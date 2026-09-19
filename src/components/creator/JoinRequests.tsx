@@ -27,10 +27,13 @@ interface JoinRequest {
  */
 export function JoinRequests({
   creatorId,
+  free,
   locale,
   t,
 }: {
   creatorId: string;
+  /** A free circle admits on approval; a paid one still waits for payment. */
+  free: boolean;
   locale: Locale;
   t: Dictionary;
 }) {
@@ -89,6 +92,9 @@ export function JoinRequests({
           </span>
         )}
       </h2>
+      <p className="mt-1 text-[12.5px] leading-relaxed text-ink-muted">
+        {free ? t.circle.approveFreeHint : t.circle.approvePaidHint}
+      </p>
 
       {requests.length === 0 ? (
         <p className="mt-3 text-[13px] text-ink-muted">{t.membership.requestsEmpty}</p>

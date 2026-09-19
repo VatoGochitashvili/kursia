@@ -90,7 +90,12 @@ export default async function CreatorCommunityPage() {
           otherwise it is a permanently empty box. */}
       {creator.communityRequiresApproval && (
         <div className="mt-5">
-          <JoinRequests creatorId={user.creatorId} locale={locale} t={t} />
+          <JoinRequests
+            creatorId={user.creatorId}
+            free={creator.communityPriceMinor === 0}
+            locale={locale}
+            t={t}
+          />
         </div>
       )}
     </>

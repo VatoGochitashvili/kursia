@@ -99,7 +99,12 @@ export default async function CircleMembersPage({ params }: Props) {
   return (
     <div className="grid gap-5">
       {membership.canModerate && (
-        <JoinRequests creatorId={creator.id} locale={locale} t={t} />
+        <JoinRequests
+          creatorId={creator.id}
+          free={community.priceMinor === 0}
+          locale={locale}
+          t={t}
+        />
       )}
       <MembersPanel
         creatorId={creator.id}

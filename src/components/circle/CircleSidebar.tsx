@@ -3,6 +3,7 @@ import { Badge, Card } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
 import { JoinCommunityCard, type CommunityView } from "@/components/community/JoinCommunityCard";
 import { CopyLinkButton } from "@/components/circle/CopyLinkButton";
+import { CircleLeaders, type Leader } from "@/components/circle/CircleLeaders";
 import { formatMoney } from "@/lib/money";
 import { formatNumber } from "@/lib/format";
 import { fill } from "@/i18n/config";
@@ -24,6 +25,8 @@ export function CircleSidebar({
   membership,
   owner,
   admins,
+  leaders,
+  profileBase,
   cancelled,
   settingsHref,
   showCover,
@@ -39,6 +42,9 @@ export function CircleSidebar({
   membership: Membership;
   owner: { displayName: string };
   admins: { userId: string; name: string }[];
+  /** Owner and admins with their photos — shown to visitors too. */
+  leaders: Leader[];
+  profileBase: string;
   cancelled: boolean;
   settingsHref: string;
   /**
@@ -101,16 +107,6 @@ export function CircleSidebar({
           </dl>
 
           <div className="mt-4 grid gap-1.5 border-t border-line pt-4 text-[13px]">
-            <p className="flex items-center justify-between gap-2">
-              <span className="text-ink-muted">{t.circle.owner}</span>
-              <span className="truncate font-semibold">{owner.displayName}</span>
-            </p>
-            {admins.length > 0 && (
-              <p className="flex items-start justify-between gap-2">
-                <span className="text-ink-muted">{t.circle.admins}</span>
-                <span className="text-end font-semibold">{admins.map((a) => a.name).join(", ")}</span>
-              </p>
-            )}
             {community.category && (
               <p className="flex items-center justify-between gap-2">
                 <span className="text-ink-muted">{t.membership.categoryLabel}</span>
@@ -145,6 +141,15 @@ export function CircleSidebar({
           </div>
         </div>
       </Card>
+
+      <CircleLeaders
+        leaders={leaders}
+        profileBase={profileBase}
+        // A member's profile page is inside the circle, so only a member can
+        // open one.
+        linked={membership.isMember}
+        t={t}
+      />
 
       {/* What running this circle actually gives you. Without it, an admin
           sees exactly what a member sees and has no idea the approvals queue

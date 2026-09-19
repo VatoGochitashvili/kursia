@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/auth/rbac";
 import { notify } from "@/lib/notifications";
 import { communityLabel } from "@/lib/membership";
 import { getMembership } from "@/lib/community";
+import { startCommunityCheckout } from "@/lib/payments/fulfillment";
 
 export const runtime = "nodejs";
 
@@ -18,10 +19,13 @@ const decideSchema = z
 /**
  * The owner's decision on one application.
  *
- * Approving grants nothing by itself — it only removes the barrier to
- * checkout. A free circle still needs the person to join; a paid one still
- * needs them to pay. That is what keeps "may they be here" and "have they
- * paid" from quietly becoming the same question.
+ * For a paid circle, approving only removes the barrier to checkout: "may
+ * they be here" and "have they paid" stay separate questions, so nobody is
+ * charged before being let in.
+ *
+ * For a FREE circle there is no second question, so approving admits them on
+ * the spot. Otherwise an owner approves somebody, looks at the member list,
+ * and finds it unchanged — which is what "approved" ought to have meant.
  */
 export const PATCH = handler(async (request, context: { params: Promise<{ id: string }> }) => {
   const user = await requireUser();
@@ -33,7 +37,10 @@ export const PATCH = handler(async (request, context: { params: Promise<{ id: st
     select: {
       id: true, userId: true, status: true,
       creator: {
-        select: { id: true, userId: true, slug: true, displayName: true, communityName: true },
+        select: {
+          id: true, userId: true, slug: true, displayName: true,
+          communityName: true, communityPriceMinor: true,
+        },
       },
     },
   });
@@ -56,6 +63,25 @@ export const PATCH = handler(async (request, context: { params: Promise<{ id: st
     select: { id: true, status: true },
   });
 
+  // A free circle admits them here and now. Routed through the ordinary
+  // checkout so the subscription, the member count and the notifications all
+  // come from the one code path that already gets them right.
+  let admitted = false;
+  if (body.status === "APPROVED" && joinRequest.creator.communityPriceMinor === 0) {
+    try {
+      await startCommunityCheckout({
+        userId: joinRequest.userId,
+        creatorId: joinRequest.creator.id,
+        locale: "ka",
+      });
+      admitted = true;
+    } catch (error) {
+      // Already a member, or a circle that has since closed. The approval
+      // still stands; they can join from the page.
+      console.error("[join-request] auto-admit failed", error);
+    }
+  }
+
   const label = communityLabel(joinRequest.creator);
   await notify({
     userId: joinRequest.userId,
@@ -63,10 +89,12 @@ export const PATCH = handler(async (request, context: { params: Promise<{ id: st
     title: body.status === "APPROVED" ? "განაცხადი დამტკიცდა" : "განაცხადი არ დამტკიცდა",
     body:
       body.status === "APPROVED"
-        ? `„${label}" — ახლა შეგიძლია შემოერთდე.`
+        ? admitted
+          ? `„${label}" — უკვე წევრი ხარ.`
+          : `„${label}" — ახლა შეგიძლია შემოერთდე.`
         : body.note || `„${label}"`,
     linkUrl: `/community/${joinRequest.creator.slug}`,
   }).catch(() => undefined);
 
-  return jsonOk({ request: updated });
+  return jsonOk({ request: updated, admitted });
 });

@@ -28,6 +28,17 @@ export default async function CircleLayout({
   const { creator, membership, community, cancelled, admins, pendingRequests } =
     await loadCommunityPage(slug, viewer?.id ?? null, locale);
 
+  const leaders = [
+    {
+      userId: creator.userId,
+      name: creator.displayName,
+      avatarUrl: creator.avatarUrl,
+      headline: creator.headline,
+      role: "OWNER" as const,
+    },
+    ...admins.map((a) => ({ ...a, role: "ADMIN" as const })),
+  ];
+
   return (
     <div className="container-page pb-16 pt-5 sm:pt-6">
       <div className="flex items-center gap-3">
@@ -79,6 +90,8 @@ export default async function CircleLayout({
           membership={membership}
           owner={{ displayName: creator.displayName }}
           admins={admins}
+          leaders={leaders}
+          profileBase={localePath(`/community/${creator.slug}/members`, locale)}
           cancelled={cancelled}
           settingsHref={localePath("/dashboard/creator/community", locale)}
           showCover={membership.isMember}
