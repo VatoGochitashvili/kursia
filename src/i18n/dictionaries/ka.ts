@@ -4,7 +4,7 @@
  */
 export const ka = {
   common: {
-    brandFallback: "წრე",
+    brandFallback: "MyTSRE",
     loading: "იტვირთება…",
     save: "შენახვა",
     saving: "ინახება…",

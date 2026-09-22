@@ -64,8 +64,8 @@ const secret = (name: string) =>
 const schema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 
-  PLATFORM_NAME: z.string().min(1).default("Tsre"),
-  PLATFORM_NAME_KA: z.string().min(1).default("წრე"),
+  PLATFORM_NAME: z.string().min(1).default("MyTSRE"),
+  PLATFORM_NAME_KA: z.string().min(1).default("MyTSRE"),
   PLATFORM_TAGLINE_KA: z.string().default("შენი წრე. შენი ხალხი."),
   PLATFORM_SUPPORT_EMAIL: z.string().email().default("info@kursia.ge"),
 
@@ -135,7 +135,7 @@ const schema = z.object({
   REFUND_WINDOW_DAYS: int(14),
 
   EMAIL_DRIVER: z.enum(["log", "smtp", "resend"]).default("log"),
-  EMAIL_FROM: z.string().default("წრე <no-reply@kursia.ge>"),
+  EMAIL_FROM: z.string().default("MyTSRE <no-reply@kursia.ge>"),
   SMTP_HOST: z.string().default(""),
   SMTP_PORT: int(587),
   SMTP_USER: z.string().default(""),

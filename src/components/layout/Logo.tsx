@@ -1,5 +1,5 @@
 /**
- * The brand mark: წრე — "circle".
+ * The brand mark for MyTSRE: a circle, which is what წრე means.
  *
  * One thin ring, drawn in the brand colour on nothing. No filled badge, no
  * dots, no motion.

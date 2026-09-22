@@ -162,9 +162,9 @@ services:
 
       # ── Branding ────────────────────────────────────────────────────────
       - key: PLATFORM_NAME
-        value: Tsre
+        value: MyTSRE
       - key: PLATFORM_NAME_KA
-        value: წრე
+        value: MyTSRE
       - key: PLATFORM_SUPPORT_EMAIL
         sync: false
 
