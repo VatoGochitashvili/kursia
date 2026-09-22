@@ -135,6 +135,8 @@ export const createCourseSchema = z
     title: z.string().trim().min(5, "სათაური მინიმუმ 5 სიმბოლო").max(140),
     categoryId: cuid.optional(),
     language: z.string().trim().min(2).max(8).default("ka"),
+    /** The circle this belongs to, when an appointed admin is creating it. */
+    creatorId: cuid.optional(),
   })
   .strict();
 

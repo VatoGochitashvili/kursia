@@ -938,6 +938,8 @@ export const ka = {
     viewProfile: "პროფილის ნახვა",
     memberActions: "წევრის მოქმედებები",
     postActions: "პოსტის მოქმედებები",
+    manageLessons: "გაკვეთილების მართვა",
+    manageLessonsHint: "დაამატე, შეცვალე ან წაშალე ამ წრის გაკვეთილები.",
     memberRole: "წევრი",
     backToMembers: "წევრები",
     join: "გაწევრიანდი",

@@ -36,6 +36,8 @@ const db = new PrismaClient();
 const DEMO_DOMAIN = "@example.ge";
 
 const DEMO_STUDENT_PASSWORD = process.env.DEMO_PASSWORD ?? "DemoStudent123!";
+/** Belongs to no circle, on purpose: the account for testing the join flow. */
+const TEST_STUDENT_EMAIL = "test.student@example.ge";
 const DEMO_CREATOR_PASSWORD = process.env.DEMO_PASSWORD ?? "DemoCreator123!";
 const COMMISSION_BPS = Number(process.env.DEFAULT_COMMISSION_BPS ?? 1000);
 const CURRENCY = process.env.DEFAULT_CURRENCY ?? "GEL";
@@ -946,6 +948,37 @@ async function ensureTestAccounts() {
     }
   }
 
+  // A student who belongs to nowhere, kept that way on every deploy: the
+  // only way to test "apply → approved → in" is an account with nothing to
+  // start from. Any membership it picked up is cleared here.
+  const tester = await db.user.upsert({
+    where: { email: TEST_STUDENT_EMAIL },
+    update: {},
+    create: {
+      email: TEST_STUDENT_EMAIL,
+      passwordHash: await hashPassword(DEMO_STUDENT_PASSWORD),
+      role: "STUDENT",
+      emailVerified: new Date(),
+      locale: "ka",
+      profile: {
+        create: {
+          fullName: "ტესტ სტუდენტი",
+          username: "test.student",
+          city: "თბილისი",
+          headline: "სატესტო ანგარიში",
+        },
+      },
+    },
+    select: { id: true },
+  });
+  await db.$transaction([
+    db.subscription.deleteMany({ where: { userId: tester.id, kind: "COMMUNITY" } }),
+    db.communityRole.deleteMany({ where: { userId: tester.id } }),
+    db.communityJoinRequest.deleteMany({ where: { userId: tester.id } }),
+    db.communityBan.deleteMany({ where: { userId: tester.id } }),
+    db.enrollment.deleteMany({ where: { userId: tester.id } }),
+  ]);
+
   const live = await db.subscription.count({
     where: {
       creatorId: circle.id,
@@ -956,7 +989,7 @@ async function ensureTestAccounts() {
   });
   await db.creatorProfile.update({ where: { id: circle.id }, data: { communityMemberCount: live } });
   console.log(
-    `  ✓ test accounts: member ${STUDENTS[0]!.email}, admin ${STUDENTS[1]!.email}, owner ${ownerEmail}`,
+    `  ✓ test accounts: member ${STUDENTS[0]!.email}, admin ${STUDENTS[1]!.email}, owner ${ownerEmail}, joined-nothing ${TEST_STUDENT_EMAIL}`,
   );
 }
 

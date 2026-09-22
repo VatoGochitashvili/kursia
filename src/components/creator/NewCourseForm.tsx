@@ -15,9 +15,15 @@ export interface CategoryOption {
 export function NewCourseForm({
   categories,
   labels,
+  creatorId,
+  redirectTo,
 }: {
   categories: CategoryOption[];
   labels: Record<string, string>;
+  /** Set when an appointed admin is creating this inside a circle. */
+  creatorId?: string;
+  /** Where to land afterwards, given `${redirectTo}/${id}`. */
+  redirectTo?: string;
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -32,12 +38,13 @@ export function NewCourseForm({
     const categoryId = String(form.get("categoryId") ?? "");
 
     try {
-      const course = await api.post<{ redirectTo: string }>("/api/courses", {
+      const course = await api.post<{ redirectTo: string; id: string }>("/api/courses", {
         title: String(form.get("title") ?? ""),
         ...(categoryId ? { categoryId } : {}),
+        ...(creatorId ? { creatorId } : {}),
         language: String(form.get("language") ?? "ka"),
       });
-      router.push(course.redirectTo);
+      router.push(redirectTo ? `${redirectTo}/${course.id}` : course.redirectTo);
       router.refresh();
     } catch (err) {
       setError(err);

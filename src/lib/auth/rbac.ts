@@ -48,7 +48,14 @@ export async function requireCreator(): Promise<SessionUser & { creatorId: strin
   return user as SessionUser & { creatorId: string };
 }
 
-/** Course ownership check. Admins may act on any course. */
+/**
+ * Who may edit a lesson: its creator, a platform admin, or an admin the
+ * circle's owner appointed.
+ *
+ * A circle's admins run the room, and the classroom is part of the room. A
+ * moderator is not included: moderating what members write is a different
+ * job from changing what the circle sells.
+ */
 export async function requireCourseOwner(courseId: string) {
   const user = await requireUser();
   const course = await db.course.findUnique({
@@ -57,8 +64,31 @@ export async function requireCourseOwner(courseId: string) {
   });
   if (!course) throw notFound("გაკვეთილი ვერ მოიძებნა");
   if (user.role === "ADMIN") return { user, course };
-  if (!user.creatorId || course.creatorId !== user.creatorId) throw forbidden();
-  return { user, course };
+  if (user.creatorId && course.creatorId === user.creatorId) return { user, course };
+  if (await isCircleAdminOf(user.id, course.creatorId)) return { user, course };
+  throw forbidden();
+}
+
+/** An admin appointed by this circle's owner — not a moderator. */
+export async function isCircleAdminOf(userId: string, creatorId: string): Promise<boolean> {
+  const role = await db.communityRole.findUnique({
+    where: { creatorId_userId: { creatorId, userId } },
+    select: { role: true },
+  });
+  return role?.role === "ADMIN";
+}
+
+/**
+ * The circle whose classroom this person may edit: their own, or one they
+ * were made an admin of. Throws rather than returning null, so a caller
+ * cannot forget to check.
+ */
+export async function requireClassroomManager(creatorId: string) {
+  const user = await requireUser();
+  if (user.role === "ADMIN") return user;
+  if (user.creatorId === creatorId) return user;
+  if (await isCircleAdminOf(user.id, creatorId)) return user;
+  throw forbidden("გაკვეთილების მართვა მხოლოდ მფლობელსა და ადმინებს შეუძლიათ");
 }
 
 /**

@@ -730,6 +730,8 @@ export const en: Dictionary = {
     viewProfile: "View profile",
     memberActions: "Member actions",
     postActions: "Post actions",
+    manageLessons: "Manage lessons",
+    manageLessonsHint: "Add, edit or remove this circle's lessons.",
     memberRole: "Member",
     backToMembers: "Members",
     join: "Join",

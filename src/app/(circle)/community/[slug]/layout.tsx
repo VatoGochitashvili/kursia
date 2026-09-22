@@ -101,6 +101,11 @@ export default async function CircleLayout({
           pendingRequests={pendingRequests}
           eventsHref={localePath(`/community/${creator.slug}/events`, locale)}
           membersHref={localePath(`/community/${creator.slug}/members`, locale)}
+          manageLessonsHref={
+            membership.isOwner || membership.isAdmin || membership.isCircleAdmin
+              ? localePath(`/community/${creator.slug}/manage/lessons`, locale)
+              : null
+          }
           locale={locale}
           t={t}
         />

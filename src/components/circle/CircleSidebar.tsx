@@ -34,6 +34,7 @@ export function CircleSidebar({
   pendingRequests = 0,
   eventsHref,
   membersHref,
+  manageLessonsHref,
   locale,
   t,
 }: {
@@ -58,6 +59,8 @@ export function CircleSidebar({
   pendingRequests?: number;
   eventsHref: string;
   membersHref: string;
+  /** Null for a moderator: the classroom is not theirs to change. */
+  manageLessonsHref: string | null;
   locale: Locale;
   t: Dictionary;
 }) {
@@ -178,6 +181,15 @@ export function CircleSidebar({
                 </span>
               )}
             </Link>
+            {manageLessonsHref && (
+              <Link
+                href={manageLessonsHref}
+                className="flex items-center gap-1.5 rounded-lg border border-line px-3 py-2 text-[13px] font-semibold transition-colors hover:bg-surface-sunken"
+              >
+                <Icon name="video" size={14} />
+                {t.circle.manageLessons}
+              </Link>
+            )}
             <Link
               href={eventsHref}
               className="flex items-center gap-1.5 rounded-lg border border-line px-3 py-2 text-[13px] font-semibold transition-colors hover:bg-surface-sunken"
