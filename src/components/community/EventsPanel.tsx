@@ -278,7 +278,7 @@ export function EventsPanel({
               <Input
                 type="url"
                 inputMode="url"
-                placeholder="https://"
+                placeholder="https://zoom.us/j/…"
                 value={draft.joinUrl}
                 onChange={(e) => setDraft({ ...draft, joinUrl: e.target.value })}
               />

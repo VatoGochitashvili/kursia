@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { levelFor } from "@/lib/points";
 
-export type CircleRole = "OWNER" | "ADMIN" | "MEMBER";
+export type CircleRole = "OWNER" | "ADMIN" | "MODERATOR" | "MEMBER";
 
 export interface CircleMember {
   userId: string;
@@ -88,16 +88,19 @@ export async function listCircleMembers(creatorId: string, take = 300): Promise<
 
   const pointsByUser = new Map(points.map((p) => [p.userId, p._sum.points ?? 0]));
   const roleByUser = new Map(roles.map((r) => [r.userId, r.role]));
-  const order: Record<CircleRole, number> = { OWNER: 0, ADMIN: 1, MEMBER: 2 };
+  const order: Record<CircleRole, number> = { OWNER: 0, ADMIN: 1, MODERATOR: 2, MEMBER: 3 };
 
   return users
     .map((user) => {
+      const assigned = roleByUser.get(user.id);
       const role: CircleRole =
         user.id === creator?.userId
           ? "OWNER"
-          : roleByUser.get(user.id) === "ADMIN"
+          : assigned === "ADMIN"
             ? "ADMIN"
-            : "MEMBER";
+            : assigned === "MODERATOR"
+              ? "MODERATOR"
+              : "MEMBER";
       const total = pointsByUser.get(user.id) ?? 0;
       return {
         userId: user.id,

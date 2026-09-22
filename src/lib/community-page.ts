@@ -35,7 +35,13 @@ async function load(
   /** Whether this circle reviews applicants, and where this viewer stands. */
   gate: JoinGate;
   /** The people who run the room, shown with their faces in the sidebar. */
-  admins: { userId: string; name: string; avatarUrl: string | null; headline: string | null }[];
+  admins: {
+    userId: string;
+    name: string;
+    avatarUrl: string | null;
+    headline: string | null;
+    role: "ADMIN" | "MODERATOR";
+  }[];
   /** Applications waiting on a decision. Only asked for someone who can decide. */
   pendingRequests: number;
 }> {
@@ -84,10 +90,11 @@ async function load(
     : await getJoinGate(creator.id, viewerId, creator.communityRequiresApproval);
 
   const adminRows = await db.communityRole.findMany({
-    where: { creatorId: creator.id, role: "ADMIN" },
+    where: { creatorId: creator.id, role: { in: ["ADMIN", "MODERATOR"] } },
     orderBy: { createdAt: "asc" },
     select: {
       userId: true,
+      role: true,
       user: {
         select: { profile: { select: { fullName: true, avatarUrl: true, headline: true } } },
       },
@@ -98,6 +105,7 @@ async function load(
     name: row.user.profile?.fullName ?? "—",
     avatarUrl: row.user.profile?.avatarUrl ?? null,
     headline: row.user.profile?.headline ?? null,
+    role: row.role === "MODERATOR" ? ("MODERATOR" as const) : ("ADMIN" as const),
   }));
 
   const pendingRequests = membership.canModerate

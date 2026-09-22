@@ -9,7 +9,7 @@ export interface MyCircle {
   coverUrl: string | null;
   memberCount: number;
   /** How this person is in it, which decides the badge beside the name. */
-  role: "OWNER" | "ADMIN" | "MEMBER";
+  role: "OWNER" | "ADMIN" | "MODERATOR" | "MEMBER";
   /** Applications waiting on them here. Always 0 for a plain member. */
   pendingRequests: number;
 }
@@ -94,7 +94,9 @@ export async function listMyCircles(
         ? ("OWNER" as const)
         : row.communityRoles[0]?.role === "ADMIN"
           ? ("ADMIN" as const)
-          : ("MEMBER" as const),
+          : row.communityRoles[0]?.role === "MODERATOR"
+            ? ("MODERATOR" as const)
+            : ("MEMBER" as const),
     pendingRequests: 0,
   }));
 

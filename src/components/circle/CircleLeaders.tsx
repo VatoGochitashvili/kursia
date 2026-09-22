@@ -7,7 +7,7 @@ export interface Leader {
   name: string;
   avatarUrl: string | null;
   headline: string | null;
-  role: "OWNER" | "ADMIN";
+  role: "OWNER" | "ADMIN" | "MODERATOR";
 }
 
 /**
@@ -44,8 +44,10 @@ export function CircleLeaders({
                   <span className="truncate text-[13.5px] font-semibold">{leader.name}</span>
                   {leader.role === "OWNER" ? (
                     <Badge tone="brand">{t.circle.owner}</Badge>
-                  ) : (
+                  ) : leader.role === "ADMIN" ? (
                     <Badge tone="success">{t.circle.admin}</Badge>
+                  ) : (
+                    <Badge>{t.circle.moderator}</Badge>
                   )}
                 </span>
                 {leader.headline && (

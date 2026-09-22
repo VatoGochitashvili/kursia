@@ -9,7 +9,14 @@ import { cuid } from "@/lib/validation";
 
 export const runtime = "nodejs";
 
-const assignSchema = z.object({ creatorId: cuid, userId: cuid }).strict();
+const assignSchema = z
+  .object({
+    creatorId: cuid,
+    userId: cuid,
+    /** ADMIN runs the circle with the owner; MODERATOR only moderates it. */
+    role: z.enum(["ADMIN", "MODERATOR"]).default("ADMIN"),
+  })
+  .strict();
 
 /**
  * Appointing and removing a circle's admins.
@@ -50,19 +57,19 @@ export const POST = handler(async (request) => {
 
   await db.communityRole.upsert({
     where: { creatorId_userId: { creatorId: creator.id, userId: body.userId } },
-    create: { creatorId: creator.id, userId: body.userId, role: "ADMIN", assignedById: user.id },
-    update: { role: "ADMIN", assignedById: user.id },
+    create: { creatorId: creator.id, userId: body.userId, role: body.role, assignedById: user.id },
+    update: { role: body.role, assignedById: user.id },
   });
 
   await notify({
     userId: body.userId,
     type: "COMMUNITY_ROLE",
-    title: "დაინიშნე ადმინად",
+    title: body.role === "ADMIN" ? "დაინიშნე ადმინად" : "დაინიშნე მოდერატორად",
     body: `„${communityLabel(creator)}" — ახლა შეგიძლია დაამტკიცებ ახალ წევრებს.`,
     linkUrl: `/community/${creator.slug}/members`,
   }).catch(() => undefined);
 
-  return jsonOk({ assigned: true });
+  return jsonOk({ assigned: true, role: body.role });
 });
 
 export const DELETE = handler(async (request) => {

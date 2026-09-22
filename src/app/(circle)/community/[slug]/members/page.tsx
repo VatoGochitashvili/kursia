@@ -110,7 +110,8 @@ export default async function CircleMembersPage({ params }: Props) {
         creatorId={creator.id}
         members={members}
         canAssign={membership.isOwner || membership.isAdmin}
-        canRemove={membership.canModerate}
+        // A helper moderates; the owner and their admins decide who stays.
+        canRemove={membership.isOwner || membership.isAdmin || membership.isCircleAdmin}
         profileBase={p(`/community/${creator.slug}/members`)}
         locale={locale}
         t={t}

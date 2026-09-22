@@ -1389,7 +1389,7 @@ model CommunityRole {
   id           String   @id @default(cuid())
   creatorId    String
   userId       String
-  /// "ADMIN"
+  /// "ADMIN" (full) | "MODERATOR" (helper: moderates, cannot remove members)
   role         String   @default("ADMIN")
   assignedById String?
   createdAt    DateTime @default(now())

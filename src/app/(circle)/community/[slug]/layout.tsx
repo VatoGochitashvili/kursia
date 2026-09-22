@@ -36,7 +36,7 @@ export default async function CircleLayout({
       headline: creator.headline,
       role: "OWNER" as const,
     },
-    ...admins.map((a) => ({ ...a, role: "ADMIN" as const })),
+    ...admins,
   ];
 
   return (
@@ -58,6 +58,8 @@ export default async function CircleLayout({
               <Badge tone="brand">{t.circle.owner}</Badge>
             ) : membership.isCircleAdmin ? (
               <Badge tone="success">{t.circle.admin}</Badge>
+            ) : membership.isCircleModerator ? (
+              <Badge>{t.circle.moderator}</Badge>
             ) : null}
           </h1>
           <p className="truncate text-[13px] text-ink-muted">

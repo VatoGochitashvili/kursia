@@ -27,6 +27,8 @@ export interface Membership {
   memberUntil: Date | null;
   /** An admin the owner appointed for this circle. */
   isCircleAdmin: boolean;
+  /** A helper: moderates the room, but cannot throw anyone out of it. */
+  isCircleModerator: boolean;
   /**
    * May approve join requests, pin and hide posts, and schedule events: the
    * owner, a platform admin, or an appointed circle admin. Every route asks
@@ -43,7 +45,7 @@ export async function getMembership(
   const denied: Membership = {
     isMember: false, isOwner: false, isAdmin: false,
     isSubscriber: false, memberUntil: null,
-    isCircleAdmin: false, canModerate: false,
+    isCircleAdmin: false, isCircleModerator: false, canModerate: false,
   };
   if (!userId) return denied;
 
@@ -62,7 +64,7 @@ export async function getMembership(
   if (isOwner || isAdmin) {
     return {
       isMember: true, isOwner, isAdmin, isSubscriber: false, memberUntil: null,
-      isCircleAdmin: false, canModerate: true,
+      isCircleAdmin: false, isCircleModerator: false, canModerate: true,
     };
   }
 
@@ -99,6 +101,7 @@ export async function getMembership(
   ]);
   if (ban) return denied;
   const isCircleAdmin = role?.role === "ADMIN";
+  const isCircleModerator = role?.role === "MODERATOR";
 
   // A CANCELLED subscription still grants access until its period ends —
   // cancelling means "do not renew", not "cut me off tonight".
@@ -110,13 +113,16 @@ export async function getMembership(
 
   return {
     // An appointed admin is staff, not a customer: in whether or not they pay.
-    isMember: isSubscriber || enrolment > 0 || isCircleAdmin,
+    isMember: isSubscriber || enrolment > 0 || isCircleAdmin || isCircleModerator,
     isOwner: false,
     isAdmin: false,
     isSubscriber,
     memberUntil: isSubscriber ? subscription!.currentPeriodEnd : null,
     isCircleAdmin,
-    canModerate: isCircleAdmin,
+    isCircleModerator,
+    // A moderator moderates: posts, applications, meetings. Throwing somebody
+    // out and appointing staff stay with the owner and their admins.
+    canModerate: isCircleAdmin || isCircleModerator,
   };
 }
 

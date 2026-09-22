@@ -5,6 +5,7 @@ import { api, errorMessage } from "@/lib/client/fetcher";
 import { Button } from "@/components/ui/Button";
 import { Alert, Avatar, Badge, Card, Textarea } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
+import { MenuButton } from "@/components/ui/MenuButton";
 import { useToast } from "@/components/ui/Toast";
 import { TimeAgo } from "@/components/ui/TimeAgo";
 import { cn } from "@/lib/cn";
@@ -372,39 +373,35 @@ function PostCard({
               {post.replyCount > 0 ? post.replyCount : t.community.reply}
             </button>
 
-            {canModerate && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => moderate({ isPinned: !post.isPinned })}
-                  className="ms-auto rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink"
-                >
-                  {post.isPinned ? t.community.unpin : t.community.pin}
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    moderate({ status: post.status === "HIDDEN" ? "VISIBLE" : "HIDDEN" })
-                  }
-                  className="rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink"
-                >
-                  {post.status === "HIDDEN" ? t.community.unhide : t.community.hide}
-                </button>
-              </>
-            )}
-
-            {(isAuthor || canModerate) && (
-              <button
-                type="button"
-                onClick={remove}
-                className={cn(
-                  "rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-ink-muted transition-colors hover:bg-danger-50 hover:text-danger-700",
-                  !canModerate && "ms-auto",
-                )}
-              >
-                {t.common.delete}
-              </button>
-            )}
+            {/* Everything a moderator or the author can do sits behind the
+                three dots, so the row reads as a post rather than a panel. */}
+            <div className="ms-auto">
+              <MenuButton
+                label={t.circle.postActions}
+                actions={[
+                  {
+                    label: post.isPinned ? t.community.unpin : t.community.pin,
+                    icon: "star",
+                    hidden: !canModerate,
+                    onSelect: () => moderate({ isPinned: !post.isPinned }),
+                  },
+                  {
+                    label: post.status === "HIDDEN" ? t.community.unhide : t.community.hide,
+                    icon: post.status === "HIDDEN" ? "eye" : "lock",
+                    hidden: !canModerate,
+                    onSelect: () =>
+                      moderate({ status: post.status === "HIDDEN" ? "VISIBLE" : "HIDDEN" }),
+                  },
+                  {
+                    label: t.common.delete,
+                    icon: "trash",
+                    danger: true,
+                    hidden: !(isAuthor || canModerate),
+                    onSelect: remove,
+                  },
+                ]}
+              />
+            </div>
           </div>
 
           {open && (

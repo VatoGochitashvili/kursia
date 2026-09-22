@@ -37,7 +37,7 @@ export const POST = handler(async (request) => {
   }
   // Somebody this circle removed does not get to queue up again.
   if (await isRemoved(creator.id, user.id)) {
-    throw new ApiError(403, "FORBIDDEN", "ამ წრიდან მოშორებული ხარ");
+    throw new ApiError(403, "FORBIDDEN", "ამ წრიდან გაგდებული ხარ");
   }
 
   const existing = await db.communityJoinRequest.findUnique({

@@ -37,8 +37,10 @@ async function loadCircle(userId: string, creatorId: string) {
   if (!creator) throw notFoundError("წრე ვერ მოიძებნა");
 
   const membership = await getMembership(userId, creator.id);
-  if (!membership.canModerate) {
-    throw new ApiError(403, "FORBIDDEN", "წევრების მართვა მხოლოდ ადმინებს შეუძლიათ");
+  // Moderators moderate; throwing somebody out of the room is the owner's
+  // power and their admins', never a helper's.
+  if (!(membership.isOwner || membership.isAdmin || membership.isCircleAdmin)) {
+    throw new ApiError(403, "FORBIDDEN", "წევრის გაგდება მხოლოდ მფლობელსა და ადმინებს შეუძლიათ");
   }
   return { creator, membership };
 }
@@ -67,15 +69,15 @@ export const POST = handler(async (request) => {
   const { creator, membership } = await loadCircle(user.id, body.creatorId);
 
   if (body.userId === creator.userId) {
-    throw new ApiError(409, "CONFLICT", "მფლობელის მოშორება შეუძლებელია");
+    throw new ApiError(409, "CONFLICT", "მფლობელის გაგდება შეუძლებელია");
   }
   if (body.userId === user.id) {
-    throw new ApiError(409, "CONFLICT", "საკუთარი თავის მოშორება შეუძლებელია");
+    throw new ApiError(409, "CONFLICT", "საკუთარი თავის გაგდება შეუძლებელია");
   }
 
   const target = await getMembership(body.userId, creator.id);
   if (target.isCircleAdmin && !(membership.isOwner || membership.isAdmin)) {
-    throw new ApiError(403, "FORBIDDEN", "ადმინის მოშორება მხოლოდ მფლობელს შეუძლია");
+    throw new ApiError(403, "FORBIDDEN", "ადმინის გაგდება მხოლოდ მფლობელს შეუძლია");
   }
 
   await db.communityBan.upsert({
@@ -105,7 +107,7 @@ export const POST = handler(async (request) => {
   await notify({
     userId: body.userId,
     type: "COMMUNITY_ROLE",
-    title: "წრიდან მოშორდი",
+    title: "წრიდან გაგდებული ხარ",
     body: body.reason
       ? `${communityLabel(creator, "ka")}: ${body.reason}`
       : communityLabel(creator, "ka"),
