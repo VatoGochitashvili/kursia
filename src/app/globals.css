@@ -52,13 +52,17 @@
     .drift { animation: none !important; }
   }
 
+  /* The page's ground colour lives on the document, not on the body.
+     A fixed decorative layer sits behind the content at a negative z-index,
+     and CSS paints those BEFORE the backgrounds of in-flow blocks — so a body
+     that painted its own white would cover the very thing it is meant to
+     reveal. */
+  html {
+    @apply bg-surface;
+  }
+
   body {
-    /* Plain. There used to be a fixed decorative layer behind the document —
-       drifting shapes, a grid, a wash — and the page was transparent so it
-       could show through. It is gone: the quietest background is one nobody
-       notices, and every gram of attention it took was borrowed from the
-       content. */
-    @apply bg-surface text-ink antialiased;
+    @apply bg-transparent text-ink antialiased;
     font-family: var(--font-sans);
     /* Georgian glyphs sit slightly differently; a touch more line-height
        keeps mixed ka/en paragraphs comfortable. */
