@@ -449,6 +449,9 @@ export const settingsUpdateSchema = z
     featuredCreatorIds: z.array(cuid).max(24).optional(),
     paymentProviders: z.array(z.string().trim().min(1).max(40)).max(10).optional(),
     defaultPaymentProvider: z.string().trim().max(40).optional(),
+    bankBeneficiary: z.string().trim().max(160).optional(),
+    bankIban: z.string().trim().max(60).optional(),
+    bankName: z.string().trim().max(120).optional(),
     seoDefaultTitleKa: z.string().trim().max(120).optional(),
     seoDefaultDescriptionKa: z.string().trim().max(300).optional(),
   })

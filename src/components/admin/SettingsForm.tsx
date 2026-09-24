@@ -28,6 +28,9 @@ interface SettingsValues {
   seoDefaultDescriptionKa: string;
   paymentProviders: string[];
   defaultPaymentProvider: string;
+  bankBeneficiary: string;
+  bankIban: string;
+  bankName: string;
 }
 
 interface ProviderOption {
@@ -104,6 +107,9 @@ export function SettingsForm({
         seoDefaultDescriptionKa: values.seoDefaultDescriptionKa,
         paymentProviders: values.paymentProviders,
         defaultPaymentProvider: values.defaultPaymentProvider,
+        bankBeneficiary: values.bankBeneficiary,
+        bankIban: values.bankIban,
+        bankName: values.bankName,
       });
       setSaved(true);
       router.refresh();
@@ -287,6 +293,29 @@ export function SettingsForm({
             </Field>
           </>
         )}
+
+        {/* Where a bank transfer should land. Shown to the buyer on the
+            transfer instructions, so an empty IBAN is a sale nobody can pay
+            for. */}
+        <div className="mt-5 grid gap-4 border-t border-line pt-5 sm:grid-cols-2">
+          <Field label={labels.bankBeneficiary}>
+            <Input
+              value={values.bankBeneficiary}
+              onChange={(e) => set("bankBeneficiary", e.target.value)}
+            />
+          </Field>
+          <Field label={labels.bankName}>
+            <Input value={values.bankName} onChange={(e) => set("bankName", e.target.value)} />
+          </Field>
+          <Field className="sm:col-span-2" label={labels.bankIban} hint={labels.bankIbanHint}>
+            <Input
+              value={values.bankIban}
+              onChange={(e) => set("bankIban", e.target.value)}
+              placeholder="GE00TB0000000000000000"
+              className="font-mono"
+            />
+          </Field>
+        </div>
       </Card>
 
       <Card className="p-5">

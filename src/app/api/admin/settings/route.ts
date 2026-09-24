@@ -51,6 +51,9 @@ export const PATCH = handler(async (request) => {
   assign("featuredCreatorIds", body.featuredCreatorIds);
   assign("paymentProviders", body.paymentProviders);
   assign("defaultPaymentProvider", body.defaultPaymentProvider);
+  assign("bankBeneficiary", body.bankBeneficiary);
+  assign("bankIban", body.bankIban);
+  assign("bankName", body.bankName);
   assign("seoDefaultTitleKa", body.seoDefaultTitleKa);
   assign("seoDefaultDescriptionKa", body.seoDefaultDescriptionKa);
 

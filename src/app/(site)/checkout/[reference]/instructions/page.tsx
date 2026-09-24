@@ -42,12 +42,18 @@ export default async function TransferInstructionsPage({
         <p className="mt-2 text-[15px] text-ink-muted">{t.checkout.bankTransferBody}</p>
 
         <dl className="mt-6 space-y-3 rounded-xl border border-line bg-surface-muted p-5 text-sm">
-          <Row label={locale === "en" ? "Beneficiary" : "მიმღები"} value={brand} />
+          <Row
+            label={locale === "en" ? "Beneficiary" : "მიმღები"}
+            value={settings.bankBeneficiary || brand}
+          />
           <Row
             label={locale === "en" ? "Account (IBAN)" : "ანგარიში (IBAN)"}
-            value={settings.logoUrl ? "—" : "GE00XX0000000000000000"}
+            value={settings.bankIban || "—"}
             mono
           />
+          {settings.bankName && (
+            <Row label={locale === "en" ? "Bank" : "ბანკი"} value={settings.bankName} />
+          )}
           <Row
             label={t.checkout.total}
             value={formatMoney(purchase.amountMinor, purchase.currency)}
@@ -62,18 +68,22 @@ export default async function TransferInstructionsPage({
             : "აუცილებლად მიუთითეთ შეკვეთის ნომერი გადარიცხვის დანიშნულებაში — მის გარეშე გადარიცხვის იდენტიფიცირება ვერ მოხერხდება."}
         </Alert>
 
-        <Alert tone="brand" className="mt-3">
-          {locale === "en"
-            ? "Bank details above are placeholders. Set the platform's real IBAN in Admin → Settings before going live."
-            : "ზემოთ მითითებული რეკვიზიტები სატესტოა. გაშვებამდე მიუთითეთ პლატფორმის რეალური IBAN ადმინის პარამეტრებში."}
-        </Alert>
+        {/* Only while the account is unset — once real details are saved the
+            buyer should see instructions, not a note to the operator. */}
+        {!settings.bankIban && (
+          <Alert tone="brand" className="mt-3">
+            {locale === "en"
+              ? "No bank account is configured yet. Set the beneficiary and IBAN in Admin → Settings before going live."
+              : "საბანკო რეკვიზიტები ჯერ არ არის მითითებული. გაშვებამდე შეავსეთ მიმღები და IBAN ადმინის პარამეტრებში."}
+          </Alert>
+        )}
 
         <div className="mt-7 space-y-2.5">
           <ButtonLink href={p("/dashboard/purchases")} size="lg" fullWidth>
             {t.dashboard.purchaseHistory}
           </ButtonLink>
-          <ButtonLink href={p("/courses")} variant="outline" size="lg" fullWidth>
-            {t.dashboard.browseCourses}
+          <ButtonLink href={p("/")} variant="outline" size="lg" fullWidth>
+            {t.communities.browse}
           </ButtonLink>
         </div>
 

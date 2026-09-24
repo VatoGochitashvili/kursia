@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { db } from "@/lib/db";
 import { getI18n, localePath } from "@/i18n";
@@ -5,7 +6,6 @@ import { getSessionUser } from "@/lib/auth/session";
 import { loadCommunityPage } from "@/lib/community-page";
 import { buildMetadata } from "@/lib/seo";
 import { LeaderboardPanel } from "@/components/community/LeaderboardPanel";
-import { CommunityGate } from "@/components/community/CommunityGate";
 
 export const dynamic = "force-dynamic";
 
@@ -39,21 +39,9 @@ export default async function CircleLeaderboardPage({ params }: Props) {
   );
   const p = (path: string) => localePath(path, locale);
 
-  if (!membership.isMember) {
-    return (
-      <CommunityGate
-        community={community}
-        creatorSlug={creator.slug}
-        isAuthenticated={Boolean(viewer)}
-        isOwner={membership.isOwner}
-        gate={gate}
-        loginHref={p(`/login?next=/community/${creator.slug}/leaderboard`)}
-        coursesHref={p(`/creator/${creator.slug}`)}
-        locale={locale}
-        t={t}
-      />
-    );
-  }
+  // One page for a visitor: everything about the circle lives there, and
+  // the sections are what membership opens.
+  if (!membership.isMember) redirect(p(`/community/${creator.slug}`));
 
   return (
     <LeaderboardPanel creatorId={creator.id} viewerId={viewer?.id ?? null} locale={locale} t={t} />

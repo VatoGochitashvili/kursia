@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { db } from "@/lib/db";
 import { getI18n, localePath } from "@/i18n";
@@ -13,7 +13,6 @@ import { formatDate, formatNumber, relativeTime } from "@/lib/format";
 import { buildMetadata } from "@/lib/seo";
 import { Avatar, Badge, Card, ProgressBar } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
-import { CommunityGate } from "@/components/community/CommunityGate";
 import { MemberActions } from "@/components/circle/MemberActions";
 
 export const dynamic = "force-dynamic";
@@ -58,21 +57,9 @@ export default async function CircleMemberPage({ params }: Props) {
   );
   const p = (path: string) => localePath(path, locale);
 
-  if (!membership.isMember) {
-    return (
-      <CommunityGate
-        community={community}
-        creatorSlug={creator.slug}
-        isAuthenticated={Boolean(viewer)}
-        isOwner={membership.isOwner}
-        gate={gate}
-        loginHref={p(`/login?next=/community/${creator.slug}/members/${userId}`)}
-        coursesHref={p(`/creator/${creator.slug}`)}
-        locale={locale}
-        t={t}
-      />
-    );
-  }
+  // One page for a visitor: everything about the circle lives there, and
+  // the sections are what membership opens.
+  if (!membership.isMember) redirect(p(`/community/${creator.slug}`));
 
   const members = await listCircleMembers(creator.id);
   const member = members.find((m) => m.userId === userId);

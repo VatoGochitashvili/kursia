@@ -124,6 +124,12 @@ const schema = z.object({
   TBC_API_BASE: z.string().default("https://api.tbcbank.ge"),
   TBC_WEBHOOK_SECRET: z.string().default(""),
 
+  // Where a bank transfer should land. Shown to the buyer on the transfer
+  // instructions page; also editable in Admin -> Settings.
+  BANK_BENEFICIARY: z.string().default(""),
+  BANK_IBAN: z.string().default(""),
+  BANK_NAME: z.string().default(""),
+
   DEFAULT_CURRENCY: z.string().default("GEL"),
   DEFAULT_COMMISSION_BPS: int(1000),
   /** Monthly creator plan, in minor units. 4900 = 49 GEL. */

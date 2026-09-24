@@ -124,6 +124,14 @@ services:
         sync: false
       - key: TBC_WEBHOOK_SECRET
         sync: false
+      # Bank transfer: where the money should land. Also editable at runtime
+      # in Admin -> Settings.
+      - key: BANK_BENEFICIARY
+        sync: false
+      - key: BANK_IBAN
+        sync: false
+      - key: BANK_NAME
+        sync: false
 
       # ── Email ───────────────────────────────────────────────────────────
       # `log` only prints to the server log — verification emails and receipts

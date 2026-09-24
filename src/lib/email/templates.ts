@@ -11,6 +11,8 @@ interface Rendered {
   subject: string;
   heading: string;
   lines: string[];
+  /** A confirmation code, shown large — the thing most people will type. */
+  code?: string;
   cta?: { label: string; url: string };
   footnote?: string;
 }
@@ -35,12 +37,13 @@ export function renderTemplate(
         lines: [
           t(
             locale,
-            `${s("name")}, გმადლობთ რეგისტრაციისთვის. დაადასტურეთ ელფოსტა, რომ სრულად გამოიყენოთ ${platformName}.`,
-            `${s("name")}, thanks for signing up. Confirm your email to get full access to ${platformName}.`,
+            `${s("name")}, გმადლობთ რეგისტრაციისთვის. შეიყვანეთ ეს კოდი საიტზე, რომ დაადასტუროთ ელფოსტა:`,
+            `${s("name")}, thanks for signing up. Enter this code on the site to confirm your email:`,
           ),
         ],
+        code: s("code"),
         cta: { label: t(locale, "ელფოსტის დადასტურება", "Verify email"), url: s("url") },
-        footnote: t(locale, "ბმული აქტიურია 24 საათი.", "This link is valid for 24 hours."),
+        footnote: t(locale, "კოდი აქტიურია 24 საათი.", "The code is valid for 24 hours."),
       };
 
     case "passwordReset":
@@ -175,6 +178,9 @@ export function renderHtml(r: Rendered, platformName: string, locale: Locale): s
       .replace(/"/g, "&quot;");
 
   const body = r.lines.map((l) => `<p style="margin:0 0 12px;font-size:15px;line-height:1.65;color:#3b4453">${esc(l)}</p>`).join("");
+  const code = r.code
+    ? `<p style="margin:0 0 18px;font-size:34px;letter-spacing:10px;font-weight:700;color:#0d1117">${esc(r.code)}</p>`
+    : "";
   const cta = r.cta
     ? `<a href="${esc(r.cta.url)}" style="display:inline-block;margin-top:8px;padding:12px 22px;background:#3559f0;color:#fff;text-decoration:none;border-radius:10px;font-weight:600;font-size:15px">${esc(r.cta.label)}</a>`
     : "";
@@ -189,7 +195,7 @@ export function renderHtml(r: Rendered, platformName: string, locale: Locale): s
     <tr><td style="padding:0 0 16px"><span style="font-size:18px;font-weight:700;color:#0d1117">${esc(platformName)}</span></td></tr>
     <tr><td style="background:#fff;border:1px solid #e6e8ee;border-radius:16px;padding:28px">
       <h1 style="margin:0 0 14px;font-size:21px;line-height:1.35;color:#0d1117">${esc(r.heading)}</h1>
-      ${body}${cta}${foot}
+      ${body}${code}${cta}${foot}
     </td></tr>
     <tr><td style="padding:16px 4px;font-size:12px;color:#8a93a1">
       ${locale === "en" ? "You received this email because you have an account on" : "ეს წერილი მიიღეთ, რადგან გაქვთ ანგარიში პლატფორმაზე"} ${esc(platformName)}.
@@ -199,7 +205,14 @@ export function renderHtml(r: Rendered, platformName: string, locale: Locale): s
 }
 
 export const renderText = (r: Rendered): string =>
-  [r.heading, "", ...r.lines, r.cta ? `\n${r.cta.label}: ${r.cta.url}` : "", r.footnote ?? ""]
+  [
+    r.heading,
+    "",
+    ...r.lines,
+    r.code ? `\n${r.code}` : "",
+    r.cta ? `\n${r.cta.label}: ${r.cta.url}` : "",
+    r.footnote ?? "",
+  ]
     .filter((l) => l !== undefined)
     .join("\n")
     .trim();

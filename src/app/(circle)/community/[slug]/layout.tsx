@@ -68,6 +68,11 @@ export default async function CircleLayout({
         </div>
       </div>
 
+      {/* A visitor gets one page about the circle, not its sections. The
+          rooms behind these tabs are the thing being sold; showing their
+          names to somebody who cannot open them is just a row of locked
+          doors. */}
+      {membership.isMember && (
       <div className="mt-4">
         <CircleTabs
           slug={creator.slug}
@@ -83,6 +88,7 @@ export default async function CircleLayout({
           pendingRequests={pendingRequests}
         />
       </div>
+      )}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 animate-fade-in">{children}</div>

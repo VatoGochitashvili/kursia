@@ -56,6 +56,25 @@ export function CommunityGate({
         <p className="mx-auto mt-2 max-w-md text-[14.5px] leading-relaxed text-ink-muted">
           {t.circle.joinHint}
         </p>
+        {/* What membership opens. The sections themselves are hidden from a
+            visitor, so this list is the only account of what is behind the
+            door. */}
+        <ul className="mx-auto mt-6 grid max-w-sm gap-2 text-start">
+          {[
+            t.membership.perkFeed,
+            community.includedCourseCount > 0 ? t.membership.perkCourses : null,
+            t.membership.perkEvents,
+            t.membership.perkLeaderboard,
+          ]
+            .filter((perk): perk is string => Boolean(perk))
+            .map((perk) => (
+              <li key={perk} className="flex items-start gap-2.5 text-[14px] text-ink">
+                <Icon name="check" size={16} className="mt-0.5 shrink-0 text-success-700" />
+                {perk}
+              </li>
+            ))}
+        </ul>
+
         <ButtonLink className="mt-6 min-w-48" href={signUp} size="lg">
           {t.circle.join}
         </ButtonLink>

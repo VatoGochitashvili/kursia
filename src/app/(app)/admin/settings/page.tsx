@@ -114,6 +114,9 @@ export default async function AdminSettingsPage() {
           seoDefaultTitleKa: settings.seoDefaultTitleKa,
           seoDefaultDescriptionKa: settings.seoDefaultDescriptionKa,
           paymentProviders: settings.paymentProviders,
+          bankBeneficiary: settings.bankBeneficiary,
+          bankIban: settings.bankIban,
+          bankName: settings.bankName,
           defaultPaymentProvider: settings.defaultPaymentProvider,
         }}
         availableProviders={providers.map((provider) => ({
@@ -161,6 +164,13 @@ export default async function AdminSettingsPage() {
             locale === "en" ? "Default SEO description" : "ნაგულისხმევი SEO აღწერა",
           enabledProviders: locale === "en" ? "Enabled at checkout" : "ჩართულია გადახდისას",
           defaultProvider: locale === "en" ? "Default provider" : "ნაგულისხმევი პროვაიდერი",
+          bankBeneficiary: locale === "en" ? "Beneficiary name" : "მიმღების სახელი",
+          bankName: locale === "en" ? "Bank" : "ბანკი",
+          bankIban: locale === "en" ? "Account (IBAN)" : "ანგარიში (IBAN)",
+          bankIbanHint:
+            locale === "en"
+              ? "Shown to buyers who pay by bank transfer."
+              : "ჩანს მყიდველისთვის, რომელიც საბანკო გადარიცხვით იხდის.",
           noProviders:
             locale === "en"
               ? "No payment provider is configured. Add credentials in .env — see .env.example."

@@ -44,6 +44,10 @@ export interface PlatformSettings {
   featuredCreatorIds: string[];
   paymentProviders: string[];
   defaultPaymentProvider: string;
+  /** Who the money is sent to, for a bank transfer. Empty until set. */
+  bankBeneficiary: string;
+  bankIban: string;
+  bankName: string;
   seoDefaultTitleKa: string;
   seoDefaultDescriptionKa: string;
 }
@@ -87,6 +91,9 @@ export const SETTING_DEFAULTS: PlatformSettings = {
   featuredCreatorIds: [],
   paymentProviders: env.PAYMENT_PROVIDERS,
   defaultPaymentProvider: env.PAYMENT_DEFAULT_PROVIDER,
+  bankBeneficiary: env.BANK_BENEFICIARY,
+  bankIban: env.BANK_IBAN,
+  bankName: env.BANK_NAME,
   seoDefaultTitleKa: "ონლაინ პროგრამები მწვრთნელებისა და კრეატორებისგან",
   seoDefaultDescriptionKa:
     "ვარჯიში, კვება, იოგა, კონტენტის შექმნა და მონეტიზაცია — ქართული ონლაინ პროგრამები პრაქტიკოსებისგან. ან შექმენი საკუთარი და გამოიმუშავე შენი აუდიტორიით.",
@@ -105,6 +112,7 @@ const VALUE_TYPES: Record<Key, "string" | "number" | "boolean" | "json"> = {
   creatorRegistrationOpen: "boolean", creatorAutoApprove: "boolean",
   homepageSections: "json", featuredCourseIds: "json", featuredCreatorIds: "json",
   paymentProviders: "json", defaultPaymentProvider: "string",
+  bankBeneficiary: "string", bankIban: "string", bankName: "string",
   seoDefaultTitleKa: "string", seoDefaultDescriptionKa: "string",
 };
 
@@ -119,7 +127,8 @@ const GROUPS: Record<Key, string> = {
   creatorRegistrationOpen: "access", creatorAutoApprove: "access",
   homepageSections: "homepage", featuredCourseIds: "homepage",
   featuredCreatorIds: "homepage", paymentProviders: "payments",
-  defaultPaymentProvider: "payments", seoDefaultTitleKa: "seo",
+  defaultPaymentProvider: "payments", bankBeneficiary: "payments",
+  bankIban: "payments", bankName: "payments", seoDefaultTitleKa: "seo",
   seoDefaultDescriptionKa: "seo",
 };
 

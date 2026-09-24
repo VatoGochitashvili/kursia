@@ -42,9 +42,13 @@ export function RegisterForm({
         locale,
         acceptTerms: form.get("acceptTerms") === "on",
       });
-      // ?next= brings somebody who signed up from a circle straight back to it.
+      // ?next= brings somebody who signed up from a circle straight back to
+      // it — after the code, which is where the server sends them first.
       const next = params.get("next");
-      router.push(next && next.startsWith("/") && !next.startsWith("//") ? next : result.redirectTo);
+      const safe = next && next.startsWith("/") && !next.startsWith("//") ? next : null;
+      router.push(
+        safe ? `/verify-email?next=${encodeURIComponent(safe)}` : result.redirectTo,
+      );
       router.refresh();
     } catch (err) {
       setError(err);

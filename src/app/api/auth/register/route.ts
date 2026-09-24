@@ -34,6 +34,10 @@ export const POST = handler(async (request) => {
     ok: true,
     // A would-be creator goes to the plans, not to a studio they have not
     // paid for and therefore cannot open.
-    redirectTo: body.accountType === "CREATOR" ? "/start" : "/dashboard",
+    // Straight to the code: an unconfirmed address is the one thing worth
+    // interrupting a new account for, and the email is already on its way.
+    redirectTo: `/verify-email?next=${encodeURIComponent(
+      body.accountType === "CREATOR" ? "/start" : "/dashboard/profile",
+    )}`,
   });
 });

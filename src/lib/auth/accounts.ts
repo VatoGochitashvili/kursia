@@ -1,5 +1,7 @@
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
+import { randomBytes } from "node:crypto";
+
 import { hashPassword, hashToken, randomToken } from "@/lib/crypto";
 import { normalizeUsername, slugify, uniqueSlug } from "@/lib/slug";
 import { queueEmail } from "@/lib/email";
@@ -37,10 +39,35 @@ async function uniqueCreatorSlug(displayName: string): Promise<string> {
   );
 }
 
+/**
+ * A six-digit confirmation code.
+ *
+ * Read aloud from a phone and typed into the page, which is what people
+ * expect of a sign-up now — the emailed link still works, and carries the
+ * same code, so both doors open the same lock. Only the hash is stored, and
+ * the code is checked against one account at a time, so guessing it means
+ * guessing an address as well.
+ */
+export function verificationCode(): string {
+  // Rejection sampling over a byte range that divides evenly, so every digit
+  // is equally likely — a modulo over 256 is not.
+  let code = "";
+  while (code.length < 6) {
+    for (const byte of randomBytes(8)) {
+      if (byte >= 250) continue;
+      code += String(byte % 10);
+      if (code.length === 6) break;
+    }
+  }
+  return code;
+}
+
 /** Issue a single-use token; only its hash is stored. */
 export async function issueToken(
   userId: string,
   purpose: "EMAIL_VERIFY" | "PASSWORD_RESET",
+  /** Six digits for email confirmation; a long random string otherwise. */
+  kind: "token" | "code" = "token",
 ): Promise<string> {
   // Older tokens for the same purpose are burned, so a leaked earlier email
   // cannot be replayed after a new request.
@@ -49,7 +76,7 @@ export async function issueToken(
     data: { usedAt: new Date() },
   });
 
-  const token = randomToken(32);
+  const token = kind === "code" ? verificationCode() : randomToken(32);
   await db.verificationToken.create({
     data: {
       userId,
@@ -121,14 +148,15 @@ export async function registerAccount(input: RegisterInput): Promise<{ userId: s
     select: { id: true, email: true },
   });
 
-  const token = await issueToken(user.id, "EMAIL_VERIFY");
+  const code = await issueToken(user.id, "EMAIL_VERIFY", "code");
   await queueEmail({
     to: user.email,
     template: "verifyEmail",
     locale: input.locale,
     payload: {
       name: input.fullName,
-      url: absoluteUrl(`/verify-email?token=${token}`),
+      code,
+      url: absoluteUrl(`/verify-email?code=${code}&email=${encodeURIComponent(user.email)}`),
     },
   });
 
@@ -247,10 +275,44 @@ export async function verifyEmailToken(token: string): Promise<boolean> {
     locale: (user.locale === "en" ? "en" : "ka") as Locale,
     payload: {
       name: user.profile?.fullName ?? "",
-      url: absoluteUrl("/courses"),
+      url: absoluteUrl("/"),
     },
   });
 
+  return true;
+}
+
+/**
+ * Confirm an address with the six digits that were emailed to it.
+ *
+ * The code alone is not enough: it is looked up under the account that owns
+ * the address, so a guessed code has to be guessed for the right person.
+ */
+export async function verifyEmailCode(email: string, code: string): Promise<boolean> {
+  const user = await db.user.findUnique({
+    where: { email: email.trim().toLowerCase() },
+    select: { id: true, emailVerified: true },
+  });
+  if (!user) return false;
+  // Already confirmed — say yes rather than sending them back to the form.
+  if (user.emailVerified) return true;
+
+  const record = await db.verificationToken.findUnique({
+    where: { tokenHash: hashToken(code) },
+    select: { id: true, userId: true, purpose: true, expiresAt: true, usedAt: true },
+  });
+  if (
+    !record ||
+    record.userId !== user.id ||
+    record.purpose !== "EMAIL_VERIFY" ||
+    record.usedAt ||
+    record.expiresAt.getTime() < Date.now()
+  ) {
+    return false;
+  }
+
+  await db.verificationToken.update({ where: { id: record.id }, data: { usedAt: new Date() } });
+  await db.user.update({ where: { id: user.id }, data: { emailVerified: new Date() } });
   return true;
 }
 
@@ -261,14 +323,15 @@ export async function resendVerification(userId: string, locale: Locale): Promis
   });
   if (!user || user.emailVerified) return;
 
-  const token = await issueToken(userId, "EMAIL_VERIFY");
+  const code = await issueToken(userId, "EMAIL_VERIFY", "code");
   await queueEmail({
     to: user.email,
     template: "verifyEmail",
     locale,
     payload: {
       name: user.profile?.fullName ?? "",
-      url: absoluteUrl(`/verify-email?token=${token}`),
+      code,
+      url: absoluteUrl(`/verify-email?code=${code}&email=${encodeURIComponent(user.email)}`),
     },
   });
 }
