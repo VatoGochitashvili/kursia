@@ -67,6 +67,7 @@ model User {
   communityJoinRequests CommunityJoinRequest[]
   communityRoles        CommunityRole[]
   communityBans         CommunityBan[]
+  preference            UserPreference?
   messagesSent          DirectMessage[]        @relation("messageSender")
   messagesReceived      DirectMessage[]        @relation("messageRecipient")
 
@@ -1440,4 +1441,35 @@ model CommunityBan {
 
   @@unique([creatorId, userId])
   @@index([creatorId, createdAt])
+}
+
+/// What one person has decided about mail, privacy and their account.
+///
+/// A row per user, created the first time they change anything: the defaults
+/// live in code, so an account that never opens settings needs no row and a
+/// new preference does not require a backfill.
+model UserPreference {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  // Email. In-app notifications are never switched off here — those are the
+  // record of what happened; this is only about what leaves the building.
+  emailMessages   Boolean @default(true)
+  emailCircle     Boolean @default(true)
+  emailEvents     Boolean @default(true)
+  emailPurchases  Boolean @default(true)
+  emailProduct    Boolean @default(false)
+
+  // Privacy.
+  /// Whether other members of a shared circle may write to you at all.
+  allowMessages    Boolean @default(true)
+  /// Whether your other circles are listed on your profile inside one.
+  showMemberships  Boolean @default(true)
+  /// Whether your activity feeds the circle leaderboard.
+  showOnLeaderboard Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

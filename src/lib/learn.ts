@@ -116,6 +116,15 @@ export async function loadLearnView(input: {
   ]);
 
   const progressByLesson = new Map(progressRows.map((r) => [r.lessonId, r]));
+
+  // A member reached this through their circle, so there is no enrolment row
+  // to read a percentage off. Derive it from the lessons they have actually
+  // finished — the same arithmetic recomputeProgress does for a buyer.
+  const completedCount = progressRows.filter((r) => r.isCompleted).length;
+  const derivedPercent =
+    orderedLessons.length === 0
+      ? 0
+      : Math.round((completedCount / orderedLessons.length) * 100);
   return {
     course,
     access,
@@ -136,9 +145,11 @@ export async function loadLearnView(input: {
     })),
     lessonProgress: progressByLesson.get(summary.id) ?? null,
     totalLessons: orderedLessons.length,
-    completedLessons: progressRows.filter((r) => r.isCompleted).length,
-    progressPercent: enrollment?.progressPercent ?? 0,
-    isComplete: Boolean(enrollment?.completedAt),
+    completedLessons: completedCount,
+    progressPercent: enrollment?.progressPercent ?? derivedPercent,
+    isComplete: enrollment
+      ? Boolean(enrollment.completedAt)
+      : orderedLessons.length > 0 && completedCount >= orderedLessons.length,
   };
 }
 

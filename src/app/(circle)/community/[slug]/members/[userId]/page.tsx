@@ -8,6 +8,7 @@ import { getSessionUser } from "@/lib/auth/session";
 import { loadCommunityPage } from "@/lib/community-page";
 import { listCircleMembers } from "@/lib/circle-members";
 import { listMyCircles } from "@/lib/my-circles";
+import { getPreferences } from "@/lib/preferences";
 import { levelFor } from "@/lib/points";
 import { formatDate, formatNumber, relativeTime } from "@/lib/format";
 import { buildMetadata } from "@/lib/seo";
@@ -69,7 +70,7 @@ export default async function CircleMemberPage({ params }: Props) {
     .sort((a, b) => b.points - a.points)
     .findIndex((m) => m.userId === userId) + 1;
 
-  const [user, followers, following, viewerFollows, posts, replies, likes, events, recent, circles] =
+  const [user, followers, following, viewerFollows, posts, replies, likes, events, recent, circles, preferences] =
     await Promise.all([
       db.user.findUniqueOrThrow({
         where: { id: userId },
@@ -106,6 +107,7 @@ export default async function CircleMemberPage({ params }: Props) {
         select: { id: true, title: true, body: true, createdAt: true, likeCount: true, replyCount: true },
       }),
       listMyCircles(userId, locale),
+      getPreferences(userId),
     ]);
 
   const isSelf = viewer?.id === userId;
@@ -227,6 +229,9 @@ export default async function CircleMemberPage({ params }: Props) {
         )}
       </Card>
 
+      {/* Theirs to hide: the list of rooms somebody belongs to says a lot
+          about them, and settings let them keep it to themselves. */}
+      {(preferences.showMemberships || isSelf) && (
       <Card className="p-5">
         <h3 className="text-[15px] font-bold">{t.circle.membershipsTitle}</h3>
         <ul className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -256,6 +261,7 @@ export default async function CircleMemberPage({ params }: Props) {
           {fill(t.circle.memberSince, { date: formatDate(user.createdAt, locale) })}
         </p>
       </Card>
+      )}
     </div>
   );
 }

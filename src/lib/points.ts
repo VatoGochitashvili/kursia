@@ -181,7 +181,13 @@ export async function loadLeaderboard(input: {
 
   const [users, creator] = await Promise.all([
     db.user.findMany({
-      where: { id: { in: wanted.map((r) => r.userId) } },
+      // Somebody who asked not to appear on the leaderboard is left out of
+      // the lookup, and drops out of the rows below with it. Their points
+      // still accumulate; they are simply not on the board.
+      where: {
+        id: { in: wanted.map((r) => r.userId) },
+        OR: [{ preference: { is: null } }, { preference: { showOnLeaderboard: true } }],
+      },
       select: {
         id: true,
         profile: { select: { fullName: true, avatarUrl: true } },
@@ -206,7 +212,7 @@ export async function loadLeaderboard(input: {
   };
 
   return {
-    rows: top.map((entry, i) => toRow(entry, i + 1)),
+    rows: top.filter((entry) => userById.has(entry.userId)).map((entry, i) => toRow(entry, i + 1)),
     viewer:
       viewerIndex >= 0 ? toRow(totals[viewerIndex]!, viewerIndex + 1) : null,
     total: totals.length,

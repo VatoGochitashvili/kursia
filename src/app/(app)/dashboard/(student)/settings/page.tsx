@@ -7,6 +7,8 @@ import { formatDate } from "@/lib/format";
 import { PageHeader } from "@/components/layout/DashboardShell";
 import { ProfileForm } from "@/components/dashboard/ProfileForm";
 import { ChangePasswordForm } from "@/components/dashboard/ChangePasswordForm";
+import { PreferencesForm } from "@/components/dashboard/PreferencesForm";
+import { getPreferences } from "@/lib/preferences";
 import { Alert, Card } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
 
@@ -20,6 +22,8 @@ export const dynamic = "force-dynamic";
 export default async function SettingsPage() {
   const { locale, t } = await getI18n();
   const user = await requireUser();
+
+  const preferences = await getPreferences(user.id);
 
   const record = await db.user.findUnique({
     where: { id: user.id },
@@ -114,6 +118,32 @@ export default async function SettingsPage() {
         </div>
 
         <div className="space-y-5">
+          <PreferencesForm
+            initial={preferences}
+            labels={{
+              saved: t.settings.settingsSaved,
+              notificationsTitle: t.settings.notificationsTitle,
+              notificationsHint: t.settings.notificationsHint,
+              emailMessages: t.settings.emailMessages,
+              emailCircle: t.settings.emailCircle,
+              emailEvents: t.settings.emailEvents,
+              emailPurchases: t.settings.emailPurchases,
+              emailProduct: t.settings.emailProduct,
+              pushTitle: t.settings.pushTitle,
+              pushSoon: t.settings.pushSoon,
+              privacyTitle: t.settings.privacyTitle,
+              privacyHint: t.settings.privacyHint,
+              allowMessages: t.settings.allowMessages,
+              showMemberships: t.settings.showMemberships,
+              showOnLeaderboard: t.settings.showOnLeaderboard,
+              deactivateTitle: t.settings.deactivateTitle,
+              deactivateBody: t.settings.deactivateBody,
+              deactivateSend: t.settings.deactivateSend,
+              deactivateSent: t.settings.deactivateSent,
+              deactivateConfirm: t.settings.deactivateConfirm,
+              deactivateDone: t.settings.deactivateDone,
+            }}
+          />
           <Card className="p-5">
             <h2 className="text-base">{t.profile.security}</h2>
             <p className="mt-1 text-[13px] text-ink-muted">{record?.email}</p>

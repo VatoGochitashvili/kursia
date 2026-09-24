@@ -3,6 +3,7 @@ import { env } from "@/lib/env";
 import { randomBytes } from "node:crypto";
 
 import { hashPassword, hashToken, randomToken } from "@/lib/crypto";
+import { revokeAllSessions } from "@/lib/auth/session";
 import { normalizeUsername, slugify, uniqueSlug } from "@/lib/slug";
 import { queueEmail } from "@/lib/email";
 import { notify, absoluteUrl } from "@/lib/notifications";
@@ -20,6 +21,9 @@ import type { Locale } from "@/lib/enums";
 export const TOKEN_TTL = {
   EMAIL_VERIFY: 24 * 60 * 60 * 1000,
   PASSWORD_RESET: 60 * 60 * 1000,
+  // Short: switching off an account is something you decide in one sitting,
+  // and a code that lingers is a code somebody else can use.
+  ACCOUNT_CLOSE: 30 * 60 * 1000,
 } as const;
 
 async function uniqueUsername(seed: string): Promise<string> {
@@ -65,7 +69,7 @@ export function verificationCode(): string {
 /** Issue a single-use token; only its hash is stored. */
 export async function issueToken(
   userId: string,
-  purpose: "EMAIL_VERIFY" | "PASSWORD_RESET",
+  purpose: "EMAIL_VERIFY" | "PASSWORD_RESET" | "ACCOUNT_CLOSE",
   /** Six digits for email confirmation; a long random string otherwise. */
   kind: "token" | "code" = "token",
 ): Promise<string> {
@@ -90,7 +94,7 @@ export async function issueToken(
 
 export async function consumeToken(
   token: string,
-  purpose: "EMAIL_VERIFY" | "PASSWORD_RESET",
+  purpose: "EMAIL_VERIFY" | "PASSWORD_RESET" | "ACCOUNT_CLOSE",
 ): Promise<{ userId: string } | null> {
   const record = await db.verificationToken.findUnique({
     where: { tokenHash: hashToken(token) },
@@ -338,3 +342,54 @@ export async function resendVerification(userId: string, locale: Locale): Promis
 
 export const supportEmail = env.PLATFORM_SUPPORT_EMAIL;
 export { slugify };
+
+/**
+ * Switching off your own account.
+ *
+ * Confirmed by a code sent to the address on file, so somebody who walks up
+ * to an unlocked laptop cannot close the account — they would need the inbox
+ * as well. Every session ends with it.
+ *
+ * Deactivation, not deletion: the row stays, so posts keep their author and
+ * a creator's sales history survives. Support can switch it back on.
+ */
+export async function requestDeactivation(userId: string, locale: Locale): Promise<void> {
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    select: { email: true, profile: { select: { fullName: true } } },
+  });
+  if (!user) return;
+
+  const code = await issueToken(userId, "ACCOUNT_CLOSE", "code");
+  await queueEmail({
+    to: user.email,
+    template: "verifyEmail",
+    locale,
+    payload: {
+      name: user.profile?.fullName ?? "",
+      code,
+      url: absoluteUrl("/dashboard/settings"),
+    },
+  });
+}
+
+export async function confirmDeactivation(userId: string, code: string): Promise<boolean> {
+  const record = await db.verificationToken.findUnique({
+    where: { tokenHash: hashToken(code) },
+    select: { id: true, userId: true, purpose: true, expiresAt: true, usedAt: true },
+  });
+  if (
+    !record ||
+    record.userId !== userId ||
+    record.purpose !== "ACCOUNT_CLOSE" ||
+    record.usedAt ||
+    record.expiresAt.getTime() < Date.now()
+  ) {
+    return false;
+  }
+
+  await db.verificationToken.update({ where: { id: record.id }, data: { usedAt: new Date() } });
+  await db.user.update({ where: { id: userId }, data: { status: "DEACTIVATED" } });
+  await revokeAllSessions(userId);
+  return true;
+}

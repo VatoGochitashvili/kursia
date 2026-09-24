@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { listMyCircles } from "@/lib/my-circles";
+import { getPreferences } from "@/lib/preferences";
 
 /**
  * People meet each other inside circles, so a circle is what lets two of them
@@ -22,6 +23,10 @@ export async function canMessage(from: string, to: string): Promise<boolean> {
   if (from === to) return false;
   const recipient = await db.user.findUnique({ where: { id: to }, select: { status: true } });
   if (!recipient || recipient.status !== "ACTIVE") return false;
+
+  // Somebody who has switched messages off is not writable to, even by
+  // someone in the same circle.
+  if (!(await getPreferences(to)).allowMessages) return false;
 
   const existing = await db.directMessage.findFirst({
     where: {

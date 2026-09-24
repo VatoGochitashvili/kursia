@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { env } from "@/lib/env";
 import { serializeObject } from "@/lib/json";
 import { queueEmail } from "@/lib/email";
+import { wantsEmail } from "@/lib/preferences";
 import type { EmailTemplate } from "@/lib/email";
 import type { Locale, NotificationType } from "@/lib/enums";
 
@@ -40,7 +41,9 @@ export async function notify(input: NotifyInput): Promise<void> {
       },
     });
 
-    if (input.email) {
+    // The in-app notification is the record and always written; the email is
+    // the interruption, and that is what settings govern.
+    if (input.email && (await wantsEmail(input.userId, input.type))) {
       await queueEmail({
         to: user.email,
         template: input.email.template,

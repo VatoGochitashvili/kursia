@@ -69,7 +69,13 @@ export const api = {
     request<T>(url, { method: "PATCH", body: body === undefined ? undefined : JSON.stringify(body) }),
   put: <T,>(url: string, body?: unknown) =>
     request<T>(url, { method: "PUT", body: body === undefined ? undefined : JSON.stringify(body) }),
-  delete: <T,>(url: string) => request<T>(url, { method: "DELETE" }),
+  // A body on DELETE is legal and some endpoints (closing an account with a
+  // code) need one.
+  delete: <T,>(url: string, body?: unknown) =>
+    request<T>(url, {
+      method: "DELETE",
+      body: body === undefined ? undefined : JSON.stringify(body),
+    }),
   upload: <T,>(url: string, form: FormData) => request<T>(url, { method: "POST", body: form }),
   uploadWithProgress: uploadWithProgress,
 };

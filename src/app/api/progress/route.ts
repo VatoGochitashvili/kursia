@@ -31,9 +31,14 @@ export const POST = handler(async (request) => {
   if (!lesson || !lesson.isPublished) throw notFoundError("ვიდეო ვერ მოიძებნა");
 
   const access = await hasCourseAccess(user.id, lesson.courseId);
-  // Free previews are watchable, but they do not accumulate course progress —
-  // otherwise a non-buyer could "complete" a course.
-  if (!access.enrolled) {
+  // Membership counts as much as a purchase. It grants access without an
+  // enrolment row — derived at read time on purpose — and checking only for
+  // enrolment here meant a paying member's progress was silently dropped:
+  // the bar never moved and the lesson could not be finished.
+  //
+  // Free previews are still watchable without accumulating progress, or a
+  // non-buyer could "complete" a course they never had.
+  if (!access.enrolled && !access.viaMembership) {
     if (!access.canView) throw new ApiError(403, "FORBIDDEN", "გაკვეთილზე წვდომა არ გაქვთ");
     return jsonOk({ tracked: false });
   }
