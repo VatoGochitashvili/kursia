@@ -43,7 +43,7 @@ export default async function CreatorDashboardPage() {
         title={t.creator.studio}
         subtitle={creator.fullName}
         action={
-          <ButtonLink href={p("/dashboard/creator/courses/new")}>
+          <ButtonLink href={p("/dashboard/creator/classes/new")}>
             <Icon name="plus" size={16} />
             {t.creator.newCourse}
           </ButtonLink>
@@ -56,7 +56,7 @@ export default async function CreatorDashboardPage() {
           title={t.creator.createFirstCourse}
           body={t.home.creatorCtaBody}
           action={
-            <ButtonLink href={p("/dashboard/creator/courses/new")}>
+            <ButtonLink href={p("/dashboard/creator/classes/new")}>
               {t.creator.newCourse}
             </ButtonLink>
           }
@@ -238,7 +238,7 @@ export default async function CreatorDashboardPage() {
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-base">{t.creator.myCourses}</h2>
               <Link
-                href={p("/dashboard/creator/courses")}
+                href={p("/dashboard/creator/classes")}
                 className="text-[13px] font-semibold text-brand-600 hover:underline"
               >
                 {t.common.seeAll}
@@ -250,7 +250,7 @@ export default async function CreatorDashboardPage() {
                 <li key={course.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
                   <div className="min-w-0 flex-1">
                     <Link
-                      href={p(`/dashboard/creator/courses/${course.id}`)}
+                      href={p(`/dashboard/creator/classes/${course.id}`)}
                       className="truncate text-[13px] font-semibold text-ink hover:text-brand-600"
                     >
                       {course.title}

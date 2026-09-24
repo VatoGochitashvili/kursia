@@ -37,7 +37,7 @@ export function CourseModerationPanel({
     setPending(to);
     setError(null);
     try {
-      await api.post(`/api/courses/${courseId}/status`, { to, ...(note ? { note } : {}) });
+      await api.post(`/api/classes/${courseId}/status`, { to, ...(note ? { note } : {}) });
       setReasonFor(null);
       setReason("");
       router.refresh();

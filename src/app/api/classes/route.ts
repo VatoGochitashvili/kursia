@@ -39,5 +39,5 @@ export const POST = handler(async (request) => {
     language: body.language,
   });
 
-  return jsonCreated({ ...course, redirectTo: `/dashboard/creator/courses/${course.id}` });
+  return jsonCreated({ ...course, redirectTo: `/dashboard/creator/classes/${course.id}` });
 });

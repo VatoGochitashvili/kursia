@@ -82,7 +82,7 @@ export function CurriculumEditor({
     setBusy("module");
     setError(null);
     try {
-      const created = await api.post<EditorModule>(`/api/courses/${courseId}/modules`, {
+      const created = await api.post<EditorModule>(`/api/classes/${courseId}/modules`, {
         title: `${labels.moduleTitle} ${modules.length + 1}`,
       });
       setModules((prev) => [...prev, { ...created, lessons: [] }]);
@@ -113,7 +113,7 @@ export function CurriculumEditor({
   async function persistModuleOrder(next: EditorModule[]) {
     setModules(next);
     await api
-      .patch(`/api/courses/${courseId}/modules`, { ids: next.map((m) => m.id) })
+      .patch(`/api/classes/${courseId}/modules`, { ids: next.map((m) => m.id) })
       .catch(setError);
   }
 

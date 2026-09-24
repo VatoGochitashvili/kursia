@@ -101,7 +101,7 @@ export const POST = handler(async (request, context: Ctx) => {
       type: "ASSIGNMENT_SUBMITTED",
       title: "ახალი დავალება შესამოწმებლად",
       body: `${assignment.title} — ${assignment.lesson.course.title}`,
-      linkUrl: `/learn/${assignment.lesson.course.slug}?lesson=${assignment.lesson.id}`,
+      linkUrl: `/class/${assignment.lesson.course.slug}?lesson=${assignment.lesson.id}`,
     }).catch(() => undefined);
   }
 
@@ -156,7 +156,7 @@ export const PATCH = handler(async (request, context: Ctx) => {
     body: `${assignment.title}${
       body.points !== undefined ? ` — ${body.points}/${assignment.maxPoints}` : ""
     }`,
-    linkUrl: `/learn/${assignment.lesson.course.slug}?lesson=${assignment.lesson.id}`,
+    linkUrl: `/class/${assignment.lesson.course.slug}?lesson=${assignment.lesson.id}`,
   }).catch(() => undefined);
 
   return jsonOk({ ok: true });

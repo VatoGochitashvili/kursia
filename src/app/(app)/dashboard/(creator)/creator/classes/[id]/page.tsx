@@ -8,22 +8,17 @@ import { parseStringArray } from "@/lib/json";
 import { toMajor } from "@/lib/money";
 import { CourseBuilder } from "@/components/creator/CourseBuilder";
 
-export const metadata: Metadata = { title: "Lesson builder", robots: { index: false } };
+export const metadata: Metadata = { title: "Class builder", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
-/**
- * The same builder the studio uses, opened from inside the circle so an
- * appointed admin — who has no creator account of their own — can edit the
- * classroom they help run.
- */
-export default async function ManageLessonBuilderPage({
+export default async function CourseBuilderPage({
   params,
 }: {
-  params: Promise<{ slug: string; id: string }>;
+  params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
 
-  // Who may edit this is decided in one place, and it allows a circle admin.
+  // Ownership is checked before a single field is read.
   await requireCourseOwner(id);
 
   const [{ locale, t }, settings, course, categories] = await Promise.all([

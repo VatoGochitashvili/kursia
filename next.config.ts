@@ -52,6 +52,12 @@ const config: NextConfig = {
       { source: "/creator/:slug", destination: "/community/:slug", permanent: false },
       { source: "/en/creator/:slug", destination: "/en/community/:slug", permanent: false },
       { source: "/dashboard/wishlist", destination: "/dashboard/profile", permanent: false },
+      // A course is a class now, in the address bar as well.
+      { source: "/learn/:slug", destination: "/class/:slug", permanent: false },
+      { source: "/en/learn/:slug", destination: "/en/class/:slug", permanent: false },
+      { source: "/dashboard/creator/courses", destination: "/dashboard/creator/classes", permanent: false },
+      { source: "/dashboard/creator/courses/:path*", destination: "/dashboard/creator/classes/:path*", permanent: false },
+      { source: "/admin/courses", destination: "/admin/classes", permanent: false },
       { source: "/en/dashboard/wishlist", destination: "/en/dashboard/profile", permanent: false },
     ];
   },

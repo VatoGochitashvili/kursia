@@ -58,7 +58,7 @@ export function DangerZone({
     setError(null);
     try {
       const result = await api.delete<{ archived?: boolean; deleted?: boolean }>(
-        `/api/courses/${courseId}`,
+        `/api/classes/${courseId}`,
       );
       toast.show(
         result.archived ? t.creator.courseArchived : t.creator.courseDeleted,

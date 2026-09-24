@@ -35,7 +35,7 @@ export default async function LearnPage({ params, searchParams }: Props) {
   if (!user) {
     redirect(
       `${localePath("/login", locale)}?next=${encodeURIComponent(
-        `/learn/${slug}${lessonParam ? `?lesson=${lessonParam}` : ""}`,
+        `/class/${slug}${lessonParam ? `?lesson=${lessonParam}` : ""}`,
       )}`,
     );
   }

@@ -58,7 +58,7 @@ export default async function LoginPage({
           <Stars rating={5} size={16} />
           <p className="mt-4 text-xl leading-relaxed">
             {locale === "en"
-              ? "“The first Georgian platform where I could actually finish a lesson — and train from my phone the whole way through.”"
+              ? "“The first Georgian platform where I could actually finish a class — and train from my phone the whole way through.”"
               : "„პირველი ქართული პლატფორმა, სადაც გაკვეთილი ბოლომდე მივიყვანე — და მთელი გზა ტელეფონიდან ვვარჯიშობდი.“"}
           </p>
           <footer className="mt-5 text-sm text-white/60">

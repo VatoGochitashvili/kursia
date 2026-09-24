@@ -109,7 +109,7 @@ export default async function CircleLayout({
           membersHref={localePath(`/community/${creator.slug}/members`, locale)}
           manageLessonsHref={
             membership.isOwner || membership.isAdmin || membership.isCircleAdmin
-              ? localePath(`/community/${creator.slug}/manage/lessons`, locale)
+              ? localePath(`/community/${creator.slug}/manage/classes`, locale)
               : null
           }
           locale={locale}

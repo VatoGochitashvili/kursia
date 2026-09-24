@@ -51,7 +51,7 @@ export default async function DashboardLayout({
             title: t.creator.studio,
             items: [
               { href: p("/dashboard/creator"), label: t.creator.overview, icon: "chart" as const },
-              { href: p("/dashboard/creator/courses"), label: t.creator.myCourses, icon: "video" as const },
+              { href: p("/dashboard/creator/classes"), label: t.creator.myCourses, icon: "video" as const },
             ],
           },
         ]

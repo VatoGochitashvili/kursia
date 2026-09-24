@@ -46,7 +46,7 @@ export default async function CreatorLayout({ children }: { children: React.Reac
       items: [
         { href: p("/dashboard/creator"), label: t.creator.overview, icon: "chart", exact: true },
         {
-          href: p("/dashboard/creator/courses"),
+          href: p("/dashboard/creator/classes"),
           label: t.creator.myCourses,
           icon: "video",
           badge: draftCount,
@@ -118,7 +118,7 @@ export default async function CreatorLayout({ children }: { children: React.Reac
       groups={groups}
       mobileTabs={[
         { href: p("/dashboard/creator"), label: t.creator.overview, icon: "chart", exact: true },
-        { href: p("/dashboard/creator/courses"), label: t.creator.myCourses, icon: "video" },
+        { href: p("/dashboard/creator/classes"), label: t.creator.myCourses, icon: "video" },
         { href: p("/dashboard/creator/sales"), label: t.creator.sales, icon: "creditCard" },
         { href: p("/dashboard/creator/earnings"), label: t.creator.earnings, icon: "wallet" },
       ]}

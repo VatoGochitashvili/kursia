@@ -12,7 +12,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Card, EmptyState } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
 
-export const metadata: Metadata = { title: "My lessons", robots: { index: false } };
+export const metadata: Metadata = { title: "My classes", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
 export default async function CreatorCoursesPage() {
@@ -38,7 +38,7 @@ export default async function CreatorCoursesPage() {
         title={t.creator.myCourses}
         subtitle={`${courses.length} ${t.nav.courses.toLowerCase()}`}
         action={
-          <ButtonLink href={p("/dashboard/creator/courses/new")}>
+          <ButtonLink href={p("/dashboard/creator/classes/new")}>
             <Icon name="plus" size={16} />
             {t.creator.newCourse}
           </ButtonLink>
@@ -51,7 +51,7 @@ export default async function CreatorCoursesPage() {
           title={t.creator.createFirstCourse}
           body={t.home.creatorCtaBody}
           action={
-            <ButtonLink href={p("/dashboard/creator/courses/new")}>
+            <ButtonLink href={p("/dashboard/creator/classes/new")}>
               {t.creator.newCourse}
             </ButtonLink>
           }
@@ -87,7 +87,7 @@ export default async function CreatorCoursesPage() {
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0">
                           <Link
-                            href={p(`/dashboard/creator/courses/${course.id}`)}
+                            href={p(`/dashboard/creator/classes/${course.id}`)}
                             className="text-[15px] font-bold text-ink hover:text-brand-600"
                           >
                             {course.title}
@@ -127,7 +127,7 @@ export default async function CreatorCoursesPage() {
 
                       <div className="mt-4 flex flex-wrap items-center gap-2">
                         <ButtonLink
-                          href={p(`/dashboard/creator/courses/${course.id}`)}
+                          href={p(`/dashboard/creator/classes/${course.id}`)}
                           size="sm"
                           variant="outline"
                         >

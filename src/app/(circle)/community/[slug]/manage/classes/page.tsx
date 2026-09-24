@@ -11,7 +11,7 @@ import { Card, EmptyState } from "@/components/ui/primitives";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { Icon } from "@/components/ui/Icon";
 
-export const metadata: Metadata = { title: "Lessons", robots: { index: false } };
+export const metadata: Metadata = { title: "Classes", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
 /** Every lesson in this circle's classroom, and the way to add another. */
@@ -24,7 +24,7 @@ export default async function ManageLessonsPage({
   const [{ locale, t }, viewer] = await Promise.all([getI18n(), getSessionUser()]);
   const { creator } = await loadCommunityPage(slug, viewer?.id ?? null, locale);
   const p = (path: string) => localePath(path, locale);
-  const base = p(`/community/${creator.slug}/manage/lessons`);
+  const base = p(`/community/${creator.slug}/manage/classes`);
 
   const courses = await db.course.findMany({
     where: { creatorId: creator.id },

@@ -112,7 +112,7 @@ export function CourseBuilder({
     setSaving(true);
     setError(null);
     try {
-      await api.patch(`/api/courses/${course.id}`, {
+      await api.patch(`/api/classes/${course.id}`, {
         title: values.title,
         subtitle: values.subtitle,
         description: values.description,
@@ -145,7 +145,7 @@ export function CourseBuilder({
   async function checkReadiness() {
     try {
       const result = await api.get<{ ready: boolean; issues: ReadinessIssue[] }>(
-        `/api/courses/${course.id}/status`,
+        `/api/classes/${course.id}/status`,
       );
       setReadiness(result.issues);
       return result.ready;
@@ -159,7 +159,7 @@ export function CourseBuilder({
     setSaving(true);
     setError(null);
     try {
-      await api.post(`/api/courses/${course.id}/status`, { to });
+      await api.post(`/api/classes/${course.id}/status`, { to });
       setValues((v) => ({ ...v, status: to }));
       setReadiness([]);
       router.refresh();
@@ -553,7 +553,7 @@ export function CourseBuilder({
             lessonType: t.creator.lessonType,
             lessonDescription: t.courses.description,
             textContent: locale === "en" ? "Lesson text" : "ვიდეოს ტექსტი",
-            newLesson: locale === "en" ? "New lesson" : "ახალი ვიდეო",
+            newLesson: locale === "en" ? "New class" : "ახალი ვიდეო",
             noLessons: locale === "en" ? "No lessons yet" : "ვიდეოები ჯერ არ არის",
             noModules: locale === "en" ? "No modules yet" : "მოდულები ჯერ არ არის",
             noContent: locale === "en" ? "No content" : "შიგთავსი არ არის",
@@ -778,7 +778,7 @@ export function CourseBuilder({
           courseId={course.id}
           courseTitle={values.title}
           studentCount={course.studentCount}
-          redirectTo={locale === "en" ? "/en/dashboard/creator/courses" : "/dashboard/creator/courses"}
+          redirectTo={locale === "en" ? "/en/dashboard/creator/classes" : "/dashboard/creator/classes"}
           t={t}
         />
 

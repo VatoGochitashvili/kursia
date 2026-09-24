@@ -128,7 +128,7 @@ export default async function AdminTransactionsPage({
                     </td>
                     <td className="max-w-[14rem] truncate px-4 py-3">
                       <Link
-                        href={p(`/learn/${purchase.course?.slug}`)}
+                        href={p(`/class/${purchase.course?.slug}`)}
                         className="hover:text-brand-600"
                       >
                         {purchase.course?.title ?? t.membership.monthlyMembership}

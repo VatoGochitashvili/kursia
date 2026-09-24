@@ -330,7 +330,7 @@ async function notifyTransition(input: {
   actorId: string;
   note?: string;
 }) {
-  const courseUrl = `/dashboard/creator/courses/${input.course.id}`;
+  const courseUrl = `/dashboard/creator/classes/${input.course.id}`;
 
   switch (input.to) {
     case "SUBMITTED": {
@@ -346,7 +346,7 @@ async function notifyTransition(input: {
             type: "COURSE_SUBMITTED",
             title: "ახალი გაკვეთილი განსახილველად",
             body: input.course.title,
-            linkUrl: `/admin/courses?status=SUBMITTED`,
+            linkUrl: `/admin/classes?status=SUBMITTED`,
           }),
         ),
       );

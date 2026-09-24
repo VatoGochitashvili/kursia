@@ -182,6 +182,89 @@ async function seedAdmin() {
   return `created (${ADMIN_EMAIL}) — change this password immediately`;
 }
 
+/**
+ * Rewrite the old word out of seeded content.
+ *
+ * The product calls these classes now — gakvetili in Georgian — and the
+ * demo catalogue still carries "kursi" in titles and descriptions written by
+ * an earlier seed. Only rows owned by demo accounts (@example.ge) are
+ * touched: nobody's own writing is edited, whatever word they chose.
+ */
+async function renameSeededCourseWording() {
+  const FORMS: [RegExp, string][] = [
+    [/კურსებში/g, "გაკვეთილებში"],
+    [/კურსებს/g, "გაკვეთილებს"],
+    [/კურსების/g, "გაკვეთილების"],
+    [/კურსები/g, "გაკვეთილები"],
+    [/კურსზე/g, "გაკვეთილზე"],
+    [/კურსად/g, "გაკვეთილად"],
+    [/კურსის/g, "გაკვეთილის"],
+    [/კურსმა/g, "გაკვეთილებმა"],
+    [/კურსს/g, "გაკვეთილს"],
+    [/კურსში/g, "გაკვეთილში"],
+    [/კურსი/g, "გაკვეთილი"],
+  ];
+  const fix = (value: string | null) => {
+    if (!value || !value.includes("კურს")) return null;
+    let next = value;
+    for (const [pattern, replacement] of FORMS) next = next.replace(pattern, replacement);
+    return next === value ? null : next;
+  };
+
+  const demo = { creator: { user: { email: { endsWith: "@example.ge" } } } };
+  let changed = 0;
+
+  const courses = await db.course.findMany({
+    where: demo,
+    select: { id: true, title: true, subtitle: true, description: true },
+  });
+  for (const course of courses) {
+    const data: Record<string, string> = {};
+    for (const field of ["title", "subtitle", "description"] as const) {
+      const next = fix(course[field]);
+      if (next) data[field] = next;
+    }
+    if (Object.keys(data).length > 0) {
+      await db.course.update({ where: { id: course.id }, data });
+      changed += 1;
+    }
+  }
+
+  const lessons = await db.lesson.findMany({
+    where: { course: demo },
+    select: { id: true, title: true, description: true },
+  });
+  for (const lesson of lessons) {
+    const data: Record<string, string> = {};
+    for (const field of ["title", "description"] as const) {
+      const next = fix(lesson[field]);
+      if (next) data[field] = next;
+    }
+    if (Object.keys(data).length > 0) {
+      await db.lesson.update({ where: { id: lesson.id }, data });
+      changed += 1;
+    }
+  }
+
+  const posts = await db.post.findMany({
+    where: { author: { email: { endsWith: "@example.ge" } } },
+    select: { id: true, title: true, body: true },
+  });
+  for (const post of posts) {
+    const data: Record<string, string> = {};
+    const title = fix(post.title);
+    const body = fix(post.body);
+    if (title) data.title = title;
+    if (body) data.body = body;
+    if (Object.keys(data).length > 0) {
+      await db.post.update({ where: { id: post.id }, data });
+      changed += 1;
+    }
+  }
+
+  return changed;
+}
+
 async function main() {
   console.log("🌱 production seed");
 
@@ -199,6 +282,9 @@ async function main() {
 
   const admin = await seedAdmin();
   console.log(`  ✓ admin: ${admin}`);
+
+  const renamed = await renameSeededCourseWording();
+  if (renamed > 0) console.log(`  ✓ wording: ${renamed} seeded rows now say გაკვეთილი`);
 
   const [users, courses] = await Promise.all([db.user.count(), db.course.count()]);
   console.log(`\n✅ done — users ${users} · courses ${courses}\n`);

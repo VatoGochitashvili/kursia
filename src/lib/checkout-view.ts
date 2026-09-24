@@ -55,7 +55,7 @@ export async function getPurchaseForViewer(
         /** Where to retry a failed payment. */
         retryHref: `/courses/${purchase.course.slug}`,
         /** Where to go once it has been paid for. */
-        openHref: `/learn/${purchase.course.slug}`,
+        openHref: `/class/${purchase.course.slug}`,
       }
     : {
         kind: "COMMUNITY" as const,

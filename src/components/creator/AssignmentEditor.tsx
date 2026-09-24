@@ -22,7 +22,7 @@ interface Assignment {
  * Saved on its own rather than with the rest of the lesson form: a lesson has
  * at most one assignment and the endpoint upserts, so there is nothing to
  * reconcile between the two saves. It also means the submissions a student
- * has already sent are never touched by an edit to the lesson title.
+ * has already sent are never touched by an edit to the class title.
  */
 export function AssignmentEditor({
   lessonId,

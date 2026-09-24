@@ -13,7 +13,7 @@ import { Avatar, Card, EmptyState } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
 
-export const metadata: Metadata = { title: "Lesson moderation", robots: { index: false } };
+export const metadata: Metadata = { title: "Class moderation", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
 export default async function AdminCoursesPage({
@@ -100,7 +100,7 @@ export default async function AdminCoursesPage({
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <Link
-                        href={p(`/learn/${course.slug}`)}
+                        href={p(`/class/${course.slug}`)}
                         className="text-[15px] font-bold text-ink hover:text-brand-600"
                       >
                         {course.title}

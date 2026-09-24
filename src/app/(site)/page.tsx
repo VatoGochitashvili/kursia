@@ -644,7 +644,7 @@ function HomeFaq({
   const en = locale === "en";
   const faqs = [
     {
-      q: en ? "How do I pay for a lesson?" : "როგორ ვიხდი გაკვეთილში?",
+      q: en ? "How do I pay for a class?" : "როგორ ვიხდი გაკვეთილში?",
       a: en
         ? "With a Georgian card, in GEL. Bank of Georgia and TBC payment systems are supported, as well as bank transfer. Access opens only once the bank confirms the payment."
         : "გადახდა ხდება ქართული ბარათით, ლარში. მხარდაჭერილია საქართველოს ბანკისა და თიბისის საგადახდო სისტემები, ასევე საბანკო გადარიცხვა. გაკვეთილზე წვდომა იხსნება მხოლოდ ბანკის მიერ გადახდის დადასტურების შემდეგ.",
@@ -652,7 +652,7 @@ function HomeFaq({
     {
       q: en ? "How long do I have access?" : "რამდენ ხანს მაქვს წვდომა?",
       a: en
-        ? "Forever. Once bought, the lesson and every future update to it stay in your account."
+        ? "Forever. Once bought, the class and every future update to it stay in your account."
         : "სამუდამოდ. ერთხელ შეძენილი გაკვეთილი და მისი ყველა მომავალი განახლება თქვენს ანგარიშში რჩება.",
     },
     {
@@ -663,10 +663,10 @@ function HomeFaq({
     },
     {
       q: en
-        ? "Can I follow a lesson on my phone?"
+        ? "Can I follow a class on my phone?"
         : "შემიძლია გაკვეთილის გავლა ტელეფონიდან?",
       a: en
-        ? "Yes. The whole platform works on a phone, which is where most people actually train. Your progress syncs, so you can start a lesson on a laptop and finish it at the gym."
+        ? "Yes. The whole platform works on a phone, which is where most people actually train. Your progress syncs, so you can start a class on a laptop and finish it at the gym."
         : "დიახ. პლატფორმა სრულად მუშაობს ტელეფონზე — სწორედ იქიდან ვარჯიშობს ხალხის უმეტესობა. პროგრესი ინახება, ასე რომ ვიდეო კომპიუტერზე დაიწყე და დარბაზში დაასრულე.",
     },
     {
@@ -680,7 +680,7 @@ function HomeFaq({
     {
       q: en ? "How do I become a creator?" : "როგორ გავხდე კრეატორი?",
       a: en
-        ? "Sign up as a creator, build a lesson in the builder and submit it for review. Once approved it is published and can sell. Commission is charged only on an actual sale."
+        ? "Sign up as a creator, build a class in the builder and submit it for review. Once approved it is published and can sell. Commission is charged only on an actual sale."
         : "დარეგისტრირდი კრეატორად, შექმენი გაკვეთილი კონსტრუქტორში და გააგზავნე განხილვაზე. დამტკიცების შემდეგ ის გამოქვეყნდება და გაყიდვები დაიწყება. საკომისიო იჭრება მხოლოდ რეალური გაყიდვისას.",
     },
     {

@@ -196,7 +196,7 @@ export async function startCheckout(input: {
       purchaseId: purchase.id,
       reference: purchase.reference,
       transactionId: "",
-      redirectUrl: `/learn/${course.slug}`,
+      redirectUrl: `/class/${course.slug}`,
       provider: "free",
       amountMinor: 0,
       currency: course.currency,
@@ -869,7 +869,7 @@ export async function fulfillPurchase(input: FulfillInput): Promise<{ settled: b
 
   const label = p.course?.title ?? communityLabel(creator);
   const destination = p.course
-    ? `/learn/${p.course.slug}`
+    ? `/class/${p.course.slug}`
     : `/community/${creator?.slug ?? ""}`;
   const sellerUserId = p.course?.creator.userId ?? creator?.userId;
 

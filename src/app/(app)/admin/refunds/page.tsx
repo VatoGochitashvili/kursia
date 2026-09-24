@@ -54,7 +54,7 @@ export default async function AdminRefundsPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <Link
-                        href={p(`/learn/${refund.purchase.course?.slug}`)}
+                        href={p(`/class/${refund.purchase.course?.slug}`)}
                         className="text-[14px] font-bold text-ink hover:text-brand-600"
                       >
                         {refund.purchase.course?.title ?? t.membership.monthlyMembership}

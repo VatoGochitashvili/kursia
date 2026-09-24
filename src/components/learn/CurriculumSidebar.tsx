@@ -173,7 +173,7 @@ export function CurriculumSidebar({
                       <li key={lesson.id}>
                         {lesson.unlocked ? (
                           <Link
-                            href={`/learn/${courseSlug}?lesson=${lesson.id}`}
+                            href={`/class/${courseSlug}?lesson=${lesson.id}`}
                             onClick={onNavigate}
                             aria-current={isCurrent ? "true" : undefined}
                             className={cn(

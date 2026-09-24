@@ -88,12 +88,12 @@ export default async function PurchasesPage() {
             const creator = purchase.course ? null : creatorById.get(purchase.creatorId);
             const title = purchase.course?.title ?? communityLabel(creator, locale);
             const href = purchase.course
-              ? `/learn/${purchase.course.slug}`
+              ? `/class/${purchase.course.slug}`
               : creator
                 ? `/community/${creator.slug}`
                 : "/dashboard/purchases";
             const openHref = purchase.course
-              ? `/learn/${purchase.course.slug}`
+              ? `/class/${purchase.course.slug}`
               : creator
                 ? `/community/${creator.slug}`
                 : null;

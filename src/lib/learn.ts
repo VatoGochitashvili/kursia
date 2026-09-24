@@ -175,10 +175,10 @@ export async function loadQuizForGrading(quizId: string) {
   });
 }
 
-/** Redirect helper for `/learn/[slug]` without a lesson query. */
+/** Redirect helper for `/class/[slug]` without a lesson query. */
 export async function resolveResumeRedirect(slug: string, userId: string): Promise<never> {
   const course = await db.course.findUnique({ where: { slug }, select: { id: true } });
   if (!course) notFound();
   const target = await nextLessonFor(userId, course.id);
-  redirect(target ? `/learn/${slug}?lesson=${target.lessonId}` : `/courses/${slug}`);
+  redirect(target ? `/class/${slug}?lesson=${target.lessonId}` : `/courses/${slug}`);
 }

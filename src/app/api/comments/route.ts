@@ -56,7 +56,7 @@ export const POST = handler(async (request) => {
         type: "COMMENT_REPLY",
         title: "ახალი პასუხი თქვენს კომენტარზე",
         body: body.body.slice(0, 120),
-        linkUrl: `/learn/${parent.course.slug}${body.lessonId ? `?lesson=${body.lessonId}` : ""}`,
+        linkUrl: `/class/${parent.course.slug}${body.lessonId ? `?lesson=${body.lessonId}` : ""}`,
       });
     }
   } else {
@@ -70,7 +70,7 @@ export const POST = handler(async (request) => {
         type: "NEW_COMMENT",
         title: body.isQuestion ? "ახალი კითხვა გაკვეთილზე" : "ახალი კომენტარი გაკვეთილზე",
         body: `${course.title}: ${body.body.slice(0, 100)}`,
-        linkUrl: `/learn/${course.slug}${body.lessonId ? `?lesson=${body.lessonId}` : ""}`,
+        linkUrl: `/class/${course.slug}${body.lessonId ? `?lesson=${body.lessonId}` : ""}`,
       });
     }
   }

@@ -8,7 +8,7 @@ import { NewCourseForm } from "@/components/creator/NewCourseForm";
 import { Card } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
 
-export const metadata: Metadata = { title: "New lesson", robots: { index: false } };
+export const metadata: Metadata = { title: "New class", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
 /** A new lesson in this circle's classroom, created by its owner or an admin. */
@@ -22,7 +22,7 @@ export default async function ManageNewLessonPage({
   const { creator } = await loadCommunityPage(slug, viewer?.id ?? null, locale);
   const [categories] = await Promise.all([getCategoryTree()]);
   const p = (path: string) => localePath(path, locale);
-  const base = p(`/community/${creator.slug}/manage/lessons`);
+  const base = p(`/community/${creator.slug}/manage/classes`);
 
   return (
     <div className="grid gap-4">
@@ -49,7 +49,7 @@ export default async function ManageNewLessonPage({
             })),
           }))}
           labels={{
-            title: locale === "en" ? "Lesson title" : "გაკვეთილის სათაური",
+            title: locale === "en" ? "Class title" : "გაკვეთილის სათაური",
             titleHint:
               locale === "en"
                 ? "What will members be able to do afterwards?"

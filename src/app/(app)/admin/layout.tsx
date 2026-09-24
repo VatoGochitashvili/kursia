@@ -62,7 +62,7 @@ export default async function AdminLayout({
       title: t.admin.moderation,
       items: [
         {
-          href: p("/admin/courses"),
+          href: p("/admin/classes"),
           label: t.admin.courses,
           icon: "video",
           badge: pendingCourses,
@@ -135,7 +135,7 @@ export default async function AdminLayout({
           exact: true,
         },
         {
-          href: p("/admin/courses"),
+          href: p("/admin/classes"),
           label: t.admin.courses,
           icon: "video",
           badge: pendingCourses,

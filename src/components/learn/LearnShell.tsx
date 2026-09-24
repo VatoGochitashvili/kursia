@@ -107,7 +107,7 @@ export function LearnShell({
   }
 
   function goTo(id: string) {
-    router.push(`/learn/${courseSlug}?lesson=${id}`);
+    router.push(`/class/${courseSlug}?lesson=${id}`);
   }
 
   const sidebar = (variant: "desktop" | "drawer") => (

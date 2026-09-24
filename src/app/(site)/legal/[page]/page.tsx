@@ -71,18 +71,18 @@ function buildContent(
                 : "You must be 18 or older, or have a parent's consent, to create an account. You are responsible for keeping your password safe and for activity carried out from your account.",
               ka
                 ? "ერთი ანგარიში ეკუთვნის ერთ ადამიანს. ანგარიშის გაზიარება ან შეძენილ გაკვეთილზე წვდომის გადაცემა სხვისთვის იკრძალება."
-                : "One account belongs to one person. Sharing an account, or passing purchased lesson access to someone else, is not permitted.",
+                : "One account belongs to one person. Sharing an account, or passing purchased class access to someone else, is not permitted.",
             ],
           },
           {
-            heading: ka ? "2. გაკვეთილების შეძენა" : "2. Buying lessons",
+            heading: ka ? "2. გაკვეთილების შეძენა" : "2. Buying classes",
             body: [
               ka
                 ? "გაკვეთილზე წვდომა იხსნება მხოლოდ გადახდის დადასტურების შემდეგ. ფასები მითითებულია ლარში და მოიცავს კანონით გათვალისწინებულ გადასახადებს."
                 : "Lesson access opens only after payment is confirmed. Prices are shown in GEL and include applicable taxes.",
               ka
                 ? "შეძენილი გაკვეთილი ხელმისაწვდომია უვადოდ, გარდა იმ შემთხვევისა, როცა გაკვეთილი კანონის ან უფლების დარღვევის გამო იშლება პლატფორმიდან."
-                : "A purchased lesson remains available indefinitely, unless it must be removed for legal or rights reasons.",
+                : "A purchased class remains available indefinitely, unless it must be removed for legal or rights reasons.",
             ],
           },
           {
@@ -101,7 +101,7 @@ function buildContent(
             body: [
               ka
                 ? "იკრძალება გაკვეთილის ჩაწერა, გადმოწერა ან გავრცელება; სხვისი ანგარიშით სარგებლობა; პლატფორმის ტექნიკური დაცვის გვერდის ავლის მცდელობა; შეურაცხმყოფელი ან უკანონო კონტენტის განთავსება."
-                : "Recording, downloading or redistributing lesson content; using someone else's account; attempting to bypass technical protections; and posting abusive or unlawful content are all prohibited.",
+                : "Recording, downloading or redistributing class content; using someone else's account; attempting to bypass technical protections; and posting abusive or unlawful content are all prohibited.",
             ],
           },
           {
@@ -142,7 +142,7 @@ function buildContent(
             body: [
               ka
                 ? "გაკვეთილის ნახვების დათვლისას ვინახავთ მხოლოდ ჰეშირებულ, არაიდენტიფიცირებად მნიშვნელობას — არა IP მისამართს ან ბრაუზერის სრულ მონაცემებს."
-                : "When counting lesson views we store only a hashed, non-identifying value — not your IP address or full browser fingerprint.",
+                : "When counting class views we store only a hashed, non-identifying value — not your IP address or full browser fingerprint.",
             ],
           },
           {
@@ -168,7 +168,7 @@ function buildContent(
             body: [
               ka
                 ? "გადადით „შენაძენებში“, აირჩიეთ გაკვეთილი და დააჭირეთ „თანხის დაბრუნებას“. მიუთითეთ მიზეზი — ეს გვეხმარება გაკვეთილების ხარისხის გაუმჯობესებაში."
-                : "Go to Purchases, choose the lesson and click Request a refund. Tell us why — it helps us improve lesson quality.",
+                : "Go to Purchases, choose the class and click Request a refund. Tell us why — it helps us improve class quality.",
             ],
           },
           {
@@ -176,7 +176,7 @@ function buildContent(
             body: [
               ka
                 ? `თუ ${settings.refundWindowDays} დღე გასულია, ან თუ გაკვეთილი თითქმის სრულად არის დასრულებული და მასალა ჩამოტვირთულია, მოთხოვნა შეიძლება არ დაკმაყოფილდეს.`
-                : `If the ${settings.refundWindowDays}-day window has passed, or the lessons are almost fully watched and their materials downloaded, the request may be declined.`,
+                : `If the ${settings.refundWindowDays}-day window has passed, or the classes are almost fully watched and their materials downloaded, the request may be declined.`,
             ],
           },
           {
@@ -203,14 +203,14 @@ function buildContent(
         title: ka ? "ჩვენ შესახებ" : "About",
         intro: ka
           ? `${brand} არის ქართული ონლაინ სასწავლო პლატფორმა — ადგილი, სადაც ქართველი და საერთაშორისო ექსპერტები ყიდიან გაკვეთილებს, ხოლო სტუდენტები სწავლობენ მშობლიურ ენაზე.`
-          : `${brand} is a Georgian online learning marketplace — a place where Georgian and international experts run paid circles — lessons, meetings and a room of their own — and members learn in their own language.`,
+          : `${brand} is a Georgian online learning marketplace — a place where Georgian and international experts run paid circles — classes, meetings and a room of their own — and members learn in their own language.`,
         sections: [
           {
             heading: ka ? "რატომ" : "Why",
             body: [
               ka
                 ? "ქართულენოვანი ხარისხიანი სასწავლო კონტენტი მიმოფანტულია და ხშირად სისტემურობას მოკლებული. ჩვენი მიზანია ერთი სანდო ადგილი, სადაც გაკვეთილს იპოვი, შეიძენ ლარით და ბოლომდე მიიყვან."
-                : "Quality Georgian-language learning content is scattered and often unstructured. We want one trustworthy place to find a lesson, buy it in GEL, and actually finish it.",
+                : "Quality Georgian-language learning content is scattered and often unstructured. We want one trustworthy place to find a class, buy it in GEL, and actually finish it.",
             ],
           },
           {
@@ -240,7 +240,7 @@ function buildContent(
             body: [
               ka
                 ? "გაკვეთილის განხილვასთან, გატანასთან ან საკომისიოსთან დაკავშირებული კითხვები — მოგვწერეთ იმავე მისამართზე და მიუთითეთ თქვენი ინსტრუქტორის სახელი."
-                : "For questions about lesson review, payouts or commission, write to the same address and include your instructor name.",
+                : "For questions about class review, payouts or commission, write to the same address and include your instructor name.",
             ],
           },
         ],
@@ -254,11 +254,11 @@ function buildContent(
           : "Frequently asked questions and short guides.",
         sections: [
           {
-            heading: ka ? "ვერ ვხსნი შეძენილ გაკვეთილს" : "I can't open a lesson I bought",
+            heading: ka ? "ვერ ვხსნი შეძენილ გაკვეთილს" : "I can't open a class I bought",
             body: [
               ka
                 ? "შეამოწმეთ „შენაძენებში“ შეკვეთის სტატუსი. თუ ის „მოლოდინშია“, გადახდა ჯერ არ დაუდასტურებია ბანკს. თუ „გადახდილია“, მაგრამ გაკვეთილი არ იხსნება — მოგვწერეთ და მიუთითეთ შეკვეთის ნომერი."
-                : "Check the order status under Purchases. If it says Pending, the bank has not confirmed the payment yet. If it says Paid but the lesson will not open, write to us with the order reference.",
+                : "Check the order status under Purchases. If it says Pending, the bank has not confirmed the payment yet. If it says Paid but the class will not open, write to us with the order reference.",
             ],
           },
           {
@@ -274,7 +274,7 @@ function buildContent(
             body: [
               ka
                 ? "პროგრესი ითვლება მხოლოდ გამოქვეყნებული ვიდეოებიდან და ინახება ავტომატურად. თუ რიცხვი არ შეიცვალა, განაახლეთ გვერდი — და შეამოწმეთ, ვიდეო მონიშნულია თუ არა დასრულებულად."
-                : "Progress counts only published lessons and saves automatically. If the number has not moved, refresh the page — and check the lesson is actually marked complete.",
+                : "Progress counts only published classes and saves automatically. If the number has not moved, refresh the page — and check the class is actually marked complete.",
             ],
           },
         ],

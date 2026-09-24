@@ -120,14 +120,14 @@ export const POST = handler(async (request) => {
         type: "ANNOUNCEMENT",
         title: body.subject,
         body: body.body.slice(0, 300),
-        linkUrl: `/learn/${slug}`,
+        linkUrl: `/class/${slug}`,
         email: body.sendEmail
           ? {
               template: "genericNotification",
               payload: {
                 title: body.subject,
                 message: body.body,
-                url: absoluteUrl(`/learn/${slug}`),
+                url: absoluteUrl(`/class/${slug}`),
               },
             }
           : undefined,

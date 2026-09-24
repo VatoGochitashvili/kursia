@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/layout/DashboardShell";
 import { NewCourseForm } from "@/components/creator/NewCourseForm";
 import { Card } from "@/components/ui/primitives";
 
-export const metadata: Metadata = { title: "New lesson", robots: { index: false } };
+export const metadata: Metadata = { title: "New class", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
 export default async function NewCoursePage() {
@@ -36,7 +36,7 @@ export default async function NewCoursePage() {
             })),
           }))}
           labels={{
-            title: locale === "en" ? "Lesson title" : "გაკვეთილის სათაური",
+            title: locale === "en" ? "Class title" : "გაკვეთილის სათაური",
             titleHint:
               locale === "en"
                 ? "What will students be able to do afterwards?"

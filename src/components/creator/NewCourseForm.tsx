@@ -38,7 +38,7 @@ export function NewCourseForm({
     const categoryId = String(form.get("categoryId") ?? "");
 
     try {
-      const course = await api.post<{ redirectTo: string; id: string }>("/api/courses", {
+      const course = await api.post<{ redirectTo: string; id: string }>("/api/classes", {
         title: String(form.get("title") ?? ""),
         ...(categoryId ? { categoryId } : {}),
         ...(creatorId ? { creatorId } : {}),

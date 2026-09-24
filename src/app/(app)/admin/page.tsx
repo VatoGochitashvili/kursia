@@ -44,7 +44,7 @@ export default async function AdminOverviewPage() {
                 <span>
                   {overview.pendingCourses} {t.nav.courses.toLowerCase()}
                 </span>
-                <ButtonLink href={p("/admin/courses?status=SUBMITTED")} size="sm" variant="outline">
+                <ButtonLink href={p("/admin/classes?status=SUBMITTED")} size="sm" variant="outline">
                   {t.common.open}
                 </ButtonLink>
               </div>
@@ -202,7 +202,7 @@ export default async function AdminOverviewPage() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <Link
-                      href={p(`/learn/${course.slug}`)}
+                      href={p(`/class/${course.slug}`)}
                       className="truncate text-[13px] font-medium text-ink hover:text-brand-600"
                     >
                       {course.title}

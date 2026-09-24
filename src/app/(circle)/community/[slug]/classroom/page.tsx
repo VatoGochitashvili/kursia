@@ -90,7 +90,7 @@ export default async function ClassroomPage({ params }: Props) {
         return (
           <li key={course.id}>
             <Link
-              href={p(`/learn/${course.slug}`)}
+              href={p(`/class/${course.slug}`)}
               className="group flex gap-4 rounded-2xl border border-line bg-surface p-3.5 transition-all duration-200 hover:-translate-y-px hover:border-line-strong hover:shadow-md sm:p-4"
             >
               <div className="h-[68px] w-[112px] shrink-0 overflow-hidden rounded-xl bg-surface-sunken">
