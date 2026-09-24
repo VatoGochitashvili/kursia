@@ -161,7 +161,7 @@ function buildContent(
         title: ka ? "თანხის დაბრუნების პოლიტიკა" : "Refund Policy",
         intro: ka
           ? `თუ გაკვეთილი არ დაგაკმაყოფილათ, თანხის დაბრუნება შესაძლებელია შეძენიდან ${settings.refundWindowDays} დღის განმავლობაში.`
-          : `If a course is not what you expected, you can request a refund within ${settings.refundWindowDays} days of purchase.`,
+          : `If a membership is not what you expected, you can request a refund within ${settings.refundWindowDays} days of purchase.`,
         sections: [
           {
             heading: ka ? "როგორ მოვითხოვო" : "How to request",
@@ -176,7 +176,7 @@ function buildContent(
             body: [
               ka
                 ? `თუ ${settings.refundWindowDays} დღე გასულია, ან თუ გაკვეთილი თითქმის სრულად არის დასრულებული და მასალა ჩამოტვირთულია, მოთხოვნა შეიძლება არ დაკმაყოფილდეს.`
-                : `If the ${settings.refundWindowDays}-day window has passed, or the course is almost fully completed and its materials downloaded, the request may be declined.`,
+                : `If the ${settings.refundWindowDays}-day window has passed, or the lessons are almost fully watched and their materials downloaded, the request may be declined.`,
             ],
           },
           {
@@ -203,7 +203,7 @@ function buildContent(
         title: ka ? "ჩვენ შესახებ" : "About",
         intro: ka
           ? `${brand} არის ქართული ონლაინ სასწავლო პლატფორმა — ადგილი, სადაც ქართველი და საერთაშორისო ექსპერტები ყიდიან გაკვეთილებს, ხოლო სტუდენტები სწავლობენ მშობლიურ ენაზე.`
-          : `${brand} is a Georgian online learning marketplace — a place where Georgian and international experts sell courses, and students learn in their own language.`,
+          : `${brand} is a Georgian online learning marketplace — a place where Georgian and international experts run paid circles — lessons, meetings and a room of their own — and members learn in their own language.`,
         sections: [
           {
             heading: ka ? "რატომ" : "Why",

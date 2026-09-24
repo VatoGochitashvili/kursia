@@ -105,7 +105,7 @@ export function websiteSchema(name: string): Json {
     inLanguage: ["ka-GE", "en"],
     potentialAction: {
       "@type": "SearchAction",
-      target: { "@type": "EntryPoint", urlTemplate: `${siteUrl}/courses?q={search_term_string}` },
+      target: { "@type": "EntryPoint", urlTemplate: `${siteUrl}/communities?q={search_term_string}` },
       "query-input": "required name=search_term_string",
     },
   };

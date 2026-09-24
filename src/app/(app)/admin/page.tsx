@@ -202,7 +202,7 @@ export default async function AdminOverviewPage() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <Link
-                      href={p(`/courses/${course.slug}`)}
+                      href={p(`/learn/${course.slug}`)}
                       className="truncate text-[13px] font-medium text-ink hover:text-brand-600"
                     >
                       {course.title}

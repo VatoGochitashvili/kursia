@@ -53,7 +53,7 @@ export default async function SettingsPage() {
         action={
           record?.creatorProfile ? (
             <Link
-              href={p(`/creator/${record.creatorProfile.slug}`)}
+              href={p(`/community/${record.creatorProfile.slug}`)}
               className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:underline"
             >
               <Icon name="external" size={15} />

@@ -62,12 +62,15 @@ export default async function RegisterPage({
           </p>
           <ul className="mt-7 space-y-3.5">
             {[
+              // What the product is now: rooms you belong to, not a catalogue.
               locale === "en"
-                ? `${formatCount(stats.courses, locale)} courses across ${formatCount(stats.creators, locale)} instructors`
-                : `${formatCount(stats.courses, locale)} გაკვეთილი, ${formatCount(stats.creators, locale)} ინსტრუქტორი`,
+                ? `${formatCount(stats.circles, locale)} circles to join`
+                : `${formatCount(stats.circles, locale)} წრე, სადაც შეგიძლია შემოხვიდე`,
               locale === "en" ? "Pay in GEL with a Georgian card" : "გადახდა ლარში, ქართული ბარათით",
-              locale === "en" ? "Lifetime access, on every device" : "სამუდამო წვდომა ყველა მოწყობილობაზე",
-              locale === "en" ? "Learn on any device" : "ისწავლე ნებისმიერ მოწყობილობაზე",
+              locale === "en"
+                ? "Lessons, meetings and people, in one place"
+                : "გაკვეთილები, შეხვედრები და ხალხი — ერთ სივრცეში",
+              locale === "en" ? "On any device" : "ნებისმიერი მოწყობილობიდან",
             ].map((line) => (
               <li key={line} className="flex items-start gap-2.5 text-[15px] text-white/80">
                 <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15 text-white">

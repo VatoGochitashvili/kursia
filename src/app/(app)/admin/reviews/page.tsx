@@ -88,7 +88,7 @@ export default async function AdminReviewsPage({
                       </div>
 
                       <Link
-                        href={p(`/courses/${review.course.slug}`)}
+                        href={p(`/learn/${review.course.slug}`)}
                         className="mt-0.5 block text-[12px] text-brand-600 hover:underline"
                       >
                         {review.course.title}

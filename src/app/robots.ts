@@ -38,9 +38,9 @@ export default function robots(): MetadataRoute.Robots {
           "/forgot-password",
           "/reset-password",
           "/verify-email",
-          // Filtered catalogue permutations add nothing to the index.
-          "/courses?*",
-          "/en/courses?*",
+          // Filtered directory permutations add nothing to the index.
+          "/communities?*",
+          "/en/communities?*",
         ],
       },
       // Ad-network crawlers need the same access as search crawlers.

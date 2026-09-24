@@ -91,7 +91,7 @@ export default async function AdminPayoutsPage() {
                           size={20}
                         />
                         <Link
-                          href={p(`/creator/${payout.creator.slug}`)}
+                          href={p(`/community/${payout.creator.slug}`)}
                           className="hover:text-brand-600"
                         >
                           {payout.creator.displayName}

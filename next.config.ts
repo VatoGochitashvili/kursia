@@ -41,6 +41,18 @@ const config: NextConfig = {
       { source: "/en/instructors", destination: "/en", permanent: false },
       { source: "/become-instructor", destination: "/start", permanent: false },
       { source: "/en/become-instructor", destination: "/en/start", permanent: false },
+      // The public catalogue is gone entirely: a lesson is something inside a
+      // circle, reached from its classroom, and a creator is found through
+      // the circle they run. Old links land on the nearest live thing rather
+      // than a 404 — a creator's slug IS their circle's slug.
+      { source: "/courses/:slug", destination: "/communities", permanent: false },
+      { source: "/en/courses/:slug", destination: "/en/communities", permanent: false },
+      { source: "/category/:slug", destination: "/communities?category=:slug", permanent: false },
+      { source: "/en/category/:slug", destination: "/en/communities?category=:slug", permanent: false },
+      { source: "/creator/:slug", destination: "/community/:slug", permanent: false },
+      { source: "/en/creator/:slug", destination: "/en/community/:slug", permanent: false },
+      { source: "/dashboard/wishlist", destination: "/dashboard/profile", permanent: false },
+      { source: "/en/dashboard/wishlist", destination: "/en/dashboard/profile", permanent: false },
     ];
   },
   async rewrites() {

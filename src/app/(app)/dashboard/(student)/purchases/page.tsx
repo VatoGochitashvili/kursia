@@ -71,7 +71,7 @@ export default async function PurchasesPage() {
           icon={<Icon name="creditCard" size={30} />}
           title={t.common.empty}
           action={
-            <ButtonLink href={p("/courses")}>{t.dashboard.browseCourses}</ButtonLink>
+            <ButtonLink href={p("/")}>{t.communities.browse}</ButtonLink>
           }
         />
       ) : (
@@ -88,7 +88,7 @@ export default async function PurchasesPage() {
             const creator = purchase.course ? null : creatorById.get(purchase.creatorId);
             const title = purchase.course?.title ?? communityLabel(creator, locale);
             const href = purchase.course
-              ? `/courses/${purchase.course.slug}`
+              ? `/learn/${purchase.course.slug}`
               : creator
                 ? `/community/${creator.slug}`
                 : "/dashboard/purchases";

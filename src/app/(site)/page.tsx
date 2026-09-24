@@ -1,11 +1,11 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getI18n, localePath, fill } from "@/i18n";
+import type { Locale } from "@/lib/enums";
+import { getI18n, localePath, fill, type Dictionary } from "@/i18n";
 import { getSettings } from "@/lib/settings";
 import { listCommunities, listCommunityCategories } from "@/lib/communities";
 import { buildMetadata, itemListSchema } from "@/lib/seo";
 import { bpsToPercent } from "@/lib/money";
-import { CourseCard } from "@/components/course/CourseCard";
 import { CommunityCard } from "@/components/community/CommunityCard";
 import { ButtonLink } from "@/components/ui/Button";
 import {
@@ -20,7 +20,7 @@ import { Stagger } from "@/components/ui/Stagger";
 
 /**
  * The homepage is fully server-rendered from the database and revalidated
- * periodically, so Google sees real course content and the page costs one
+ * periodically, so Google sees the real circles and the page costs one
  * cached render rather than a query storm per visitor.
  *
  * Structure follows the two things a two-sided marketplace has to do on one
@@ -434,7 +434,7 @@ function EarningsBand({
   t,
   share,
 }: {
-  t: Parameters<typeof CourseCard>[0]["t"];
+  t: Dictionary;
   share: string;
 }) {
   const points = [
@@ -561,8 +561,8 @@ function Testimonials({
   locale,
   t,
 }: {
-  locale: Parameters<typeof CourseCard>[0]["locale"];
-  t: Parameters<typeof CourseCard>[0]["t"];
+  locale: Locale;
+  t: Dictionary;
 }) {
   // Illustrative quotes for the launch page. Once real reviews exist, an
   // admin can promote genuine ones here from Admin → Homepage.
@@ -634,8 +634,8 @@ function HomeFaq({
   t,
   settings,
 }: {
-  locale: Parameters<typeof CourseCard>[0]["locale"];
-  t: Parameters<typeof CourseCard>[0]["t"];
+  locale: Locale;
+  t: Dictionary;
   settings: { refundWindowDays: number };
 }) {
   // These were Georgian-only, which meant the English homepage rendered a
@@ -658,7 +658,7 @@ function HomeFaq({
     {
       q: en ? "Can I get a refund?" : "შემიძლია თანხის დაბრუნება?",
       a: en
-        ? `Yes. If a course is not what you expected, you can request a refund within ${settings.refundWindowDays} days of purchase.`
+        ? `Yes. If a membership is not what you expected, you can request a refund within ${settings.refundWindowDays} days of purchase.`
         : `დიახ. თუ გაკვეთილი არ დაგაკმაყოფილათ, თანხის დაბრუნება შესაძლებელია შეძენიდან ${settings.refundWindowDays} დღის განმავლობაში.`,
     },
     {

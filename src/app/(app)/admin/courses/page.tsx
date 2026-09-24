@@ -100,7 +100,7 @@ export default async function AdminCoursesPage({
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <Link
-                        href={p(`/courses/${course.slug}`)}
+                        href={p(`/learn/${course.slug}`)}
                         className="text-[15px] font-bold text-ink hover:text-brand-600"
                       >
                         {course.title}
@@ -127,7 +127,7 @@ export default async function AdminCoursesPage({
                           size={20}
                         />
                         <Link
-                          href={p(`/creator/${course.creator.slug}`)}
+                          href={p(`/community/${course.creator.slug}`)}
                           className="hover:text-brand-600"
                         >
                           {course.creator.displayName}

@@ -32,15 +32,15 @@ export default async function NotFound() {
           <div className="mt-7">
             <SearchBar
               placeholder={t.home.heroSearchPlaceholder}
-              action={p("/courses")}
+              action={p("/communities")}
             />
           </div>
 
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <ButtonLink href={p("/")}>{t.errors.goHome}</ButtonLink>
-            <ButtonLink href={p("/courses")} variant="outline">
+            <ButtonLink href={p("/communities")} variant="outline">
               <Icon name="book" size={16} />
-              {t.dashboard.browseCourses}
+              {t.communities.browse}
             </ButtonLink>
           </div>
         </div>

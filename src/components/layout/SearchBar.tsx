@@ -6,13 +6,13 @@ import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
 
 /**
- * Search is a plain form that navigates to /courses?q=… — it works without
+ * Search is a plain form that navigates to /communities?q=… — it works without
  * JavaScript, and the results page is fully server-rendered and indexable.
  */
 export function SearchBar({
   placeholder,
   defaultValue = "",
-  action = "/courses",
+  action = "/communities",
   size = "md",
   className,
   autoFocus,

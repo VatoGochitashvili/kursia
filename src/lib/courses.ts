@@ -347,10 +347,14 @@ export type CategoryNode = Awaited<ReturnType<typeof getCategoryTreeUncached>>[n
 
 /** Headline platform numbers for the homepage. */
 async function getPlatformStatsUncached() {
-  const [courses, students, creators, ratingAgg] = await Promise.all([
+  const [courses, students, creators, circles, ratingAgg] = await Promise.all([
     db.course.count({ where: publicWhere }),
     db.enrollment.count({ where: { revokedAt: null } }),
     db.creatorProfile.count({ where: { courses: { some: { status: "PUBLISHED" } } } }),
+    // Circles anybody can actually see and join — what the signup page counts.
+    db.creatorProfile.count({
+      where: { communityEnabled: true, communityStatus: "APPROVED", approvedAt: { not: null } },
+    }),
     db.course.aggregate({
       where: { AND: [publicWhere, { ratingCount: { gt: 0 } }] },
       _avg: { ratingAvg: true },
@@ -360,6 +364,7 @@ async function getPlatformStatsUncached() {
     courses,
     students,
     creators,
+    circles,
     averageRating: Math.round((ratingAgg._avg.ratingAvg ?? 0) * 10) / 10,
   };
 }

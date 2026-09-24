@@ -33,8 +33,8 @@ export default async function CheckoutCancelledPage({
           <ButtonLink href={p(purchase.subject.retryHref)} size="lg" fullWidth>
             {t.checkout.tryAgain}
           </ButtonLink>
-          <ButtonLink href={p("/courses")} variant="outline" size="lg" fullWidth>
-            {t.dashboard.browseCourses}
+          <ButtonLink href={p("/")} variant="outline" size="lg" fullWidth>
+            {t.communities.browse}
           </ButtonLink>
         </div>
       </Card>

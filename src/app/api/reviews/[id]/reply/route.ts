@@ -44,7 +44,7 @@ export const POST = handler(async (request, context: { params: Promise<{ id: str
     type: "REVIEW_REPLY",
     title: "ინსტრუქტორმა უპასუხა თქვენს შეფასებას",
     body: review.course.title,
-    linkUrl: `/courses/${review.course.slug}`,
+    linkUrl: `/learn/${review.course.slug}`,
   });
 
   return jsonOk({ ok: true });
