@@ -1,9 +1,7 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { getI18n, localePath } from "@/i18n";
-import { getSessionUser } from "@/lib/auth/session";
-import { getSettings } from "@/lib/settings";
 import { buildMetadata } from "@/lib/seo";
-import { StartPlans } from "@/components/creator/StartPlans";
 import { StartShowcase } from "@/components/creator/StartShowcase";
 import { listShowcaseCircles } from "@/lib/communities";
 import { formatMoney } from "@/lib/money";
@@ -30,11 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
  * only curious.
  */
 export default async function StartPage() {
-  const [{ locale, t }, user, settings] = await Promise.all([
-    getI18n(),
-    getSessionUser(),
-    getSettings(),
-  ]);
+  const [{ locale, t }] = await Promise.all([getI18n()]);
   const p = (path: string) => localePath(path, locale);
   const showcase = await listShowcaseCircles(locale, 6);
 
@@ -74,34 +68,17 @@ export default async function StartPage() {
       )}
 
       <div className="mt-8 flex justify-center">
-        <a
-          href="#plans"
-          className="inline-flex h-13 items-center gap-2 rounded-xl bg-brand-600 px-7 py-3.5 text-[15px] font-bold text-white shadow-sm transition-colors hover:bg-brand-700 sm:text-base"
+        {/* Onward to the price, on its own page — pressing this is the
+            decision to look at what it costs, not a scroll. */}
+        <Link
+          href={p("/start/plans")}
+          className="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-7 py-3.5 text-[15px] font-bold text-white shadow-sm transition-colors hover:bg-brand-700 sm:text-base"
         >
           <Icon name="plus" size={18} />
           {t.start.title}
-        </a>
+        </Link>
       </div>
 
-      <header id="plans" className="mx-auto mt-16 max-w-xl scroll-mt-20 text-center">
-        <h2 className="text-[1.6rem]/[1.2] font-bold tracking-tight sm:text-[2rem]/[1.18]">
-          {t.start.seePlans}
-        </h2>
-        <p className="mt-3 text-[15px] leading-relaxed text-ink-muted sm:text-base">
-          {t.start.subtitle}
-        </p>
-      </header>
-
-      <div className="mx-auto mt-9 max-w-3xl">
-        <StartPlans
-          monthlyMinor={settings.creatorPlanPriceMinor}
-          yearlyMinor={settings.creatorPlanYearlyPriceMinor}
-          currency={settings.currency}
-          isSignedIn={Boolean(user)}
-          loginHref={p("/login?next=/start")}
-          t={t}
-        />
-      </div>
     </div>
   );
 }

@@ -37,7 +37,7 @@ export const POST = handler(async (request) => {
     // Straight to the code: an unconfirmed address is the one thing worth
     // interrupting a new account for, and the email is already on its way.
     redirectTo: `/verify-email?next=${encodeURIComponent(
-      body.accountType === "CREATOR" ? "/start" : "/dashboard/profile",
+      body.accountType === "CREATOR" ? "/start/plans" : "/dashboard/profile",
     )}`,
   });
 });
