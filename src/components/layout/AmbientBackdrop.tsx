@@ -46,20 +46,20 @@ interface Glyph {
  * because those are the two anyone recognises at 8% opacity.
  */
 const GLYPHS: Glyph[] = [
-  { icon: "book", left: 4, top: 12, size: 92, rotate: -14, duration: 26, delay: 0, opacity: 0.119 },
-  { icon: "edit", left: 88, top: 8, size: 75, rotate: 22, duration: 31, delay: -6, opacity: 0.112 },
-  { icon: "dumbbell", left: 14, top: 62, size: 102, rotate: 9, duration: 34, delay: -12, opacity: 0.098 },
-  { icon: "leaf", left: 78, top: 44, size: 82, rotate: -18, duration: 29, delay: -3, opacity: 0.119 },
-  { icon: "camera", left: 46, top: 82, size: 72, rotate: 12, duration: 37, delay: -18, opacity: 0.098 },
-  { icon: "music", left: 92, top: 74, size: 78, rotate: -8, duration: 28, delay: -9, opacity: 0.105 },
-  { icon: "book", left: 26, top: 30, size: 68, rotate: 6, duration: 33, delay: -21, opacity: 0.098 },
-  { icon: "palette", left: 62, top: 18, size: 70, rotate: -20, duration: 30, delay: -15, opacity: 0.098 },
-  { icon: "mic", left: 8, top: 88, size: 65, rotate: 16, duration: 35, delay: -7, opacity: 0.105 },
-  { icon: "edit", left: 70, top: 92, size: 80, rotate: -6, duration: 27, delay: -24, opacity: 0.098 },
-  { icon: "sparkles", left: 36, top: 6, size: 60, rotate: 18, duration: 32, delay: -11, opacity: 0.119 },
-  { icon: "video", left: 56, top: 54, size: 62, rotate: -12, duration: 36, delay: -17, opacity: 0.084 },
-  { icon: "trendingUp", left: 20, top: 46, size: 58, rotate: 10, duration: 30, delay: -13, opacity: 0.091 },
-  { icon: "lotus", left: 84, top: 60, size: 72, rotate: -10, duration: 38, delay: -20, opacity: 0.091 },
+  { icon: "book", left: 4, top: 12, size: 92, rotate: -14, duration: 26, delay: 0, opacity: 0.074 },
+  { icon: "edit", left: 88, top: 8, size: 75, rotate: 22, duration: 31, delay: -6, opacity: 0.069 },
+  { icon: "dumbbell", left: 14, top: 62, size: 102, rotate: 9, duration: 34, delay: -12, opacity: 0.061 },
+  { icon: "leaf", left: 78, top: 44, size: 82, rotate: -18, duration: 29, delay: -3, opacity: 0.074 },
+  { icon: "camera", left: 46, top: 82, size: 72, rotate: 12, duration: 37, delay: -18, opacity: 0.061 },
+  { icon: "music", left: 92, top: 74, size: 78, rotate: -8, duration: 28, delay: -9, opacity: 0.065 },
+  { icon: "book", left: 26, top: 30, size: 68, rotate: 6, duration: 33, delay: -21, opacity: 0.061 },
+  { icon: "palette", left: 62, top: 18, size: 70, rotate: -20, duration: 30, delay: -15, opacity: 0.061 },
+  { icon: "mic", left: 8, top: 88, size: 65, rotate: 16, duration: 35, delay: -7, opacity: 0.065 },
+  { icon: "edit", left: 70, top: 92, size: 80, rotate: -6, duration: 27, delay: -24, opacity: 0.061 },
+  { icon: "sparkles", left: 36, top: 6, size: 60, rotate: 18, duration: 32, delay: -11, opacity: 0.074 },
+  { icon: "video", left: 56, top: 54, size: 62, rotate: -12, duration: 36, delay: -17, opacity: 0.052 },
+  { icon: "trendingUp", left: 20, top: 46, size: 58, rotate: 10, duration: 30, delay: -13, opacity: 0.056 },
+  { icon: "lotus", left: 84, top: 60, size: 72, rotate: -10, duration: 38, delay: -20, opacity: 0.056 },
 ];
 
 export function AmbientBackdrop() {
@@ -71,9 +71,9 @@ export function AmbientBackdrop() {
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(60rem 40rem at 12% 8%, rgb(53 89 240 / 0.10), transparent 60%)," +
-            "radial-gradient(52rem 34rem at 88% 26%, rgb(255 87 16 / 0.085), transparent 62%)," +
-            "radial-gradient(46rem 32rem at 50% 96%, rgb(18 183 106 / 0.075), transparent 64%)",
+            "radial-gradient(60rem 40rem at 12% 8%, rgb(53 89 240 / 0.06), transparent 60%)," +
+            "radial-gradient(52rem 34rem at 88% 26%, rgb(255 87 16 / 0.05), transparent 62%)," +
+            "radial-gradient(46rem 32rem at 50% 96%, rgb(18 183 106 / 0.045), transparent 64%)",
         }}
       />
 
@@ -83,13 +83,17 @@ export function AmbientBackdrop() {
         className="absolute inset-0 opacity-70"
         style={{
           backgroundImage:
-            "linear-gradient(to bottom, rgb(13 17 23 / 0.055) 1px, transparent 1px)",
+            "linear-gradient(to bottom, rgb(13 17 23 / 0.035) 1px, transparent 1px)",
           backgroundSize: "100% 2.25rem",
           maskImage: "linear-gradient(to bottom, #000, #000 70%, transparent)",
           WebkitMaskImage: "linear-gradient(to bottom, #000, #000 70%, transparent)",
         }}
       />
 
+      {/* Blurred as a group rather than per glyph: one filtered layer is one
+          composited surface, where fourteen filtered spans would be
+          fourteen. */}
+      <div className="absolute inset-0 [filter:blur(1.5px)]">
       {GLYPHS.map((glyph, i) => (
         <span
           key={i}
@@ -106,6 +110,7 @@ export function AmbientBackdrop() {
           <Icon name={glyph.icon} size={glyph.size} strokeWidth={1.6} />
         </span>
       ))}
+      </div>
     </div>
   );
 }

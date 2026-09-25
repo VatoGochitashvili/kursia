@@ -48,8 +48,11 @@ export function StartShowcase({
 
   if (count === 0) return null;
 
+  // The cards behind the front one stick out past the deck on purpose. On a
+  // narrow screen that bleed widened the document and let the whole page
+  // scroll sideways, so it is clipped here: drawn, not scrollable.
   return (
-    <div className="mt-10">
+    <div className="mt-10 overflow-hidden">
       <div className="relative mx-auto flex h-[19rem] max-w-3xl items-center justify-center sm:h-[23rem]">
         {circles.map((circle, i) => {
           // Where this card sits relative to the one in front, wrapped so the
@@ -86,14 +89,16 @@ export function StartShowcase({
                     />
                   )}
                 </div>
-                <figcaption className="flex items-center justify-between gap-3 px-4 py-3">
-                  <span className="min-w-0">
+                {/* Stacked on a phone: side by side, the name is squeezed to
+                    an ellipsis by a badge that cannot shrink. */}
+                <figcaption className="flex flex-col items-start gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                  <span className="min-w-0 max-w-full">
                     <span className="block truncate text-[15px] font-bold">{circle.name}</span>
-                    <span className="block text-[12.5px] text-ink-subtle">
+                    <span className="block whitespace-nowrap text-[12.5px] text-ink-subtle">
                       {circle.members} {labels.members}
                     </span>
                   </span>
-                  <span className="shrink-0 rounded-xl bg-success-700 px-3 py-1.5 text-[13px] font-bold text-white">
+                  <span className="shrink-0 whitespace-nowrap rounded-xl bg-success-700 px-3 py-1.5 text-[12.5px] font-bold text-white sm:text-[13px]">
                     {formatEarnings[i]}
                   </span>
                 </figcaption>
