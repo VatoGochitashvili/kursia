@@ -169,3 +169,75 @@ export async function listCommunityCategories(locale: Locale) {
     count: row._count.communities,
   }));
 }
+
+export interface ShowcaseCircle {
+  slug: string;
+  name: string;
+  coverUrl: string | null;
+  members: number;
+  priceMinor: number;
+  currency: string;
+  /** Members paying now × the monthly price. Gross, before commission. */
+  monthlyMinor: number;
+}
+
+/**
+ * Circles worth showing to somebody deciding whether to start one.
+ *
+ * Every figure is arithmetic on live rows — members paying right now times
+ * the price they pay — not a number somebody typed. A circle with no paying
+ * members is left out rather than shown earning nothing, and so is a free
+ * one, where the honest figure would be zero.
+ */
+export async function listShowcaseCircles(locale: Locale, take = 6): Promise<ShowcaseCircle[]> {
+  const settings = await getSettings();
+  const now = new Date();
+
+  const rows = await db.creatorProfile.findMany({
+    where: {
+      communityEnabled: true,
+      approvedAt: { not: null },
+      communityStatus: "APPROVED",
+      communityPriceMinor: { gt: 0 },
+      ...payingCreatorFilter(settings.creatorPlanPriceMinor),
+    },
+    orderBy: { communityMemberCount: "desc" },
+    take: take * 3,
+    select: {
+      slug: true,
+      displayName: true,
+      communityName: true,
+      communityCoverUrl: true,
+      communityPriceMinor: true,
+      communityCurrency: true,
+      _count: {
+        select: {
+          subscriptions: {
+            where: {
+              kind: "COMMUNITY",
+              status: { in: ["ACTIVE", "CANCELLED"] },
+              currentPeriodEnd: { gt: now },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return rows
+    .map((row) => ({
+      slug: row.slug,
+      name: communityLabel(
+        { communityName: row.communityName, displayName: row.displayName },
+        locale,
+      ),
+      coverUrl: row.communityCoverUrl,
+      members: row._count.subscriptions,
+      priceMinor: row.communityPriceMinor,
+      currency: row.communityCurrency,
+      monthlyMinor: row._count.subscriptions * row.communityPriceMinor,
+    }))
+    .filter((row) => row.members > 0)
+    .sort((a, b) => b.monthlyMinor - a.monthlyMinor)
+    .slice(0, take);
+}
