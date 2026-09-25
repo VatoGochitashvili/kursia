@@ -2,6 +2,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { ApiError, beginMutation, handler, jsonOk, notFoundError, readJson } from "@/lib/api";
 import { requireUser } from "@/lib/auth/rbac";
+import { consumeCircleLeaveCode } from "@/lib/auth/accounts";
 import { startCommunityCheckout } from "@/lib/payments/fulfillment";
 import { cancelSubscription } from "@/lib/subscriptions";
 import { communityScope } from "@/lib/membership";
@@ -47,19 +48,27 @@ export const POST = handler(async (request) => {
  */
 export const DELETE = handler(async (request) => {
   const user = await requireUser();
-  await beginMutation("write", user.id);
+  await beginMutation("passwordReset", user.id);
 
-  // Query param rather than a body: DELETE bodies are legal but some proxies
-  // drop them, and this needs one id.
-  const creatorId = new URL(request.url).searchParams.get("creatorId") ?? "";
-  if (!cuid.safeParse(creatorId).success) {
+  const params = new URL(request.url).searchParams;
+  const creatorId = params.get("creatorId") ?? "";
+  const code = params.get("code") ?? "";
+  if (!cuid.safeParse(creatorId).success || !/^\d{6}$/.test(code)) {
     throw new ApiError(400, "VALIDATION_ERROR", "არასწორი მოთხოვნა");
   }
+
   const subscription = await db.subscription.findUnique({
     where: { userId_scopeKey: { userId: user.id, scopeKey: communityScope(creatorId) } },
     select: { id: true },
   });
   if (!subscription) throw notFoundError("წევრობა ვერ მოიძებნა");
+
+  // Leaving ends something the person pays for, so it takes the code that
+  // was emailed to them — not just a signed-in session. Checked after the
+  // membership is found, so a mistyped circle does not burn the code.
+  if (!(await consumeCircleLeaveCode(user.id, code))) {
+    throw new ApiError(400, "INVALID_TOKEN", "კოდი არასწორია ან ვადაგასულია");
+  }
 
   const cancelled = await cancelSubscription(user.id, subscription.id);
   if (!cancelled) throw new ApiError(409, "CONFLICT", "გაუქმება ვერ მოხერხდა");

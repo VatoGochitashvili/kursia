@@ -24,6 +24,8 @@ export const TOKEN_TTL = {
   // Short: switching off an account is something you decide in one sitting,
   // and a code that lingers is a code somebody else can use.
   ACCOUNT_CLOSE: 30 * 60 * 1000,
+  // Same reasoning: leaving a paid circle is decided in one sitting.
+  CIRCLE_LEAVE: 30 * 60 * 1000,
 } as const;
 
 async function uniqueUsername(seed: string): Promise<string> {
@@ -69,7 +71,7 @@ export function verificationCode(): string {
 /** Issue a single-use token; only its hash is stored. */
 export async function issueToken(
   userId: string,
-  purpose: "EMAIL_VERIFY" | "PASSWORD_RESET" | "ACCOUNT_CLOSE",
+  purpose: "EMAIL_VERIFY" | "PASSWORD_RESET" | "ACCOUNT_CLOSE" | "CIRCLE_LEAVE",
   /** Six digits for email confirmation; a long random string otherwise. */
   kind: "token" | "code" = "token",
 ): Promise<string> {
@@ -94,7 +96,7 @@ export async function issueToken(
 
 export async function consumeToken(
   token: string,
-  purpose: "EMAIL_VERIFY" | "PASSWORD_RESET" | "ACCOUNT_CLOSE",
+  purpose: "EMAIL_VERIFY" | "PASSWORD_RESET" | "ACCOUNT_CLOSE" | "CIRCLE_LEAVE",
 ): Promise<{ userId: string } | null> {
   const record = await db.verificationToken.findUnique({
     where: { tokenHash: hashToken(token) },
@@ -391,5 +393,51 @@ export async function confirmDeactivation(userId: string, code: string): Promise
   await db.verificationToken.update({ where: { id: record.id }, data: { usedAt: new Date() } });
   await db.user.update({ where: { id: userId }, data: { status: "DEACTIVATED" } });
   await revokeAllSessions(userId);
+  return true;
+}
+
+/**
+ * Leaving a circle — stopping a membership that renews.
+ *
+ * Confirmed by a code sent to the address on file, the same as closing the
+ * account: it ends something the person pays for, and a stray click or a
+ * borrowed laptop should not be enough to do that.
+ */
+export async function requestCircleLeave(userId: string, locale: Locale): Promise<void> {
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    select: { email: true, profile: { select: { fullName: true } } },
+  });
+  if (!user) return;
+
+  const code = await issueToken(userId, "CIRCLE_LEAVE", "code");
+  await queueEmail({
+    to: user.email,
+    template: "verifyEmail",
+    locale,
+    payload: {
+      name: user.profile?.fullName ?? "",
+      code,
+      url: absoluteUrl("/dashboard/settings"),
+    },
+  });
+}
+
+/** Spend a leave code. True when it was valid for this person. */
+export async function consumeCircleLeaveCode(userId: string, code: string): Promise<boolean> {
+  const record = await db.verificationToken.findUnique({
+    where: { tokenHash: hashToken(code) },
+    select: { id: true, userId: true, purpose: true, expiresAt: true, usedAt: true },
+  });
+  if (
+    !record ||
+    record.userId !== userId ||
+    record.purpose !== "CIRCLE_LEAVE" ||
+    record.usedAt ||
+    record.expiresAt.getTime() < Date.now()
+  ) {
+    return false;
+  }
+  await db.verificationToken.update({ where: { id: record.id }, data: { usedAt: new Date() } });
   return true;
 }

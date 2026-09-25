@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { api, errorMessage } from "@/lib/client/fetcher";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Alert, Card, Textarea } from "@/components/ui/primitives";
-import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Icon } from "@/components/ui/Icon";
 import { useToast } from "@/components/ui/Toast";
 import { formatMoney } from "@/lib/money";
@@ -69,7 +68,6 @@ export function JoinCommunityCard({
   const toast = useToast();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [confirmLeave, setConfirmLeave] = useState(false);
   const [message, setMessage] = useState("");
   const [applied, setApplied] = useState(false);
 
@@ -121,21 +119,6 @@ export function JoinCommunityCard({
     }
   }
 
-  async function leave() {
-    setPending(true);
-    try {
-      await api.delete(
-        `/api/communities?creatorId=${encodeURIComponent(community.creatorId)}`,
-      );
-      toast.show(t.membership.cancelled, "success");
-      setConfirmLeave(false);
-      router.refresh();
-    } catch (err) {
-      toast.show(errorMessage(err), "danger");
-    } finally {
-      setPending(false);
-    }
-  }
 
   const perks = [
     t.membership.perkFeed,
@@ -166,33 +149,17 @@ export function JoinCommunityCard({
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          {cancelled ? (
+        {/* Leaving is not offered here. It ends something the person pays
+            for, so it lives at the bottom of their settings behind an emailed
+            code — not one tap away in the room they are standing in. Renewing
+            a membership they already stopped is the only action here. */}
+        {cancelled && (
+          <div className="mt-4">
             <Button size="sm" loading={pending} onClick={join}>
               {t.membership.renew}
             </Button>
-          ) : (
-            <Button
-              size="sm"
-              variant="ghost"
-              className="text-ink-muted"
-              onClick={() => setConfirmLeave(true)}
-            >
-              {t.membership.cancel}
-            </Button>
-          )}
-        </div>
-
-        <ConfirmDialog
-          open={confirmLeave}
-          title={t.membership.cancel}
-          body={t.membership.cancelConfirm}
-          confirmLabel={t.membership.cancel}
-          cancelLabel={t.common.cancel}
-          pending={pending}
-          onConfirm={leave}
-          onCancel={() => setConfirmLeave(false)}
-        />
+          </div>
+        )}
       </Card>
     );
   }

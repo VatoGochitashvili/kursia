@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { api, errorMessage } from "@/lib/client/fetcher";
 import { Button } from "@/components/ui/Button";
@@ -21,9 +21,12 @@ type Key = keyof Preferences;
 export function PreferencesForm({
   initial,
   labels,
+  beforeAccount,
 }: {
   initial: Preferences;
   labels: Record<string, string>;
+  /** Rendered between privacy and closing the account — memberships go here. */
+  beforeAccount?: ReactNode;
 }) {
   const router = useRouter();
   const toast = useToast();
@@ -92,6 +95,8 @@ export function PreferencesForm({
           ))}
         </ul>
       </Card>
+
+      {beforeAccount}
 
       <DeactivateCard labels={labels} onDone={() => router.push("/")} />
     </div>

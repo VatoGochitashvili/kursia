@@ -8,6 +8,9 @@ import { PageHeader } from "@/components/layout/DashboardShell";
 import { ProfileForm } from "@/components/dashboard/ProfileForm";
 import { ChangePasswordForm } from "@/components/dashboard/ChangePasswordForm";
 import { PreferencesForm } from "@/components/dashboard/PreferencesForm";
+import { MembershipsManager, type ManagedMembership } from "@/components/dashboard/MembershipsManager";
+import { communityLabel } from "@/lib/membership";
+import { fill } from "@/i18n/config";
 import { getPreferences } from "@/lib/preferences";
 import { Alert, Card } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
@@ -24,6 +27,32 @@ export default async function SettingsPage() {
   const user = await requireUser();
 
   const preferences = await getPreferences(user.id);
+
+  // Memberships that are live now — including ones already stopped, which
+  // still run to the end of the period and say so.
+  const subscriptions = await db.subscription.findMany({
+    where: {
+      userId: user.id,
+      kind: "COMMUNITY",
+      status: { in: ["ACTIVE", "CANCELLED"] },
+      currentPeriodEnd: { gt: new Date() },
+    },
+    orderBy: { currentPeriodEnd: "asc" },
+    select: {
+      creatorId: true,
+      status: true,
+      currentPeriodEnd: true,
+      creator: { select: { displayName: true, communityName: true } },
+    },
+  });
+  const memberships: ManagedMembership[] = subscriptions.map((row) => ({
+    creatorId: row.creatorId,
+    name: communityLabel(row.creator, locale),
+    cancelled: row.status === "CANCELLED",
+    status: fill(row.status === "CANCELLED" ? t.settings.endsOn : t.settings.renewsOn, {
+      date: formatDate(row.currentPeriodEnd, locale),
+    }),
+  }));
 
   const record = await db.user.findUnique({
     where: { id: user.id },
@@ -143,6 +172,23 @@ export default async function SettingsPage() {
               deactivateConfirm: t.settings.deactivateConfirm,
               deactivateDone: t.settings.deactivateDone,
             }}
+            beforeAccount={
+              <MembershipsManager
+                memberships={memberships}
+                locale={locale}
+                labels={{
+                  membershipsTitle: t.settings.membershipsTitle,
+                  membershipsHint: t.settings.membershipsHint,
+                  membershipsEmpty: t.settings.membershipsEmpty,
+                  leaveCircle: t.settings.leaveCircle,
+                  leaveSend: t.settings.leaveSend,
+                  leaveSent: t.settings.leaveSent,
+                  leaveConfirm: t.settings.leaveConfirm,
+                  leaveDone: t.settings.leaveDone,
+                  cancel: t.common.cancel,
+                }}
+              />
+            }
           />
           <Card className="p-5">
             <h2 className="text-base">{t.profile.security}</h2>
