@@ -24,7 +24,14 @@ export function StartShowcase({
   formatEarnings,
 }: {
   circles: ShowcaseCircle[];
-  labels: { earns: string; members: string; previous: string; next: string };
+  labels: {
+    earns: string;
+    members: string;
+    previous: string;
+    next: string;
+    /** What the figure is — gross, from live memberships. Shown on hover. */
+    earningsNote: string;
+  };
   /** Money is formatted on the server, so the client ships no currency table. */
   formatEarnings: string[];
 }) {
@@ -49,12 +56,14 @@ export function StartShowcase({
 
   if (count === 0) return null;
 
-  // The cards behind the front one stick out past the deck on purpose. On a
-  // narrow screen that bleed widened the document and let the whole page
-  // scroll sideways, so it is clipped here: drawn, not scrollable.
+  // The deck takes whatever height the page leaves it and sizes the card from
+  // that, through container units — so the page can fill the window without
+  // scrolling on a phone and on a laptop alike. The cards behind the front
+  // one stick out past it on purpose; the clip keeps that bleed drawn rather
+  // than scrollable.
   return (
-    <div className="mt-10 overflow-hidden">
-      <div className="relative mx-auto flex h-[19rem] max-w-3xl items-center justify-center sm:h-[23rem]">
+    <div className="flex max-h-[30rem] min-h-0 w-full flex-1 flex-col">
+      <div className="relative flex min-h-[11rem] w-full flex-1 items-center justify-center overflow-hidden [container-type:size]">
         {circles.map((circle, i) => {
           // Where this card sits relative to the one in front, wrapped so the
           // deck has no seam between the last card and the first.
@@ -68,10 +77,14 @@ export function StartShowcase({
               key={circle.slug}
               aria-hidden={offset !== 0}
               className={cn(
-                "absolute w-[min(34rem,86vw)] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
+                "absolute transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
                 hidden && "pointer-events-none",
               )}
               style={{
+                // As wide as fits: 34rem at most, never wider than the deck,
+                // and never taller than the height it was given (16:9 photo
+                // plus a caption of up to ~6rem when it stacks on a phone).
+                width: "min(34rem, 88cqw, max(10rem, calc((100cqh - 6rem) * 1.77)))",
                 transform: `translateX(${offset * 58}%) scale(${offset === 0 ? 1 : 0.84})`,
                 opacity: hidden ? 0 : offset === 0 ? 1 : 0.35,
                 zIndex: offset === 0 ? 2 : 1,
@@ -99,7 +112,10 @@ export function StartShowcase({
                       {circle.members} {labels.members}
                     </span>
                   </span>
-                  <span className="shrink-0 whitespace-nowrap rounded-xl bg-success-700 px-3 py-1.5 text-[12.5px] font-bold text-white sm:text-[13px]">
+                  <span
+                    title={labels.earningsNote}
+                    className="shrink-0 whitespace-nowrap rounded-xl bg-success-700 px-3 py-1.5 text-[12.5px] font-bold text-white sm:text-[13px]"
+                  >
                     {formatEarnings[i]}
                   </span>
                 </figcaption>
@@ -110,7 +126,7 @@ export function StartShowcase({
       </div>
 
       {count > 1 && (
-        <div className="mt-5 flex items-center justify-center gap-4">
+        <div className="mt-3 flex shrink-0 items-center justify-center gap-4">
           <button
             type="button"
             aria-label={labels.previous}
