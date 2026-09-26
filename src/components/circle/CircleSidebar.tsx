@@ -10,6 +10,7 @@ import { fill } from "@/i18n/config";
 import type { Membership } from "@/lib/community";
 import type { Dictionary } from "@/i18n";
 import type { Locale } from "@/lib/enums";
+import { imageAt } from "@/lib/images";
 
 /**
  * The circle's side column: what it is, what it costs, who runs it, and — for
@@ -73,7 +74,7 @@ export function CircleSidebar({
           <div className="aspect-[16/9] bg-surface-sunken">
             {community.coverUrl ? (
               // eslint-disable-next-line @next/next/no-img-element -- stored or user-configured host
-              <img src={community.coverUrl} alt="" className="h-full w-full object-cover" />
+              <img src={imageAt(community.coverUrl, 640) ?? undefined} alt="" className="h-full w-full object-cover" />
             ) : (
               <div className="h-full w-full bg-gradient-to-br from-brand-100 via-brand-50 to-surface-sunken" />
             )}

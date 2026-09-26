@@ -5,6 +5,7 @@ import { formatNumber } from "@/lib/format";
 import { fill } from "@/i18n/config";
 import type { CommunityView } from "@/components/community/JoinCommunityCard";
 import type { Dictionary } from "@/i18n";
+import { imageAt } from "@/lib/images";
 
 /**
  * The head of every circle page: a cover photo, the owner, and the facts a
@@ -40,7 +41,7 @@ export function CommunityHeader({
           // eslint-disable-next-line @next/next/no-img-element -- covers come
           // from user-configured hosts as well as our own storage.
           <img
-            src={community.coverUrl}
+            src={imageAt(community.coverUrl, 1400) ?? undefined}
             alt=""
             fetchPriority="high"
             decoding="async"

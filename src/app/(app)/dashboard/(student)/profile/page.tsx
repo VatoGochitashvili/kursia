@@ -10,6 +10,7 @@ import { levelFor } from "@/lib/points";
 import { Alert, Avatar, Badge, Card } from "@/components/ui/primitives";
 import { ButtonLink } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
+import { imageAt } from "@/lib/images";
 
 export const metadata: Metadata = { title: "Profile", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -121,7 +122,7 @@ export default async function ProfilePage() {
                       <span className="h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-surface-sunken">
                         {circle.coverUrl && (
                           // eslint-disable-next-line @next/next/no-img-element -- stored or user-configured host
-                          <img src={circle.coverUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
+                          <img src={imageAt(circle.coverUrl, 200) ?? undefined} alt="" loading="lazy" className="h-full w-full object-cover" />
                         )}
                       </span>
                       <span className="min-w-0 flex-1">

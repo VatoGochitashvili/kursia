@@ -4,6 +4,7 @@ import { loadCommunityPage } from "@/lib/community-page";
 import { CircleTabs } from "@/components/circle/CircleTabs";
 import { CircleSidebar } from "@/components/circle/CircleSidebar";
 import { Badge } from "@/components/ui/primitives";
+import { imageAt } from "@/lib/images";
 
 export const dynamic = "force-dynamic";
 
@@ -45,7 +46,7 @@ export default async function CircleLayout({
         <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-surface-sunken">
           {community.coverUrl && (
             // eslint-disable-next-line @next/next/no-img-element -- stored or user-configured host
-            <img src={community.coverUrl} alt="" className="h-full w-full object-cover" />
+            <img src={imageAt(community.coverUrl, 160) ?? undefined} alt="" className="h-full w-full object-cover" />
           )}
         </div>
         <div className="min-w-0">

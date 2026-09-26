@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
 import type { ShowcaseCircle } from "@/lib/communities";
+import { imageAt } from "@/lib/images";
 
 /**
  * Circles already running, shown to somebody deciding whether to start one.
@@ -82,7 +83,7 @@ export function StartShowcase({
                   {circle.coverUrl && (
                     // eslint-disable-next-line @next/next/no-img-element -- stored or user-configured host
                     <img
-                      src={circle.coverUrl}
+                      src={imageAt(circle.coverUrl, 960) ?? undefined}
                       alt=""
                       loading={offset === 0 ? "eager" : "lazy"}
                       className="h-full w-full object-cover"

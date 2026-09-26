@@ -15,6 +15,7 @@ import { buildMetadata } from "@/lib/seo";
 import { Avatar, Badge, Card, ProgressBar } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
 import { MemberActions } from "@/components/circle/MemberActions";
+import { imageAt } from "@/lib/images";
 
 export const dynamic = "force-dynamic";
 
@@ -244,7 +245,7 @@ export default async function CircleMemberPage({ params }: Props) {
                 <span className="h-10 w-14 shrink-0 overflow-hidden rounded-lg bg-surface-sunken">
                   {c.coverUrl && (
                     // eslint-disable-next-line @next/next/no-img-element -- stored or user-configured host
-                    <img src={c.coverUrl} alt="" className="h-full w-full object-cover" />
+                    <img src={imageAt(c.coverUrl, 200) ?? undefined} alt="" className="h-full w-full object-cover" />
                   )}
                 </span>
                 <span className="min-w-0 flex-1">

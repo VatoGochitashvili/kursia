@@ -7,6 +7,7 @@ import { localePath } from "@/i18n/config";
 import { cn } from "@/lib/cn";
 import type { MyCircle } from "@/lib/my-circles";
 import type { Locale } from "@/lib/enums";
+import { imageAt } from "@/lib/images";
 
 /**
  * A way back into your circles from anywhere on the marketplace.
@@ -94,7 +95,7 @@ export function MyCirclesLauncher({
                           <span className="h-9 w-12 shrink-0 overflow-hidden rounded-lg bg-surface-sunken">
                             {circle.coverUrl && (
                               // eslint-disable-next-line @next/next/no-img-element -- stored or user-configured host
-                              <img src={circle.coverUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
+                              <img src={imageAt(circle.coverUrl, 160) ?? undefined} alt="" loading="lazy" className="h-full w-full object-cover" />
                             )}
                           </span>
                           <span className="min-w-0 flex-1">

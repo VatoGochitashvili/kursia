@@ -6,6 +6,7 @@ import { fill } from "@/i18n/config";
 import { cn } from "@/lib/cn";
 import type { CommunityCard as Community } from "@/lib/communities";
 import type { Dictionary } from "@/i18n";
+import { imageAt } from "@/lib/images";
 
 /**
  * One circle in the directory.
@@ -48,7 +49,7 @@ export function CommunityCard({
           // eslint-disable-next-line @next/next/no-img-element -- covers come
           // from user-configured hosts as well as our own storage.
           <img
-            src={community.coverUrl}
+            src={imageAt(community.coverUrl, 640) ?? undefined}
             alt=""
             loading={priority ? "eager" : "lazy"}
             fetchPriority={priority ? "high" : "auto"}
